@@ -1,0 +1,32 @@
+{
+  "name": "ring",
+  "version": "0.0.1",
+  "description": "A framework for the data lifecycle of a highly modularized React application.",
+  "main": "index.js",
+  "directories": {
+    "example": "example",
+    "src": "src"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jung-digital/ring.git"
+  },
+  "keywords": [
+    "react",
+    "framework",
+    "data",
+    "state",
+    "ioc",
+    "redux",
+    "flux"
+  ],
+  "author": "JungDigital",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jung-digital/ring/issues"
+  },
+  "homepage": "https://github.com/jung-digital/ring#readme"
+}
