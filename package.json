@@ -2,7 +2,7 @@
   "name": "ring",
   "version": "0.0.1",
   "description": "A framework for the data lifecycle of a highly modularized React application.",
-  "main": "index.js",
+  "main": "./src/index.js",
   "directories": {
     "example": "example",
     "src": "src"
@@ -28,5 +28,10 @@
   "bugs": {
     "url": "https://github.com/jung-digital/ring/issues"
   },
-  "homepage": "https://github.com/jung-digital/ring#readme"
+  "homepage": "https://github.com/jung-digital/ring#readme",
+  "dependencies": {
+    "react": "^15.4.2",
+    "react-addons-test-utils": "^15.4.2",
+    "react-dom": "^15.4.2"
+  }
 }
