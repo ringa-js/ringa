@@ -1,5 +1,5 @@
 import React from 'react';
-import UserCollection from '../ringModels/UserCollection';
+import UserCollection from '../ring/models/UserCollection';
 import { inject, ForceUpdate } from '../../../src/index';
 
 /**
@@ -24,6 +24,13 @@ export class UserList extends React.Component {
     super(properties);
   }
 
+  filterSelect(filter) {
+    new RingEvent(FILTER_USERS, {
+      filter,
+      userList,
+      blahBlah
+    });
+  }
   //-----------------------------------
   // Lifecycle
   //-----------------------------------
