@@ -70,7 +70,14 @@ class Command extends RingObject {
   buildArgumentsFromRingEvent(ringEvent) {
     let args = [];
 
-    //
+    this.injections = this.injections || {
+      controller: this.controller,
+      commandThread: this.commandThread,
+      ringEvent: ringEvent,
+      customEvent: ringEvent.customEvent,
+      target: ringEvent.target
+    };
+
     this.argNames.forEach((argName) => {
       if (ringEvent.detail.hasOwnProperty(argName)) {
         args.push(ringEvent.detail[argName]);
@@ -100,19 +107,16 @@ class Command extends RingObject {
     this.doneHandler = doneHandler;
     this.failHandler = failHandler;
 
-    this.injections = {
-      controller: this.controller,
-      commandThread: this.commandThread,
-      ringEvent: this.ringEvent,
-      customEvent: this.ringEvent.customEvent,
-      target: this.ringEvent.target
-    };
-
     let args = this.buildArgumentsFromRingEvent(this.commandThread.ringEvent);
 
-    // If the command execute method returns true, we continue on the next immediate cycle.
-    if (this.execute.apply(this, args)) {
-      this.done();
+    try {
+      // If the command execute method returns true, we continue on the next immediate cycle.
+      if (this.execute.apply(this, args)) {
+        this.done();
+      }
+    } catch (error) {
+      console.error(error);
+      failHandler(error);
     }
   }
 
