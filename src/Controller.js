@@ -121,10 +121,14 @@ class Controller extends RingObject {
 
   threadDoneHandler(commandThread) {
     this.commandThreads.remove(commandThread);
+
+    commandThread.ringEvent._done();
   }
 
   threadFailHandler(commandThread, error) {
     this.commandThreads.remove(commandThread);
+
+    commandThread.ringEvent._fail();
   }
 }
 

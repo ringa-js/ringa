@@ -31,13 +31,13 @@ describe('Shortcuts / Wrappers', () => {
     commandThread = commandThreadFactory.build(new Ring.Event(TEST_EVENT), false);
   });
 
-  it('Ring.dispatch() should dispatch and manage an event', () => {
+  it('Ring.dispatch() should dispatch and manage an event', (done) => {
     let ringEvent = Ring.dispatch(TEST_EVENT, {
-      testObject: {value: 'test'}
+      testObject: {
+        value: 'test'
+      }
     }, domNode);
 
-    expect(ringEvent.dispatched).toEqual(true);
-    expect(ringEvent.controller).toEqual(controller);
-    expect(ringEvent.commandThread.id).toEqual('testController_CommandThread');
+    ringEvent.addDoneListener(done);
   });
 });

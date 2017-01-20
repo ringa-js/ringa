@@ -89,9 +89,18 @@ class RingEvent extends RingObject {
   /**
    * Dispatch the event on the provided domNode.
    *
+   * Note: this method is always delayed so you must not access its properties
+   * until a frame later.
+   *
    * @param domNode
    */
   dispatch(domNode = document) {
+    setTimeout(this._dispatch.bind(this, domNode));
+
+    return this;
+  }
+
+  _dispatch(domNode) {
     if (this.dispatched) {
       throw Error('RingEvent::dispatch(): events should only be dispatched once!', this);
     }
@@ -109,8 +118,6 @@ class RingEvent extends RingObject {
     }
 
     domNode.dispatchEvent(this.customEvent);
-
-    return this;
   }
 
   /**
@@ -131,12 +138,23 @@ class RingEvent extends RingObject {
     console.log('[' + this.type + ']', this.detail, this.target, this.stack);
   }
 
-  dispatchEvent(event) {
-    let listeners = this.listeners[event.type];
+  _done() {
+    this._dispatchEvent(RingEvent.DONE);
+  }
+
+  _fail(error) {
+    this._dispatchEvent(RingEvent.FAIL, error);
+  }
+
+  _dispatchEvent(type, detail) {
+    let listeners = this.listeners[type];
 
     if (listeners) {
       listeners.forEach((listener) => {
-        listener(event);
+        listener({
+          type,
+          detail
+        });
       });
     }
   }
@@ -152,6 +170,11 @@ class RingEvent extends RingObject {
     this.listeners[eventType] = this.listeners[eventType] || [];
     this.listeners[eventType].push(handler);
   }
+
+  addDoneListener(handler) {
+    this.addListener(RingEvent.DONE, handler);
+  }
+
 }
 
 RingEvent.DONE = 'done';

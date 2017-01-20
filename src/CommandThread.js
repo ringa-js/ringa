@@ -72,7 +72,7 @@ class CommandThread extends RingHashArray {
   _commandDoneHandler(error) {
     this.index++;
 
-    if (this.index < this.all.length - 1) {
+    if (this.index < this.all.length) {
       setTimeout(this.executeNext.bind(this), 0);
     } else {
       this.doneHandler(this);
