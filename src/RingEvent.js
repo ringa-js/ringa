@@ -1,4 +1,5 @@
 import RingObject from './RingObject';
+import ErrorStackParser from 'error-stack-parser';
 
 let eventIx = 0;
 
@@ -98,10 +99,10 @@ class RingEvent extends RingObject {
     this.dispatched = true;
 
     if (window.__DEV__) {
-      try {
-        throw Error();
-      } catch (error) {
-        this.dispatchStack = error.stack;
+      this.dispatchStack = ErrorStackParser.parse(new Error());
+      this.dispatchStack.shift(); // Remove a reference to RingEvent.dispatch()
+      if (this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
+        this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
       }
     } else {
       this.dispatchStack = 'To turn on stack traces, build ring in development mode. See documentation.';

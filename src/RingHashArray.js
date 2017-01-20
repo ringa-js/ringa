@@ -11,6 +11,9 @@ class RingHashArray extends RingObject {
     this._hashArray = new HashArray(key, changeHandler, options);
   }
 
+  get all() {
+    return this._hashArray._list;
+  }
   add() {
     return this._hashArray.add(...arguments);
   }

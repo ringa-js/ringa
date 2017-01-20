@@ -77,7 +77,12 @@ class Command extends RingObject {
       } else if (this.injections.hasOwnProperty(argName)) {
         args.push(this.injections[argName]);
       } else {
-        throw Error(this.toString() + '::buildArgumentsFromRingEvent(): the property \'' + argName + '\' was not provided on the dispatched ringEvent.', ringEvent);
+        throw Error(this.toString() +
+          '::buildArgumentsFromRingEvent(): the property \'' +
+          argName +
+          '\' was not provided on the dispatched ringEvent.' +
+          ' Dispatched from: ' +
+          ringEvent.dispatchStack[0], ringEvent);
       }
     });
 
@@ -103,7 +108,7 @@ class Command extends RingObject {
       target: this.ringEvent.target
     };
 
-    let args = this.buildArgumentsFrom(this.commandThread.ringEvent);
+    let args = this.buildArgumentsFromRingEvent(this.commandThread.ringEvent);
 
     // If the command execute method returns true, we continue on the next immediate cycle.
     if (this.execute.apply(this, args)) {

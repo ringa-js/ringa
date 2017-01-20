@@ -1,6 +1,6 @@
 import CommandThreadFactory from './CommandThreadFactory';
 import RingObject from './RingObject';
-import RingHashArray from './RingHashArray';
+import HashArray from 'hasharray';
 
 /**
  * Controller is the hub for events dispatched on the DOM invoking threads of commands.
@@ -14,7 +14,7 @@ class Controller extends RingObject {
 
     this.domNode = domNode;
 
-    this.threads = new RingHashArray('id');
+    this.commandThreads = new HashArray('id');
 
     this.eventTypeToCommandThreadFactory = new Map();
   }
@@ -67,11 +67,13 @@ class Controller extends RingObject {
   }
 
   invoke(ringEvent, commandThreadFactory) {
-    let commandThread = commandThreadFactory.build(eventType);
+    let commandThread = commandThreadFactory.build(ringEvent);
 
-    commandThread.run();
+    this.commandThreads.add(commandThread);
 
-    this.threads.add(commandThread, this.threadCompletedHandler.bind(this));
+    commandThread.run(ringEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
+
+    return commandThread;
   }
 
   //-----------------------------------
@@ -90,22 +92,39 @@ class Controller extends RingObject {
       throw Error('Controller::_eventHandler(): caught an event but there is no associated CommandThreadFactory! Fatal error.');
     }
 
-    let abort = this.eventHandler(customEvent.ringEvent);
+    let abort = this.preInvokeHandler(customEvent.ringEvent);
 
     if (abort) {
       return;
     }
 
-    this.invoke(customEvent.detail.ringEvent, commandThreadFactory);
+    try {
+      let commandThread = this.invoke(customEvent.detail.ringEvent, commandThreadFactory);
+
+      this.postInvokeHandler(customEvent.detail.ringEvent, commandThread);
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
   }
 
-  eventHandler(ringEvent) {
+  preInvokeHandler(ringEvent) {
     // Can be extended by a subclass
-    return true;
+    return false;
   }
 
-  threadCompletedHandler(commandThread) {
+  postInvokeHandler(ringEvent, commandThread) {
+    // Can be extended by a subclass
+    console.log('Post invoke should not happen here');
+  }
 
+  threadDoneHandler(commandThread) {
+    this.commandThreads.remove(commandThread);
+  }
+
+  threadFailHandler(commandThread, error) {
+    this.commandThreads.remove(commandThread);
   }
 }
 

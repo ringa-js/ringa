@@ -1,5 +1,5 @@
 import RingObject from './RingObject';
-import getArgNames from './util/function';
+import {getArgNames} from './util/function';
 
 class CommandFactory {
   //-----------------------------------
@@ -7,19 +7,24 @@ class CommandFactory {
   //-----------------------------------
   constructor(commandClass) {
     this.commandClass = commandClass;
-
-    this.cacheArguments();
   }
 
   //-----------------------------------
   // Methods
   //-----------------------------------
-  cacheArguments() {
-    this.argNames = getArgNames(commandClass.prototype.execute);
+  cacheArguments(instance) {
+    this.argNames = getArgNames(instance.execute);
   }
 
   build(commandThread) {
-    return new this.commandClass(commandThread, this.argNames);
+    let instance = new this.commandClass(commandThread, this.argNames);
+
+    if (!this.argNames) {
+      this.cacheArguments(instance);
+      instance.argNames = this.argNames;
+    }
+
+    return instance;
   }
 }
 

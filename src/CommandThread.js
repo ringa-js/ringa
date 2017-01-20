@@ -24,22 +24,31 @@ class CommandThread extends RingHashArray {
   // Methods
   //-----------------------------------
   buildCommands() {
-    this.commandThreadFactory.forEach((commandFactory) => {
-      let command = commandFactory.build(this.ringEvent);
+    this.commandThreadFactory.all.forEach((commandFactory) => {
+      let command = commandFactory.build(this);
 
       this.add(command);
     });
   }
 
-  run(ringEvent, completedHandler) {
+  run(ringEvent, doneHandler, failHandler) {
     if (this.running) {
       throw Error('CommandThread::run(): you cannot start a thread while it is already running!');
     }
 
-    this.ringEvent = ringEvent;
-    this.completedHandler = completedHandler;
+    if (this.commandThreadFactory.all.length === 0) {
+      throw Error('CommandThread::run(): attempting to run a thread with no commands!');
+    }
 
-    buildCommands();
+    if (!ringEvent) {
+      throw Error('CommandThread::run(): cannot run a thread without a RingEvent!');
+    }
+
+    this.ringEvent = ringEvent;
+    this.doneHandler = doneHandler;
+    this.failHandler = failHandler;
+
+    this.buildCommands();
 
     // The current command we are running
     this.index = 0;
@@ -48,9 +57,9 @@ class CommandThread extends RingHashArray {
   }
 
   executeNext() {
-    let command = this._list(this.index);
+    let command = this.all[this.index];
 
-    command._execute(this.ringEvent);
+    command._execute(this._commandDoneHandler.bind(this), this._commandFailHandler.bind(this));
   }
 
   kill() {
@@ -63,7 +72,17 @@ class CommandThread extends RingHashArray {
   _commandDoneHandler(error) {
     this.index++;
 
-    setTimeout(this.executeNext.bind(this), 0);
+    if (this.index < this.all.length - 1) {
+      setTimeout(this.executeNext.bind(this), 0);
+    } else {
+      this.doneHandler(this);
+    }
+  }
+
+  _commandFailHandler(error) {
+    this.error = error;
+
+    this.failHandler(this, error);
   }
 }
 

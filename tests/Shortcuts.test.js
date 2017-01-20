@@ -1,9 +1,12 @@
 /* eslint-disable no-unused-vars */
 
+window.__DEV__ = true;
+
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Ring from '../src/index';
+import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
 const TEST_EVENT = 'testEvent';
@@ -16,7 +19,7 @@ describe('Shortcuts / Wrappers', () => {
       <div>Controller Attach Point</div>
     ));
 
-    controller = new Ring.Controller('testController', domNode);
+    controller = new TestController('testController', domNode);
 
     commandThreadFactory = new Ring.CommandThreadFactory('testCommandThreadFactory', [
       CommandSimple
@@ -29,9 +32,12 @@ describe('Shortcuts / Wrappers', () => {
   });
 
   it('Ring.dispatch() should dispatch and manage an event', () => {
-    let ringEvent = Ring.dispatch(TEST_EVENT, undefined, domNode);
+    let ringEvent = Ring.dispatch(TEST_EVENT, {
+      testObject: {value: 'test'}
+    }, domNode);
 
     expect(ringEvent.dispatched).toEqual(true);
     expect(ringEvent.controller).toEqual(controller);
+    expect(ringEvent.commandThread.id).toEqual('testController_CommandThread');
   });
 });
