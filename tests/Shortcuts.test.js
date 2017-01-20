@@ -19,7 +19,9 @@ describe('Shortcuts / Wrappers', () => {
       <div>Controller Attach Point</div>
     ));
 
-    controller = new TestController('testController', domNode);
+    controller = new TestController('testController', domNode, {
+      timeout: 50
+    });
 
     commandThreadFactory = new Ring.CommandThreadFactory('testCommandThreadFactory', [
       CommandSimple

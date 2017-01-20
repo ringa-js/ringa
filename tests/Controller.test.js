@@ -18,7 +18,9 @@ describe('Controller', () => {
       <div>Controller Attach Point</div>
     ));
 
-    controller = new Ring.Controller('testController', domNode);
+    controller = new Ring.Controller('testController', domNode, {
+      timeout: 50
+    });
 
     commandThreadFactory = new Ring.CommandThreadFactory('testCommandThreadFactory', [
       CommandSimple

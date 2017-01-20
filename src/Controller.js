@@ -9,10 +9,21 @@ class Controller extends RingObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id, domNode) {
+  /**
+   * Constructs a new controller.
+   *
+   * @param id The id of this controller, primarily used for internal hashes and debugging. Must be unique.
+   * @param domNode The native browser DOMNode element (not a React Node) to attach event listeners to.
+   * @param options See documentation on Controller options. Defaults are provided, so this is optional.
+   */
+  constructor(id, domNode, options) {
     super(id);
 
     this.domNode = domNode;
+
+    this.options = options || {};
+    this.options.timeout = this.options.timeout || 5000;
+    this.options.injections = this.options.injections || {};
 
     this.commandThreads = new HashArray('id');
 
@@ -22,7 +33,19 @@ class Controller extends RingObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  addListener(eventType, commandThreadFactory) {
+  addListener(eventType, commandThreadFactoryOrArray) {
+    let commandThreadFactory;
+
+    if (!this.options) {
+      throw Error('Controller::addListener() was called by super was never called in the constructor!');
+    }
+
+    if (commandThreadFactoryOrArray instanceof Array) {
+      commandThreadFactory = new CommandThreadFactory(this.id + '_' + eventType + '_CommandThreadFactory', commandThreadFactoryOrArray);
+    } else {
+      commandThreadFactory = commandThreadFactoryOrArray;
+    }
+
     if (!commandThreadFactory || !(commandThreadFactory instanceof CommandThreadFactory)) {
       throw Error('Controller::addListener(): commandThreadFactory not an instance of CommandThreadFactory');
     }
@@ -50,6 +73,8 @@ class Controller extends RingObject {
         throw Error('Controller::addListener(): provided eventType is invalid.', eventType);
       }
     }
+
+    return commandThreadFactory;
   }
 
   removeListener(eventType) {
@@ -126,7 +151,11 @@ class Controller extends RingObject {
   }
 
   threadFailHandler(commandThread, error) {
-    this.commandThreads.remove(commandThread);
+    if (this.commandThreads.has(commandThread.id)) {
+      this.commandThreads.remove(commandThread);
+    } else {
+      throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${commandThread.id} was not found.`)
+    }
 
     commandThread.ringEvent._fail();
   }

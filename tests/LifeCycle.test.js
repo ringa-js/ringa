@@ -19,13 +19,13 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       <div>Controller Attach Point</div>
     ));
 
-    controller = new TestController('testController', domNode);
+    controller = new TestController('testController', domNode, {
+      timeout: 50
+    });
 
-    commandThreadFactory = new Ring.CommandThreadFactory('testCommandThreadFactory', [
+    commandThreadFactory = controller.addListener(TEST_EVENT, [
       CommandSimple
     ]);
-
-    controller.addListener(TEST_EVENT, commandThreadFactory);
 
     // Build a thread but do not run it right away because we are testing!
     commandThread = commandThreadFactory.build(new Ring.Event(TEST_EVENT), false);
@@ -39,9 +39,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       value: 'test'
     };
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, { testObject }, domNode);
-
-    ringEvent.addDoneListener(() => {
+    let ringEvent = Ring.dispatch(TEST_EVENT, { testObject }, domNode).addDoneListener(() => {
       expect(testObject.executed).toEqual(true);
       done();
     });

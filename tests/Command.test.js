@@ -9,6 +9,7 @@ import Ring from '../src/index';
 import CommandSimple from './shared/CommandSimple';
 import CommandComplexArgs from './shared/CommandComplexArgs';
 import {getArgNames} from '../src/util/function';
+import {buildArgumentsFromRingEvent} from '../src/util/command';
 
 const TEST_EVENT = 'testEvent';
 
@@ -20,7 +21,9 @@ describe('Command', () => {
       <div>Controller Attach Point</div>
     ));
 
-    controller = new Ring.Controller('testController', domNode);
+    controller = new Ring.Controller('testController', domNode, {
+      timeout: 50
+    });
 
     commandThreadFactory = new Ring.CommandThreadFactory('testCommandThreadFactory', [
       CommandSimple
@@ -78,7 +81,7 @@ describe('Command', () => {
       c: 'c'
     });
 
-    let args = commandComplex.buildArgumentsFromRingEvent(ringEvent);
+    let args = buildArgumentsFromRingEvent(commandComplex, commandComplex.argNames, ringEvent);
 
     // ringEvent, target, controller, commandThread, testObject, a, b, c
     expect(args[0]).toEqual(ringEvent);
@@ -100,7 +103,7 @@ describe('Command', () => {
     });
 
     expect(() => {
-      commandComplex.buildArgumentsFromRingEvent(ringEvent);
+      buildArgumentsFromRingEvent(commandComplex, commandComplex.argNames, ringEvent);
     }).toThrow();
   });
 
@@ -108,7 +111,7 @@ describe('Command', () => {
     let ringEvent = new Ring.Event('testEvent', undefined);
 
     expect(() => {
-      commandComplex.buildArgumentsFromRingEvent(ringEvent);
+      buildArgumentsFromRingEvent(commandComplex, commandComplex.argNames, ringEvent);
     }).toThrow();
   });
 });
