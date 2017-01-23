@@ -33,6 +33,10 @@
 export const buildArgumentsFromRingEvent = function(commandAbstract, expectedArguments, ringEvent) {
   let args = [];
 
+  if (!(expectedArguments instanceof Array)) {
+    throw Error('buildArgumentsFromRingEvent(): An internal error has occurred in that expectedArguments is not an Array!');
+  }
+
   let injections = commandAbstract._injections = commandAbstract._injections || {
       controller: commandAbstract.controller,
       commandThread: commandAbstract.commandThread,
@@ -49,17 +53,18 @@ export const buildArgumentsFromRingEvent = function(commandAbstract, expectedArg
   }
 
   expectedArguments.forEach((argName) => {
-    if (ringEvent.detail.hasOwnProperty(argName)) {
+    if (ringEvent.detail && ringEvent.detail.hasOwnProperty(argName)) {
       args.push(ringEvent.detail[argName]);
     } else if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
     } else {
-      throw Error(this.toString() +
-        '::buildArgumentsFromRingEvent(): the property \'' +
+      throw Error(commandAbstract.toString() +
+        ': the property \'' +
         argName +
         '\' was not provided on the dispatched ringEvent.' +
-        ' Dispatched from: ' +
-        ringEvent.dispatchStack[0], ringEvent);
+        'Expected Arguments were: [\'' + expectedArguments.join('\'.\'') +
+        '\'] Dispatched from: ' +
+        ringEvent.dispatchStack ? ringEvent.dispatchStack[0] : 'unknown stack.', ringEvent);
     }
   });
 

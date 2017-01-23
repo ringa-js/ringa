@@ -44,7 +44,7 @@ describe('Command', () => {
     expect(domNode.nodeType).toEqual(1);
     expect(controller.id).toEqual('testController');
     expect(commandThreadFactory.id).toEqual('testCommandThreadFactory');
-    expect(commandThread.id).toEqual('testController_CommandThread');
+    expect(commandThread.id).toEqual('testController_CommandThread0');
   });
 
   it('should have a properly defined id', () => {

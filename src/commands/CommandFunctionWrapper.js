@@ -1,5 +1,5 @@
 import CommandAbstract from '../CommandAbstract';
-import {buildArgumentsFromRingEvent} from '../util/function';
+import {buildArgumentsFromRingEvent} from '../util/command';
 import {getArgNames} from '../util/function';
 
 /**
@@ -36,15 +36,16 @@ class CommandFunctionWrapper extends CommandAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    const args = buildArgumentsFromRingEvent(this, expectedArguments, this.ringEvent);
+    const args = buildArgumentsFromRingEvent(this, this.expectedArguments, this.ringEvent);
 
-    const donePassedAsArg = expectedArguments.indexOf('done') !== -1;
+    const donePassedAsArg = this.expectedArguments.indexOf('done') !== -1;
 
     try {
-      // If the function returns true, we continue on the next immediate cycle.
-      // If, however the function requested that 'done' be passed, we assume it is an asynchronous
+      // If the function requested that 'done' be passed, we assume it is an asynchronous
       // function and let the function determine when it will call done.
-      if (this.func.apply(this, args) && !donePassedAsArg) {
+      this.func.apply(undefined, args);
+
+      if (!donePassedAsArg) {
         this.done();
       }
     } catch (error) {
@@ -72,6 +73,10 @@ class CommandFunctionWrapper extends CommandAbstract {
     this.finished = true;
 
     super.fail(error, kill);
+  }
+
+  toString() {
+    return this.id + ': ' + this.func.toString().substr(0, 128);
   }
 }
 

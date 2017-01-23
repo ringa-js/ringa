@@ -3,6 +3,9 @@ import CommandThread from './CommandThread';
 import CommandFactory from './CommandFactory';
 
 class CommandThreadFactory extends RingHashArray {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
   constructor(id, commandFactories, options) {
     super(id || 'commandFactory');
 
@@ -21,14 +24,23 @@ class CommandThreadFactory extends RingHashArray {
     if (commandFactories) {
       this.addAll(commandFactories);
     }
+
+    this.threadId = 0;
   }
 
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
   build(ringEvent) {
     if (!this.controller) {
       console.log('CommandThreadFactory::build(): controller was not set before the build method was called.');
     }
 
-    return new CommandThread(this.controller.id + '_CommandThread', this);
+    let commandThread = new CommandThread(this.controller.id + '_CommandThread' + this.threadId, this);
+
+    this.threadId++;
+
+    return commandThread;
   }
 }
 

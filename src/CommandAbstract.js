@@ -105,9 +105,9 @@ class CommandAbstract extends RingObject {
   _timeoutHandler() {
     let message = 'CommandAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
 
-    console.error(message, this);
+    console.error(message);
 
-    this.fail(new Error(message), true);
+    this.fail(new Error(message), this);
   }
 }
 

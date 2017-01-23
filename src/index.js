@@ -3,11 +3,11 @@ import Command from './commands/Command';
 import CommandFactory from './CommandFactory';
 import CommandThreadFactory from './CommandThreadFactory';
 import Controller from './Controller';
-import Event from './RingEvent';
+import RingEvent from './RingEvent';
 
 const ForceUpdate = Symbol('ForceUpdate');
 
-export { inject, Command, CommandFactory, CommandThreadFactory, Controller, Event as RingEvent, ForceUpdate };
+export { inject, Command, CommandFactory, CommandThreadFactory, Controller, RingEvent, ForceUpdate };
 
 export default {
   inject,
@@ -16,9 +16,9 @@ export default {
   Command,
   CommandFactory,
   CommandThreadFactory,
-  Event,
+  Event: RingEvent,
   dispatch: (eventType, details, domNode = document) => {
-    return new Event(eventType, details).dispatch(domNode);
+    return new RingEvent(eventType, details).dispatch(domNode);
   },
   iif: (condition, executor) => {
 

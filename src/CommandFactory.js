@@ -4,6 +4,7 @@ import CommandFunctionWrapper from './commands/CommandFunctionWrapper';
 import CommandPromiseWrapper from './commands/CommandPromiseWrapper';
 import CommandEventWrapper from './commands/CommandEventWrapper';
 import CommandsParallelWrapper from './commands/CommandsParallelWrapper';
+import RingEventFactory from './RingEventFactory';
 import {getArgNames} from './util/function';
 
 class CommandFactory {
@@ -29,7 +30,8 @@ class CommandFactory {
 
   build(commandThread) {
     if (typeof this.executee === 'string') {
-      return new CommandEventWrapper(commandThread, this.executee);
+      let ringEventFactory = new RingEventFactory(this.executee);
+      return new CommandEventWrapper(commandThread, ringEventFactory);
     } else if (typeof this.executee.then === 'function') {
       return new CommandPromiseWrapper(commandThread, this.executee);
     } else if (typeof this.executee === 'function') {

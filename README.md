@@ -4,15 +4,14 @@ and scalable Javascript application.
 
 Specializing in support for:
 
-- ReactJS / Angular
 - Modules
 - Plugins
 - Scalability
 - Customization
 - Debugging
+- ReactJS / Angular (through plugins, not yet built)
 
-Unlike a lot of other MV* style frameworks in existence, Ring works closely with the DOM event system and the DOM tree
-so that your Model and Control structure are loosely tied to the tree structure of your application.
+Ring works closely with the DOM event system and the DOM tree so that your Model and Control structure are loosely tied to the tree structure of your application.
 
 # Asyncronous Nightmares no More
 

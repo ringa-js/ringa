@@ -32,10 +32,10 @@ class RingEvent extends RingObject {
    * @param bubbles
    * @param cancelable
    */
-  constructor(type, detail, bubbles = true, cancelable = true) {
+  constructor(type, detail = {}, bubbles = true, cancelable = true) {
     super('event_' + type + '_' + eventIx++);
 
-    detail = detail || {};
+    this.detail = detail;
     detail.ringEvent = this;
 
     this.customEvent = new CustomEvent(type, {
@@ -50,6 +50,8 @@ class RingEvent extends RingObject {
     this._errors = undefined;
 
     this.listeners = {};
+
+    this.caught = false;
   }
 
   //-----------------------------------
@@ -57,10 +59,6 @@ class RingEvent extends RingObject {
   //-----------------------------------
   get type() {
     return this.customEvent.type;
-  }
-
-  get detail() {
-    return this.customEvent.detail;
   }
 
   get bubbles() {
@@ -175,6 +173,9 @@ class RingEvent extends RingObject {
     this.addListener(RingEvent.DONE, handler);
   }
 
+  addFailListener(handler) {
+    this.addListener(RingEvent.FAIL, handler);
+  }
 }
 
 RingEvent.DONE = 'done';

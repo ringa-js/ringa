@@ -1,6 +1,7 @@
 import CommandThreadFactory from './CommandThreadFactory';
 import RingObject from './RingObject';
 import HashArray from 'hasharray';
+import RingEvent from './RingEvent';
 
 /**
  * Controller is the hub for events dispatched on the DOM invoking threads of commands.
@@ -40,7 +41,7 @@ class Controller extends RingObject {
       throw Error('Controller::addListener() was called by super was never called in the constructor!');
     }
 
-    if (commandThreadFactoryOrArray instanceof Array) {
+    if (!commandThreadFactoryOrArray || commandThreadFactoryOrArray instanceof Array) {
       commandThreadFactory = new CommandThreadFactory(this.id + '_' + eventType + '_CommandThreadFactory', commandThreadFactoryOrArray);
     } else {
       commandThreadFactory = commandThreadFactoryOrArray;
@@ -105,6 +106,10 @@ class Controller extends RingObject {
   // Events
   //-----------------------------------
   _eventHandler(customEvent) {
+    // This event might be a something like 'click' which does not have
+    // an attached ringEvent yet!
+    customEvent.detail.ringEvent = customEvent.detail.ringEvent || new RingEvent(customEvent.type, customEvent.detail, customEvent.bubbles, customEvent.cancellable);
+
     if (customEvent.detail.ringEvent.controller) {
       throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ', customEvent);
     }
@@ -116,6 +121,8 @@ class Controller extends RingObject {
     if (!commandThreadFactory) {
       throw Error('Controller::_eventHandler(): caught an event but there is no associated CommandThreadFactory! Fatal error.');
     }
+
+    customEvent.detail.ringEvent.caught = true;
 
     let abort = this.preInvokeHandler(customEvent.ringEvent);
 
