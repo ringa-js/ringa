@@ -4,6 +4,7 @@ import CommandFactory from './CommandFactory';
 import CommandThreadFactory from './CommandThreadFactory';
 import Controller from './Controller';
 import RingEvent from './RingEvent';
+import RingEventFactory from './RingEventFactory';
 
 const ForceUpdate = Symbol('ForceUpdate');
 
@@ -28,5 +29,8 @@ export default {
   },
   Bind: (commandAbstract, ...params) => {
 
+  },
+  EventFactory: (eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true) => {
+    return new RingEventFactory(eventType, detail, domNode, requireCatch, bubbles, cancellable);
   }
 };

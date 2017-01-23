@@ -152,12 +152,18 @@ class Controller extends RingObject {
   }
 
   threadDoneHandler(commandThread) {
+    if (!this.commandThreads.has(commandThread.id)) {
+      throw Error('Controller::threadDoneHandler(): could not find thread with id ' + commandThread.id);
+    }
+
     this.commandThreads.remove(commandThread);
 
     commandThread.ringEvent._done();
   }
 
   threadFailHandler(commandThread, error) {
+    console.error(error);
+
     if (this.commandThreads.has(commandThread.id)) {
       this.commandThreads.remove(commandThread);
     } else {

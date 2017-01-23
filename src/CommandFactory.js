@@ -50,9 +50,11 @@ class CommandFactory {
     } else if (this.executee instanceof Array) {
       // This might be a group of CommandAbstracts that should be run synchronously
       return new CommandsParallelWrapper(commandThread, this.executee);
+    } else if (typeof this.executee === 'object' && this.executee instanceof RingEventFactory) {
+      return new CommandEventWrapper(commandThread, this.executee);
     }
 
-    throw Error('CommandFactory::build(): could not find way to build ' + this.executee);
+    throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ring: ' + typeof this.executee + ': ' + this.executee);
   }
 }
 

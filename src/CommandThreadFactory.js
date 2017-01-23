@@ -36,7 +36,7 @@ class CommandThreadFactory extends RingHashArray {
       console.log('CommandThreadFactory::build(): controller was not set before the build method was called.');
     }
 
-    let commandThread = new CommandThread(this.controller.id + '_CommandThread' + this.threadId, this);
+    let commandThread = new CommandThread(this.id + '_Thread' + this.threadId, this);
 
     this.threadId++;
 
