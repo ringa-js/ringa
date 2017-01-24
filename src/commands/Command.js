@@ -35,11 +35,11 @@ class Command extends CommandAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    let args = buildArgumentsFromRingEvent(this, this.argNames, this.commandThread.ringEvent);
-
-    const donePassedAsArg = this.argNames.indexOf('done') !== -1;
-
     try {
+      let args = buildArgumentsFromRingEvent(this, this.argNames, this.commandThread.ringEvent);
+
+      const donePassedAsArg = this.argNames.indexOf('done') !== -1;
+
       // If the function returns true, we continue on the next immediate cycle.
       // If, however the function requested that 'done' be passed, we assume it is an asynchronous
       // function and let the function determine when it will call done.
@@ -47,7 +47,6 @@ class Command extends CommandAbstract {
         this.done();
       }
     } catch (error) {
-      console.error(error);
       failHandler(error);
     }
   }

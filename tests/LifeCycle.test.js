@@ -22,7 +22,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
     ));
 
     controller = new TestController('testController', domNode, {
-      timeout: 50
+      timeout: 500
     });
 
     commandThreadFactory = controller.addListener(TEST_EVENT);
@@ -298,5 +298,37 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       expect(sequence).toEqual('01234567891011121314151617181920');
       done();
     });
+  }, 1000);
+
+  //------------------------------------------------
+  // RingEvent -> 10 CommandEventWrappers Depth Test
+  //------------------------------------------------
+  it('RingEvent -> 10 CommandEventWrapper Sequence Test', (done) => {
+    let sequence = '';
+
+    for (let i = 0; i < 10; i++) {
+      let eventType = 'TestEvent_' + i;
+      let nextEventType = 'TestEvent_' + (i + 1);
+
+      let arr = [() => {
+        sequence += i;
+      }];
+
+      if (i < 9) {
+        arr.push(nextEventType);
+      }
+
+      arr.push(() => {
+        sequence += i;
+      });
+
+      controller.addListener(eventType, arr);
+    }
+
+    Ring.dispatch('TestEvent_0', undefined, domNode)
+      .addDoneListener(() => {
+        expect(sequence).toEqual('01234567899876543210');
+        done();
+      });
   }, 1000);
 });

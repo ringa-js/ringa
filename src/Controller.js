@@ -20,6 +20,10 @@ class Controller extends RingObject {
   constructor(id, domNode, options) {
     super(id);
 
+    if (!domNode) {
+      throw Error('Controller:constructor(): no DOMNode provided to constructor!');
+    }
+
     this.domNode = domNode;
 
     this.options = options || {};
@@ -29,22 +33,26 @@ class Controller extends RingObject {
     this.commandThreads = new HashArray('id');
 
     this.eventTypeToCommandThreadFactory = new Map();
+
+    this._eventHandler = this._eventHandler.bind(this);
   }
 
   //-----------------------------------
   // Methods
   //-----------------------------------
+  getListener(eventType) {
+    return this.eventTypeToCommandThreadFactory[eventType];
+  }
+
   addListener(eventType, commandThreadFactoryOrArray) {
     let commandThreadFactory;
 
-    if (!this.options) {
-      throw Error('Controller::addListener() was called by super was never called in the constructor!');
-    }
-
     if (!commandThreadFactoryOrArray || commandThreadFactoryOrArray instanceof Array) {
       commandThreadFactory = new CommandThreadFactory(this.id + '_' + eventType + '_CommandThreadFactory', commandThreadFactoryOrArray);
-    } else {
+    } else if (typeof commandThreadFactoryOrArray.build === 'function') {
       commandThreadFactory = commandThreadFactoryOrArray;
+    } else {
+      throw Error('Controller::addListener(): the provided commandThreadFactoryOrArray is not valid!');
     }
 
     if (!commandThreadFactory || !(commandThreadFactory instanceof CommandThreadFactory)) {
@@ -55,12 +63,16 @@ class Controller extends RingObject {
       throw Error('Controller::addListener(): commandThreadFactory cannot have two parent controllers!');
     }
 
+    if (this.eventTypeToCommandThreadFactory[eventType]) {
+      throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getListener() to make modifications.');
+    }
+
     commandThreadFactory.controller = this;
 
     this.eventTypeToCommandThreadFactory[eventType] = commandThreadFactory;
 
     if (typeof eventType === 'string') {
-      this.domNode.addEventListener(eventType, this._eventHandler.bind(this));
+      this.domNode.addEventListener(eventType, this._eventHandler);
     } else {
       let _eventType = undefined;
 
@@ -84,7 +96,7 @@ class Controller extends RingObject {
     if (commandThreadFactory) {
       delete this.eventTypeToCommandThreadFactory[eventType];
 
-      this.domNode.removeEventListener(eventType, _eventHandler);
+      this.domNode.removeEventListener(eventType, this._eventHandler);
 
       return commandThreadFactory;
     }
@@ -92,10 +104,16 @@ class Controller extends RingObject {
     throw Error('Controller:removeListener(): could not find a listener for \'' + eventType + '\'', this);
   }
 
+  hasListener(eventType) {
+    return this.getListener(eventType) !== undefined;
+  }
+
   invoke(ringEvent, commandThreadFactory) {
     let commandThread = commandThreadFactory.build(ringEvent);
 
     this.commandThreads.add(commandThread);
+
+    ringEvent._dispatchEvent(RingEvent.PREHOOK);
 
     commandThread.run(ringEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
@@ -136,8 +154,6 @@ class Controller extends RingObject {
       this.postInvokeHandler(customEvent.detail.ringEvent, commandThread);
     } catch (error) {
       console.error(error);
-
-      throw error;
     }
   }
 

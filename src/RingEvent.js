@@ -165,6 +165,10 @@ class RingEvent extends RingObject {
    * @param handler
    */
   addListener(eventType, handler) {
+    if (typeof eventType !== 'string') {
+      throw Error('RingEvent::addListener(): invalid eventType provided!' + eventType);
+    }
+
     this.listeners[eventType] = this.listeners[eventType] || [];
     this.listeners[eventType].push(handler);
   }
@@ -180,5 +184,7 @@ class RingEvent extends RingObject {
 
 RingEvent.DONE = 'done';
 RingEvent.FAIL = 'fail';
+
+RingEvent.PREHOOK = 'prehook';
 
 export default RingEvent;

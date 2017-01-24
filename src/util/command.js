@@ -58,13 +58,15 @@ export const buildArgumentsFromRingEvent = function(commandAbstract, expectedArg
     } else if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
     } else {
-      throw Error(commandAbstract.toString() +
-        ': the property \'' +
-        argName +
-        '\' was not provided on the dispatched ringEvent.' +
-        'Expected Arguments were: [\'' + expectedArguments.join('\'.\'') +
-        '\'] Dispatched from: ' +
-        ringEvent.dispatchStack ? ringEvent.dispatchStack[0] : 'unknown stack.', ringEvent);
+      let message = commandAbstract.toString() +
+      ': the property \'' +
+      argName +
+      '\' was not provided on the dispatched ringEvent.' +
+      'Expected Arguments were: [\'' + expectedArguments.join('\'.\'') +
+      '\'] Dispatched from: ' +
+        (ringEvent.dispatchStack ? ringEvent.dispatchStack[0] : 'unknown stack.');
+
+      throw Error(message);
     }
   });
 
