@@ -1,19 +1,71 @@
 # ring
-Ring JS: a framework and set of design patterns for the complete data and action lifecycle of a highly modularized
-and scalable Javascript application.
 
-Specializing in support for:
+A framework and design patterns for the action and data management lifecycle of a modularized Javascript application.
+
+# install
+
+    npm install ring
+
+# quick example
+
+In `MyController.js`:
+
+    import Ring from 'ring';
+    
+    class MyController extends Ring.Controller {
+      constructor(domNode) {
+        super('MyController', domNode);
+
+        this.addListener(MyController.MY_EVENT, [
+          (ringEvent) => {ringEvent.detail.count++}
+        ]);
+      }
+    }
+    
+    MyController.MY_EVENT = 'myEvent';
+    
+    export default MyController;
+
+In `MyComponent.js` (in this case ReactJS):
+
+    this.controller = new MyController(this.getDOMNode());
+
+    Ring.dispatch(MyController.MY_EVENT, {count: 0});
+
+# philosophy
+
+In 2008, Adobe Flash - and Flex - were all the rage for web GUI. But the process of managing asynchronous calls and organizing the lifecycle of
+user interaction to server calls and back to interface updates was a wild west. Adobe introduced Cairngorm, a lightweight event-to-commmand pattern
+built around a central event dispatcher.
+
+But as the Flex community grew developers began to share concerns with some of the patterns that Cairngorm introduced. Before long there were
+a plethora of options from Swiz to Parsley to PureMVC.
+
+For Actionscript, we eventually built our own solution that combined all the best parts of all the available MV* frameworks.
+ 
+Javascript is a wild west right now too with Alt, Flux, Redux and all its extensions. Just like Cairngorm, Redux promises a super lightweight and
+simple solution to a host of problems. However, becuse it is so unopinionated this means every implementation feels radically different.
+
+Recognizing the same dilemma facing Actionscript developers back in 2008, we have loosely taken the best philosophies of our in-house solution that
+worked for years with Adobe Flex and rebuilt them for Javascript.
+ 
+# technology
+
+Ring is ES6 and depends only on the DOM and the internal event system of the browser.
+
+Because of its independence from any particular GUI framework, it specializes in:
 
 - Modules
-- Plugins
+- Plugins (ReactJS, Angular, React-Native)
 - Scalability
 - Customization
 - Debugging
-- ReactJS / Angular (through plugins, not yet built)
+
+# architecture
 
 Ring works closely with the DOM event system and the DOM tree so that your Model and Control structure are loosely tied to the tree structure of your application.
 
-# Asyncronous Nightmares no More
+# asyncronous nightmares be gone
 
 A Ring Controller listens for events on a DOM node and responds to each event with a type of
 AST. However, unlike a standard AST, each node is by default asynchronous, analogous
@@ -78,7 +130,7 @@ Each item in the event listener is assumed to be asynchronous but by chaining th
 together you get the sensation of easy-to-read synchronous code without the hassle of trying
 to track down promises.
 
-# Highly Debuggable
+# debuggable
 
 While Ring works with standard DOM events like `'click'`, every dispatched `RingEvent` instance
 includes within it all the information necessary to debug the entire lifecycle of the entire tree
@@ -89,7 +141,7 @@ For example, you can see on the event itself the stack trace of where it was dis
 error message dispatched by Ring tells you exactly what was happening and includes the context of what went
 wrong, making logging of errors in your application easy to do.
 
-# Modular
+# modular
 
 Because Ring is not bound to any particular GUI-related framework like React or Angular and because 
 Ring can respond to any events dispatched on the DOM, it lends itself to enterprise applications where
@@ -106,10 +158,33 @@ global godlike event emitter. Beacuse of this, you can cordone off portions of t
 and can intercept events at deep nodes from reaching the root during the bubbling phase *or* intercept events from
 reaching descendents during *capture* phase - just like you bubbling and capture events like 'click' and 'mouseover'!
 
-# Rapid Prototyping
+# decoupled
 
-# Promise Support
+Because the chains of commands built in ring are centralized and 100% decoupled from the view, it is super easy to swap
+out an entire chain of functionality - or a portion of functionality - in one location to test out new business logic.
 
-Do you already use promises for a lot of your current codebase? Ring has built-in support for JS
-promises at every level of its event handling system.
+In addition, because ring is view agnostic it can be used with any view and so hotswapping your views while not touching
+your business logic is a breeze.
+
+# reuse
+
+Commands, commands chains, and controllers in Ring are designed from the ground up to be both extensible and overridable.
+
+Do you have standard functionality for displaying loading indicators, notifications, or error handling in your application?
+Write the commands for this once and reuse them in all of your controllers by easily stringing them together in your
+command chains.
+
+Want to reuse the majority of the command chains in another controller but add a few new items? Extend your other controller
+and add a few new command chains!
+
+# organized
+
+Ring takes an out-of-the-box opinionated approach to where things go in your application. This makes moving between ring
+modules and applications a breeze for team leads or new developers. Jumping into a Ring application feels familiar, without
+limiting what you can do.
+
+# promise support
+
+Do you already use promises for a lot of your current codebase? Ring has built-in support for JS promises at every level
+of its event handling system.
 
