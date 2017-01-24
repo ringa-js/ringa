@@ -188,15 +188,17 @@ class Controller extends RingObject {
     commandThread.ringEvent._done();
   }
 
-  threadFailHandler(commandThread, error) {
+  threadFailHandler(commandThread, error, kill) {
     if (this.options.consoleLogFails) {
       console.error(error);
     }
 
-    if (this.commandThreads.has(commandThread.id)) {
-      this.commandThreads.remove(commandThread);
-    } else {
-      throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${commandThread.id} was not found.`)
+    if (kill) {
+      if (this.commandThreads.has(commandThread.id)) {
+        this.commandThreads.remove(commandThread);
+      } else {
+        throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${commandThread.id} was not found.`)
+      }
     }
 
     commandThread.ringEvent._fail(error);

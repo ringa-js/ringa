@@ -83,10 +83,14 @@ class CommandThread extends RingHashArray {
     }
   }
 
-  _commandFailHandler(error) {
+  _commandFailHandler(error, kill) {
     this.error = error;
 
-    this.failHandler(this, error);
+    this.failHandler(this, error, kill);
+
+    if (!kill) {
+      this._commandDoneHandler(error);
+    }
   }
 }
 
