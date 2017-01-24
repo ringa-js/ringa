@@ -141,17 +141,18 @@ class RingEvent extends RingObject {
   }
 
   _fail(error) {
-    this._dispatchEvent(RingEvent.FAIL, error);
+    this._dispatchEvent(RingEvent.FAIL, undefined, error);
   }
 
-  _dispatchEvent(type, detail) {
+  _dispatchEvent(type, detail, error) {
     let listeners = this.listeners[type];
 
     if (listeners) {
       listeners.forEach((listener) => {
         listener({
           type,
-          detail
+          detail,
+          error
         });
       });
     }
@@ -171,14 +172,16 @@ class RingEvent extends RingObject {
 
     this.listeners[eventType] = this.listeners[eventType] || [];
     this.listeners[eventType].push(handler);
+
+    return this;
   }
 
   addDoneListener(handler) {
-    this.addListener(RingEvent.DONE, handler);
+    return this.addListener(RingEvent.DONE, handler);
   }
 
   addFailListener(handler) {
-    this.addListener(RingEvent.FAIL, handler);
+    return this.addListener(RingEvent.FAIL, handler);
   }
 }
 

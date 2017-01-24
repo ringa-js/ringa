@@ -35,19 +35,15 @@ class Command extends CommandAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    try {
-      let args = buildArgumentsFromRingEvent(this, this.argNames, this.commandThread.ringEvent);
+    let args = buildArgumentsFromRingEvent(this, this.argNames, this.commandThread.ringEvent);
 
-      const donePassedAsArg = this.argNames.indexOf('done') !== -1;
+    const donePassedAsArg = this.argNames.indexOf('done') !== -1;
 
-      // If the function returns true, we continue on the next immediate cycle.
-      // If, however the function requested that 'done' be passed, we assume it is an asynchronous
-      // function and let the function determine when it will call done.
-      if (this.execute.apply(this, args) && !donePassedAsArg) {
-        this.done();
-      }
-    } catch (error) {
-      failHandler(error);
+    // If the function returns true, we continue on the next immediate cycle.
+    // If, however the function requested that 'done' be passed, we assume it is an asynchronous
+    // function and let the function determine when it will call done.
+    if (this.execute.apply(this, args) && !donePassedAsArg) {
+      this.done();
     }
   }
 

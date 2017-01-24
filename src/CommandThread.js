@@ -59,7 +59,11 @@ class CommandThread extends RingHashArray {
   executeNext() {
     let command = this.all[this.index];
 
-    command._execute(this._commandDoneHandler.bind(this), this._commandFailHandler.bind(this));
+    try {
+      command._execute(this._commandDoneHandler.bind(this), this._commandFailHandler.bind(this));
+    } catch (error) {
+      this._commandFailHandler(error);
+    }
   }
 
   kill() {

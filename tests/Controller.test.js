@@ -21,9 +21,7 @@ describe('Controller', () => {
       <div>Controller Attach Point</div>
     ));
 
-    controller = new TestController('testController', domNode, {
-      timeout: 500
-    });
+    controller = new TestController('testController', domNode);
 
     commandThreadFactory = controller.addListener(TEST_EVENT);
     commandThreadFactory2 = controller.addListener(TEST_EVENT2);
@@ -36,6 +34,19 @@ describe('Controller', () => {
   it('should default options properly', () => {
     expect(controller.options).toBeDefined();
     expect(controller.options.injections).toBeDefined();
+    expect(controller.options.timeout).toEqual(5000);
+    expect(controller.options.throwKillsThread).toEqual(true);
+  });
+
+  it('should allow you to override the default options', () => {
+    let c = new Ring.Controller('c', domNode, {
+      timeout: 1,
+      throwKillsThread: false
+    });
+
+    expect(c.options).toBeDefined();
+    expect(c.options.timeout).toEqual(1);
+    expect(c.options.throwKillsThread).toEqual(false);
   });
 
   it('should have an attached domNode', () => {
@@ -111,6 +122,7 @@ describe('Controller', () => {
 
     let tc = new TC('TC', domNode);
     let ran = false;
+
     tc.addListener('test', [() => {
       ran = true;
     }]);
@@ -118,6 +130,30 @@ describe('Controller', () => {
     _ringEvent = Ring.dispatch('test', undefined, domNode).addDoneListener(() => {
       expect(ran).toEqual(true);
       expect(tc.preinvokeRan).toEqual(true);
+      done();
+    });
+  });
+
+  it('should properly handle errors in preInvokeHandler', (done) => {
+    let _ringEvent;
+
+    class TC extends Ring.Controller {
+      preInvokeHandler(ringEvent) {
+        throw Error('whatever');
+      }
+    };
+
+    let tc = new TC('TC', domNode);
+    tc.options.consoleLogFails = false;
+    let ran = false;
+
+    tc.addListener('test', [() => {
+      ran = true;
+    }]);
+
+    _ringEvent = Ring.dispatch('test', undefined, domNode).addFailListener((event) => {
+      expect(event.error.message).toEqual('whatever');
+      expect(ran).toEqual(false);
       done();
     });
   });

@@ -28,6 +28,8 @@ class Controller extends RingObject {
 
     this.options = options || {};
     this.options.timeout = this.options.timeout || 5000;
+    this.options.throwKillsThread = this.options.throwKillsThread === undefined ? true : false;
+    this.options.consoleLogFails = this.options.consoleLogFails === undefined ? true : false;
     this.options.injections = this.options.injections || {};
 
     this.commandThreads = new HashArray('id');
@@ -129,7 +131,7 @@ class Controller extends RingObject {
     customEvent.detail.ringEvent = customEvent.detail.ringEvent || new RingEvent(customEvent.type, customEvent.detail, customEvent.bubbles, customEvent.cancellable);
 
     if (customEvent.detail.ringEvent.controller) {
-      throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ', customEvent);
+      throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + customEvent);
     }
 
     customEvent.detail.ringEvent.controller = this;
@@ -142,9 +144,19 @@ class Controller extends RingObject {
 
     customEvent.detail.ringEvent.caught = true;
 
-    let abort = this.preInvokeHandler(customEvent.ringEvent);
+    let abort;
+    try {
+      abort = this.preInvokeHandler(customEvent.detail.ringEvent);
+    } catch (error) {
+      // At this point we don't have a thread yet, so this is all kinds of whack.
+      if (this.options.consoleLogFails) {
+        console.error(error);
+      }
 
-    if (abort) {
+      customEvent.detail.ringEvent._fail(error);
+    }
+
+    if (abort === true) {
       return;
     }
 
@@ -153,7 +165,7 @@ class Controller extends RingObject {
 
       this.postInvokeHandler(customEvent.detail.ringEvent, commandThread);
     } catch (error) {
-      console.error(error);
+      this.threadFailHandler(commandThread, error);
     }
   }
 
@@ -168,7 +180,7 @@ class Controller extends RingObject {
 
   threadDoneHandler(commandThread) {
     if (!this.commandThreads.has(commandThread.id)) {
-      throw Error('Controller::threadDoneHandler(): could not find thread with id ' + commandThread.id);
+      throw Error(`Controller::threadDoneHandler(): could not find thread with id ${commandThread.id}`);
     }
 
     this.commandThreads.remove(commandThread);
@@ -177,7 +189,9 @@ class Controller extends RingObject {
   }
 
   threadFailHandler(commandThread, error) {
-    console.error(error);
+    if (this.options.consoleLogFails) {
+      console.error(error);
+    }
 
     if (this.commandThreads.has(commandThread.id)) {
       this.commandThreads.remove(commandThread);
@@ -185,7 +199,7 @@ class Controller extends RingObject {
       throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${commandThread.id} was not found.`)
     }
 
-    commandThread.ringEvent._fail();
+    commandThread.ringEvent._fail(error);
   }
 }
 

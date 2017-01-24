@@ -49,8 +49,7 @@ class CommandFunctionWrapper extends CommandAbstract {
         this.done();
       }
     } catch (error) {
-      console.error(error);
-      failHandler(error);
+      this.fail(error);
     }
   }
 
