@@ -164,7 +164,6 @@ class Controller extends RingObject {
 
   postInvokeHandler(ringEvent, commandThread) {
     // Can be extended by a subclass
-    console.log('Post invoke should not happen here');
   }
 
   threadDoneHandler(commandThread) {
