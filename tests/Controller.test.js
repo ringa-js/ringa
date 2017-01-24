@@ -178,4 +178,12 @@ describe('Controller', () => {
 
     _ringEvent = Ring.dispatch('test', undefined, domNode);
   });
+
+  it('should have a dispatch method that dispatches directly on the domNode for the controller', (done) => {
+    controller.addListener('test1', [() => {
+      done();
+    }]);
+
+    controller.dispatch('test1', undefined);
+  });
 });

@@ -201,6 +201,10 @@ class Controller extends RingObject {
 
     commandThread.ringEvent._fail(error);
   }
+
+  dispatch(eventType, details) {
+    return new RingEvent(eventType, details).dispatch(this.domNode);
+  }
 }
 
 export default Controller;
