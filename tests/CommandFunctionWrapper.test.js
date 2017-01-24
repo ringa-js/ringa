@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ring from '../src/index';
+import Ringa from '../src/index';
 import TestController from './shared/TestController';
 
 const TEST_EVENT = 'testEvent';
@@ -32,11 +32,11 @@ describe('CommandFunctionWrapper', () => {
   });
 
   it('injection should work', (done) => {
-    let _ringEvent;
+    let _ringaEvent;
     let _controller = controller;
 
-    controller.addListener(TEST_EVENT, [(val1, ringEvent, val2, controller, val3) => {
-      expect(_ringEvent).toEqual(ringEvent);
+    controller.addListener(TEST_EVENT, [(val1, ringaEvent, val2, controller, val3) => {
+      expect(_ringaEvent).toEqual(ringaEvent);
       expect(_controller).toEqual(controller);
 
       expect(val1).toEqual(1);
@@ -46,7 +46,7 @@ describe('CommandFunctionWrapper', () => {
       done();
     }]);
 
-    _ringEvent = controller.dispatch(TEST_EVENT, {
+    _ringaEvent = controller.dispatch(TEST_EVENT, {
       val1: 1,
       val2: 2,
       val3: '3'

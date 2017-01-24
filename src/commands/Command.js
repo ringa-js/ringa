@@ -1,8 +1,8 @@
 import CommandAbstract from '../CommandAbstract';
-import {buildArgumentsFromRingEvent} from '../util/command';
+import {buildArgumentsFromRingaEvent} from '../util/command';
 
 /**
- * Command is the base class for all command objects that are run in a Ring application or module.
+ * Command is the base class for all command objects that are run in a Ringa application or module.
  */
 class Command extends CommandAbstract {
   //-----------------------------------
@@ -35,7 +35,7 @@ class Command extends CommandAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    let args = buildArgumentsFromRingEvent(this, this.argNames, this.commandThread.ringEvent);
+    let args = buildArgumentsFromRingaEvent(this, this.argNames, this.commandThread.ringaEvent);
 
     const donePassedAsArg = this.argNames.indexOf('done') !== -1;
 

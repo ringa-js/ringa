@@ -5,7 +5,7 @@ import React from 'react';
 // import TestUtils from 'react-addons-test-utils';
 // import UserList from './users/test/UserList';
 //
-// import RC_Users from './users/ring/controllers/RC_Users';
+// import RC_Users from './users/ringa/controllers/RC_Users';
 
 it('UserList', () => {
 

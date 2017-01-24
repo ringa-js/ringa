@@ -1,9 +1,9 @@
-import RingObject from './RingObject';
+import RingaObject from './RingaObject';
 
 /**
- * Command is the base class for all command objects that are run in a Ring application or module.
+ * Command is the base class for all command objects that are run in a Ringa application or module.
  */
-class CommandAbstract extends RingObject {
+class CommandAbstract extends RingaObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -27,8 +27,8 @@ class CommandAbstract extends RingObject {
   //-----------------------------------
   // Properties
   //-----------------------------------
-  get ringEvent() {
-    return this.commandThread.ringEvent;
+  get ringaEvent() {
+    return this.commandThread.ringaEvent;
   }
 
   get controller() {

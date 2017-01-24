@@ -1,12 +1,12 @@
 import CommandThreadFactory from './CommandThreadFactory';
-import RingObject from './RingObject';
+import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
-import RingEvent from './RingEvent';
+import RingaEvent from './RingaEvent';
 
 /**
  * Controller is the hub for events dispatched on the DOM invoking threads of commands.
  */
-class Controller extends RingObject {
+class Controller extends RingaObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -110,14 +110,14 @@ class Controller extends RingObject {
     return this.getListener(eventType) !== undefined;
   }
 
-  invoke(ringEvent, commandThreadFactory) {
-    let commandThread = commandThreadFactory.build(ringEvent);
+  invoke(ringaEvent, commandThreadFactory) {
+    let commandThread = commandThreadFactory.build(ringaEvent);
 
     this.commandThreads.add(commandThread);
 
-    ringEvent._dispatchEvent(RingEvent.PREHOOK);
+    ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
-    commandThread.run(ringEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
+    commandThread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
     return commandThread;
   }
@@ -127,14 +127,14 @@ class Controller extends RingObject {
   //-----------------------------------
   _eventHandler(customEvent) {
     // This event might be a something like 'click' which does not have
-    // an attached ringEvent yet!
-    customEvent.detail.ringEvent = customEvent.detail.ringEvent || new RingEvent(customEvent.type, customEvent.detail, customEvent.bubbles, customEvent.cancellable);
+    // an attached ringaEvent yet!
+    customEvent.detail.ringaEvent = customEvent.detail.ringaEvent || new RingaEvent(customEvent.type, customEvent.detail, customEvent.bubbles, customEvent.cancellable);
 
-    if (customEvent.detail.ringEvent.controller) {
+    if (customEvent.detail.ringaEvent.controller) {
       throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + customEvent);
     }
 
-    customEvent.detail.ringEvent.controller = this;
+    customEvent.detail.ringaEvent.controller = this;
 
     let commandThreadFactory = this.eventTypeToCommandThreadFactory[customEvent.type];
 
@@ -142,18 +142,18 @@ class Controller extends RingObject {
       throw Error('Controller::_eventHandler(): caught an event but there is no associated CommandThreadFactory! Fatal error.');
     }
 
-    customEvent.detail.ringEvent.caught = true;
+    customEvent.detail.ringaEvent.caught = true;
 
     let abort;
     try {
-      abort = this.preInvokeHandler(customEvent.detail.ringEvent);
+      abort = this.preInvokeHandler(customEvent.detail.ringaEvent);
     } catch (error) {
       // At this point we don't have a thread yet, so this is all kinds of whack.
       if (this.options.consoleLogFails) {
         console.error(error);
       }
 
-      customEvent.detail.ringEvent._fail(error);
+      customEvent.detail.ringaEvent._fail(error);
     }
 
     if (abort === true) {
@@ -161,20 +161,20 @@ class Controller extends RingObject {
     }
 
     try {
-      let commandThread = this.invoke(customEvent.detail.ringEvent, commandThreadFactory);
+      let commandThread = this.invoke(customEvent.detail.ringaEvent, commandThreadFactory);
 
-      this.postInvokeHandler(customEvent.detail.ringEvent, commandThread);
+      this.postInvokeHandler(customEvent.detail.ringaEvent, commandThread);
     } catch (error) {
       this.threadFailHandler(commandThread, error);
     }
   }
 
-  preInvokeHandler(ringEvent) {
+  preInvokeHandler(ringaEvent) {
     // Can be extended by a subclass
     return false;
   }
 
-  postInvokeHandler(ringEvent, commandThread) {
+  postInvokeHandler(ringaEvent, commandThread) {
     // Can be extended by a subclass
   }
 
@@ -185,7 +185,7 @@ class Controller extends RingObject {
 
     this.commandThreads.remove(commandThread);
 
-    commandThread.ringEvent._done();
+    commandThread.ringaEvent._done();
   }
 
   threadFailHandler(commandThread, error, kill) {
@@ -201,11 +201,11 @@ class Controller extends RingObject {
       }
     }
 
-    commandThread.ringEvent._fail(error);
+    commandThread.ringaEvent._fail(error);
   }
 
   dispatch(eventType, details) {
-    return new RingEvent(eventType, details).dispatch(this.domNode);
+    return new RingaEvent(eventType, details).dispatch(this.domNode);
   }
 }
 

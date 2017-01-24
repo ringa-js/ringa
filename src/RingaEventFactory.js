@@ -1,6 +1,6 @@
-import RingEvent from './RingEvent';
+import RingaEvent from './RingaEvent';
 
-class RingEventFactory {
+class RingaEventFactory {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -24,12 +24,12 @@ class RingEventFactory {
     newDetail._callee = callee;
     newDetail.requireCatch = this.requireCatch;
 
-    return new RingEvent(this.eventType, newDetail, this.bubbles, this.cancellable);
+    return new RingaEvent(this.eventType, newDetail, this.bubbles, this.cancellable);
   }
 
   toString() {
-    return 'RingEventFactory_' + this.eventType;
+    return 'RingaEventFactory_' + this.eventType;
   }
 }
 
-export default RingEventFactory;
+export default RingaEventFactory;

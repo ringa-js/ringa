@@ -1,6 +1,6 @@
-import RingHashArray from './RingHashArray';
+import RingaHashArray from './RingaHashArray';
 
-class CommandThread extends RingHashArray {
+class CommandThread extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -31,7 +31,7 @@ class CommandThread extends RingHashArray {
     });
   }
 
-  run(ringEvent, doneHandler, failHandler) {
+  run(ringaEvent, doneHandler, failHandler) {
     if (this.running) {
       throw Error('CommandThread::run(): you cannot start a thread while it is already running!');
     }
@@ -40,11 +40,11 @@ class CommandThread extends RingHashArray {
       throw Error('CommandThread::run(): attempting to run a thread with no commands!');
     }
 
-    if (!ringEvent) {
-      throw Error('CommandThread::run(): cannot run a thread without a RingEvent!');
+    if (!ringaEvent) {
+      throw Error('CommandThread::run(): cannot run a thread without a RingaEvent!');
     }
 
-    this.ringEvent = ringEvent;
+    this.ringaEvent = ringaEvent;
     this.doneHandler = doneHandler;
     this.failHandler = failHandler;
 

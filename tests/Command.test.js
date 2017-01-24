@@ -5,11 +5,11 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ring from '../src/index';
+import Ringa from '../src/index';
 import CommandSimple from './shared/CommandSimple';
 import CommandComplexArgs from './shared/CommandComplexArgs';
 import {getArgNames} from '../src/util/function';
-import {buildArgumentsFromRingEvent} from '../src/util/command';
+import {buildArgumentsFromRingaEvent} from '../src/util/command';
 
 const TEST_EVENT = 'testEvent';
 
@@ -21,18 +21,18 @@ describe('Command', () => {
       <div>Controller Attach Point</div>
     ));
 
-    controller = new Ring.Controller('testController', domNode, {
+    controller = new Ringa.Controller('testController', domNode, {
       timeout: 50
     });
 
-    commandThreadFactory = new Ring.CommandThreadFactory('testCommandThreadFactory', [
+    commandThreadFactory = new Ringa.CommandThreadFactory('testCommandThreadFactory', [
       CommandSimple
     ]);
 
     controller.addListener(TEST_EVENT, commandThreadFactory);
 
     // Build a thread but do not run it right away because we are testing!
-    commandThread = commandThreadFactory.build(new Ring.Event(TEST_EVENT), false);
+    commandThread = commandThreadFactory.build(new Ringa.Event(TEST_EVENT), false);
 
     command = new CommandSimple(commandThread, ['testObject']);
     commandComplex = new CommandComplexArgs(commandThread);
@@ -65,26 +65,26 @@ describe('Command', () => {
     expect(command.argNames).toEqual(argNames);
   });
 
-  it('should proxy the ringEvent property from the commandThread', () => {
-    expect(command.ringEvent).toEqual(commandThread.ringEvent);
+  it('should proxy the ringaEvent property from the commandThread', () => {
+    expect(command.ringaEvent).toEqual(commandThread.ringaEvent);
   });
 
   it('should proxy the controller property from the commandThread', () => {
     expect(command.controller).toEqual(commandThread.controller);
   });
 
-  it('should have a working buildArgumentsFromRingEvent function (success scenario 1)', () => {
-    let ringEvent = new Ring.Event('testEvent', {
+  it('should have a working buildArgumentsFromRingaEvent function (success scenario 1)', () => {
+    let ringaEvent = new Ringa.Event('testEvent', {
       testObject: 'test',
       a: 'a',
       b: 'b',
       c: 'c'
     });
 
-    let args = buildArgumentsFromRingEvent(commandComplex, commandComplex.argNames, ringEvent);
+    let args = buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
 
-    // ringEvent, target, controller, commandThread, testObject, a, b, c
-    expect(args[0]).toEqual(ringEvent);
+    // ringaEvent, target, controller, commandThread, testObject, a, b, c
+    expect(args[0]).toEqual(ringaEvent);
     expect(args[1]).toEqual(null);
     expect(args[2]).toEqual(controller);
     expect(args[3]).toEqual(commandThread);
@@ -95,23 +95,23 @@ describe('Command', () => {
     expect(args.length).toEqual(8);
   });
 
-  it('should have a working buildArgumentsFromRingEvent function (2/X)', () => {
-    let ringEvent = new Ring.Event('testEvent', {
+  it('should have a working buildArgumentsFromRingaEvent function (2/X)', () => {
+    let ringaEvent = new Ringa.Event('testEvent', {
       testObject: 'test',
       a: 'a',
       b: 'b'
     });
 
     expect(() => {
-      buildArgumentsFromRingEvent(commandComplex, commandComplex.argNames, ringEvent);
+      buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
     }).toThrow();
   });
 
-  it('should have a working buildArgumentsFromRingEvent function (2/X)', () => {
-    let ringEvent = new Ring.Event('testEvent', undefined);
+  it('should have a working buildArgumentsFromRingaEvent function (2/X)', () => {
+    let ringaEvent = new Ringa.Event('testEvent', undefined);
 
     expect(() => {
-      buildArgumentsFromRingEvent(commandComplex, commandComplex.argNames, ringEvent);
+      buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
     }).toThrow();
   });
 });

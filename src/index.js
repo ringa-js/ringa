@@ -3,12 +3,12 @@ import Command from './commands/Command';
 import CommandFactory from './CommandFactory';
 import CommandThreadFactory from './CommandThreadFactory';
 import Controller from './Controller';
-import RingEvent from './RingEvent';
-import RingEventFactory from './RingEventFactory';
+import RingaEvent from './RingaEvent';
+import RingaEventFactory from './RingaEventFactory';
 
 const ForceUpdate = Symbol('ForceUpdate');
 
-export { inject, Command, CommandFactory, CommandThreadFactory, Controller, RingEvent, ForceUpdate };
+export { inject, Command, CommandFactory, CommandThreadFactory, Controller, RingaEvent, ForceUpdate };
 
 export default {
   inject,
@@ -17,9 +17,9 @@ export default {
   Command,
   CommandFactory,
   CommandThreadFactory,
-  Event: RingEvent,
+  Event: RingaEvent,
   dispatch: (eventType, details, domNode = document) => {
-    return new RingEvent(eventType, details).dispatch(domNode);
+    return new RingaEvent(eventType, details).dispatch(domNode);
   },
   iif: (condition, executor) => {
 
@@ -31,6 +31,6 @@ export default {
 
   },
   EventFactory: (eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true) => {
-    return new RingEventFactory(eventType, detail, domNode, requireCatch, bubbles, cancellable);
+    return new RingaEventFactory(eventType, detail, domNode, requireCatch, bubbles, cancellable);
   }
 };

@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ring from '../src/index';
+import Ringa from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -23,23 +23,23 @@ describe('Shortcuts / Wrappers', () => {
       timeout: 50
     });
 
-    commandThreadFactory = new Ring.CommandThreadFactory('testCommandThreadFactory', [
+    commandThreadFactory = new Ringa.CommandThreadFactory('testCommandThreadFactory', [
       CommandSimple
     ]);
 
     controller.addListener(TEST_EVENT, commandThreadFactory);
 
     // Build a thread but do not run it right away because we are testing!
-    commandThread = commandThreadFactory.build(new Ring.Event(TEST_EVENT), false);
+    commandThread = commandThreadFactory.build(new Ringa.Event(TEST_EVENT), false);
   });
 
-  it('Ring.dispatch() should dispatch and manage an event', (done) => {
-    let ringEvent = Ring.dispatch(TEST_EVENT, {
+  it('Ringa.dispatch() should dispatch and manage an event', (done) => {
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, {
       testObject: {
         value: 'test'
       }
     }, domNode);
 
-    ringEvent.addDoneListener(done);
+    ringaEvent.addDoneListener(done);
   });
 });

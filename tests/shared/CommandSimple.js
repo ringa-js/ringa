@@ -1,6 +1,6 @@
-import Ring from '../../src/index';
+import Ringa from '../../src/index';
 
-class CommandSimple extends Ring.Command {
+class CommandSimple extends Ringa.Command {
   execute(testObject) {
     testObject.executed = true;
     testObject.count = testObject.count ? testObject.count : 0;

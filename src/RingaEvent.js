@@ -1,12 +1,12 @@
-import RingObject from './RingObject';
+import RingaObject from './RingaObject';
 import ErrorStackParser from 'error-stack-parser';
 
 let eventIx = 0;
 
 /**
- * RingEvent wraps a CustomEvent that is dispatched on the DOM:
+ * RingaEvent wraps a CustomEvent that is dispatched on the DOM:
  *
- *   let event = new RingEvent('change', {
+ *   let event = new RingaEvent('change', {
  *     property: 'index',
  *     newValue: 1
  *   });
@@ -18,14 +18,14 @@ let eventIx = 0;
  *
  *   event.dispatch(myDiv);
  *
- * All RingEvents bubble and are cancelable by default.
+ * All RingaEvents bubble and are cancelable by default.
  */
-class RingEvent extends RingObject {
+class RingaEvent extends RingaObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
   /**
-   * Build a RingEvent that wraps a CustomEvent internally.
+   * Build a RingaEvent that wraps a CustomEvent internally.
    *
    * @param type
    * @param detail
@@ -36,7 +36,7 @@ class RingEvent extends RingObject {
     super('event_' + type + '_' + eventIx++);
 
     this.detail = detail;
-    detail.ringEvent = this;
+    detail.ringaEvent = this;
 
     this.customEvent = new CustomEvent(type, {
       detail,
@@ -100,26 +100,26 @@ class RingEvent extends RingObject {
 
   _dispatch(domNode) {
     if (this.dispatched) {
-      throw Error('RingEvent::dispatch(): events should only be dispatched once!', this);
+      throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
     }
 
     this.dispatched = true;
 
     if (window.__DEV__) {
       this.dispatchStack = ErrorStackParser.parse(new Error());
-      this.dispatchStack.shift(); // Remove a reference to RingEvent.dispatch()
+      this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
       if (this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
         this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
       }
     } else {
-      this.dispatchStack = 'To turn on stack traces, build ring in development mode. See documentation.';
+      this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
     }
 
     domNode.dispatchEvent(this.customEvent);
   }
 
   /**
-   * Completely kills the current ring thread, keeping any subsequent commands from running.
+   * Completely kills the current Ringa thread, keeping any subsequent commands from running.
    */
   fail(error) {
     this.killed = true;
@@ -137,11 +137,11 @@ class RingEvent extends RingObject {
   }
 
   _done() {
-    this._dispatchEvent(RingEvent.DONE);
+    this._dispatchEvent(RingaEvent.DONE);
   }
 
   _fail(error) {
-    this._dispatchEvent(RingEvent.FAIL, undefined, error);
+    this._dispatchEvent(RingaEvent.FAIL, undefined, error);
   }
 
   _dispatchEvent(type, detail, error) {
@@ -159,7 +159,7 @@ class RingEvent extends RingObject {
   }
 
   /**
-   * Add a listener for either RingEvent.DONE or RingEvent.FAIL for when the CommandThread that
+   * Add a listener for either RingaEvent.DONE or RingaEvent.FAIL for when the CommandThread that
    * was triggered by this event has completed.
    *
    * @param eventType
@@ -167,7 +167,7 @@ class RingEvent extends RingObject {
    */
   addListener(eventType, handler) {
     if (typeof eventType !== 'string') {
-      throw Error('RingEvent::addListener(): invalid eventType provided!' + eventType);
+      throw Error('RingaEvent::addListener(): invalid eventType provided!' + eventType);
     }
 
     this.listeners[eventType] = this.listeners[eventType] || [];
@@ -177,17 +177,16 @@ class RingEvent extends RingObject {
   }
 
   addDoneListener(handler) {
-    return this.addListener(RingEvent.DONE, handler);
+    return this.addListener(RingaEvent.DONE, handler);
   }
 
   addFailListener(handler) {
-    return this.addListener(RingEvent.FAIL, handler);
+    return this.addListener(RingaEvent.FAIL, handler);
   }
 }
 
-RingEvent.DONE = 'done';
-RingEvent.FAIL = 'fail';
+RingaEvent.DONE = 'done';
+RingaEvent.FAIL = 'fail';
+RingaEvent.PREHOOK = 'prehook';
 
-RingEvent.PREHOOK = 'prehook';
-
-export default RingEvent;
+export default RingaEvent;

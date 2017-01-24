@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ring from '../src/index';
+import Ringa from '../src/index';
 import TestController from './shared/TestController';
 import CommandThrow from './shared/CommandThrow';
 import CommandFail from './shared/CommandFail';
@@ -32,14 +32,14 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   });
 
   //-----------------------------------
-  // RingEvent -> 1 Command throw
+  // RingaEvent -> 1 Command throw
   //-----------------------------------
-  it('RingEvent -> 1 Command throw', (done) => {
+  it('RingaEvent -> 1 Command throw', (done) => {
     commandThreadFactory.add(CommandThrow);
 
     controller.options.consoleLogFails = false;
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, {
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, {
       error: 'some error'
     }, domNode).addDoneListener(() => {
       done('Unexpectedly called done when an error was thrown!');
@@ -50,20 +50,20 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 50);
 
   //----------------------------------------------
-  // RingEvent -> 1 Command Fail Call (kill false)
+  // RingaEvent -> 1 Command Fail Call (kill false)
   //----------------------------------------------
-  it('RingEvent -> 1 Command Fail Call (kill false)', (done) => {
+  it('RingaEvent -> 1 Command Fail Call (kill false)', (done) => {
     commandThreadFactory.add(CommandFail);
     commandThreadFactory.add(CommandSimple);
 
     controller.options.consoleLogFails = false;
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, {
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, {
       error: 'some error',
       kill: false,
       testObject: {}
     }, domNode).addDoneListener(() => {
-      expect(ringEvent.detail.testObject.count).toEqual(1);
+      expect(ringaEvent.detail.testObject.count).toEqual(1);
       done();
     }).addFailListener((event) => {
       expect(event.error).toEqual('some error');
@@ -71,15 +71,15 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 50);
 
   //----------------------------------------------
-  // RingEvent -> 1 Command Fail Call (kill true)
+  // RingaEvent -> 1 Command Fail Call (kill true)
   //----------------------------------------------
-  it('RingEvent -> 1 Command Fail Call (kill true)', (done) => {
+  it('RingaEvent -> 1 Command Fail Call (kill true)', (done) => {
     commandThreadFactory.add(CommandFail);
     commandThreadFactory.add(CommandSimple);
 
     controller.options.consoleLogFails = false;
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, {
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, {
       error: 'some error',
       kill: true,
       testObject: {}
@@ -87,7 +87,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       done('Unexpectedly called done when a fail was expected!');
     }).addFailListener((event) => {
       expect(event.error).toEqual('some error');
-      expect(ringEvent.detail.testObject.count).toEqual(undefined);
+      expect(ringaEvent.detail.testObject.count).toEqual(undefined);
       done();
     });
   }, 50);

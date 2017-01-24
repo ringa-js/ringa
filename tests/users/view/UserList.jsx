@@ -1,5 +1,5 @@
 import React from 'react';
-import UserCollection from '../ring/models/UserCollection';
+import UserCollection from '../ringa/models/UserCollection';
 import { inject, ForceUpdate } from '../../../src/index';
 
 /**
@@ -25,7 +25,7 @@ export class UserList extends React.Component {
   }
 
   filterSelect(filter) {
-    new RingEvent(FILTER_USERS, {
+    new RingaEvent(FILTER_USERS, {
       filter,
       userList,
       blahBlah

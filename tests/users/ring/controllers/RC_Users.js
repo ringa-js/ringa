@@ -1,9 +1,8 @@
-import Ring from '../../index.js';
-import CmdRC_GetUsers from 'commands/CmdRC_GetUsers';
+import a from '../../index.js';
 import GET_USER from '../Events';
-import {bind, spawn, iif, event} from 'ring';
+import {bind, spawn, iif, event} from 'ringa';
 
-class RC_Users extends Ring.Controller {
+class RC_Users extends Ringa.Controller {
   constructor(domNode) {
     super(domNode);
 

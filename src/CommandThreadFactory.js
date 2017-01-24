@@ -1,8 +1,8 @@
-import RingHashArray from './RingHashArray';
+import RingaHashArray from './RingaHashArray';
 import CommandThread from './CommandThread';
 import CommandFactory from './CommandFactory';
 
-class CommandThreadFactory extends RingHashArray {
+class CommandThreadFactory extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -31,7 +31,7 @@ class CommandThreadFactory extends RingHashArray {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  build(ringEvent) {
+  build(ringaEvent) {
     if (!this.controller) {
       console.log('CommandThreadFactory::build(): controller was not set before the build method was called.');
     }

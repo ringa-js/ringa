@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ring from '../src/index';
+import Ringa from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -30,61 +30,61 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   });
 
   //-----------------------------------
-  // RingEvent -> 1 Command
+  // RingaEvent -> 1 Command
   //-----------------------------------
-  it('RingEvent -> 1 Command', (done) => {
+  it('RingaEvent -> 1 Command', (done) => {
     let testObject = {
       value: 'test'
     };
 
     commandThreadFactory.add(CommandSimple);
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, { testObject }, domNode).addDoneListener(() => {
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, { testObject }, domNode).addDoneListener(() => {
       expect(testObject.executed).toEqual(true);
       done();
     });
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> 2 Commands
+  // RingaEvent -> 2 Commands
   //-----------------------------------
-  it('RingEvent -> 2 Commands', (done) => {
+  it('RingaEvent -> 2 Commands', (done) => {
     let testObject = {
       value: 'test'
     };
 
     commandThreadFactory.addAll([CommandSimple,CommandSimple]);
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, { testObject }, domNode);
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, { testObject }, domNode);
 
-    ringEvent.addDoneListener(() => {
+    ringaEvent.addDoneListener(() => {
       expect(testObject.count).toEqual(2);
       done();
     });
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> 1 Function
+  // RingaEvent -> 1 Function
   //-----------------------------------
-  it('RingEvent -> 1 Function', (done) => {
+  it('RingaEvent -> 1 Function', (done) => {
     let a = 0;
 
     commandThreadFactory.add(() => {
       a = 1;
     });
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, undefined, domNode);
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, undefined, domNode);
 
-    ringEvent.addDoneListener(() => {
+    ringaEvent.addDoneListener(() => {
       expect(a).toEqual(1);
       done();
     });
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> 2 Functions
+  // RingaEvent -> 2 Functions
   //-----------------------------------
-  it('RingEvent -> 2 Functions', (done) => {
+  it('RingaEvent -> 2 Functions', (done) => {
     let a = 0;
 
     commandThreadFactory.add(() => {
@@ -93,49 +93,49 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       a = 2;
     });
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, undefined, domNode);
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, undefined, domNode);
 
-    ringEvent.addDoneListener(() => {
+    ringaEvent.addDoneListener(() => {
       expect(a).toEqual(2);
       done();
     });
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> 1 Function, modify event
+  // RingaEvent -> 1 Function, modify event
   //-----------------------------------
-  it('RingEvent -> 1 Function, modify event', (done) => {
+  it('RingaEvent -> 1 Function, modify event', (done) => {
     let obj = {};
 
-    commandThreadFactory.add((ringEvent) => {
-      ringEvent.detail.itsWorking = true;
+    commandThreadFactory.add((ringaEvent) => {
+      ringaEvent.detail.itsWorking = true;
     });
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, obj, domNode);
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
 
-    ringEvent.addDoneListener(() => {
+    ringaEvent.addDoneListener(() => {
       expect(obj.itsWorking).toEqual(true);
       done();
     });
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> 2 Functions, modify event
+  // RingaEvent -> 2 Functions, modify event
   //-----------------------------------
-  it('RingEvent -> 2 Functions, modify event', (done) => {
+  it('RingaEvent -> 2 Functions, modify event', (done) => {
     let obj = {};
 
-    commandThreadFactory.add((ringEvent) => {
-      ringEvent.detail.test1 = true;
+    commandThreadFactory.add((ringaEvent) => {
+      ringaEvent.detail.test1 = true;
     });
 
-    commandThreadFactory.add((ringEvent) => {
-      ringEvent.detail.test2 = true;
+    commandThreadFactory.add((ringaEvent) => {
+      ringaEvent.detail.test2 = true;
     });
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, obj, domNode);
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
 
-    ringEvent.addDoneListener(() => {
+    ringaEvent.addDoneListener(() => {
       expect(obj.test1).toEqual(true);
       expect(obj.test2).toEqual(true);
       done();
@@ -143,94 +143,94 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> Ring.dispatch
+  // RingaEvent -> Ringa.dispatch
   //-----------------------------------
-  it('RingEvent -> Ring.dispatch', (done) => {
-    let ringEvent2, ringEvent;
+  it('RingaEvent -> Ringa.dispatch', (done) => {
+    let ringaEvent2, ringaEvent;
     let obj = {}, obj2 = {};
 
-    commandThreadFactory.add((ringEvent) => {
-      ringEvent.detail.test1 = true;
-      ringEvent2 = Ring.dispatch(TEST_EVENT2, obj2, domNode);
+    commandThreadFactory.add((ringaEvent) => {
+      ringaEvent.detail.test1 = true;
+      ringaEvent2 = Ringa.dispatch(TEST_EVENT2, obj2, domNode);
 
-      ringEvent2.addDoneListener(() => {
+      ringaEvent2.addDoneListener(() => {
         expect(obj.test1).toEqual(true);
         expect(obj2.test2).toEqual(true);
-        expect(ringEvent.detail.test1).toEqual(true);
-        expect(ringEvent2.detail.test2).toEqual(true);
+        expect(ringaEvent.detail.test1).toEqual(true);
+        expect(ringaEvent2.detail.test2).toEqual(true);
         done();
       });
     });
 
-    commandThreadFactory2.add((ringEvent) => {
-      ringEvent.detail.test2 = true;
+    commandThreadFactory2.add((ringaEvent) => {
+      ringaEvent.detail.test2 = true;
     });
 
-    ringEvent = Ring.dispatch(TEST_EVENT, obj, domNode);
+    ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> CommandEventWrapper
+  // RingaEvent -> CommandEventWrapper
   //-----------------------------------
-  it('RingEvent -> CommandEventWrapper', (done) => {
-    let ringEvent, ringEvent2;
+  it('RingaEvent -> CommandEventWrapper', (done) => {
+    let ringaEvent, ringaEvent2;
     let obj = {};
 
     commandThreadFactory.add(TEST_EVENT2);
 
-    commandThreadFactory2.add((ringEvent) => {
-      ringEvent.detail.test2 = true;
+    commandThreadFactory2.add((ringaEvent) => {
+      ringaEvent.detail.test2 = true;
 
-      ringEvent2 = ringEvent;
+      ringaEvent2 = ringaEvent;
     });
 
-    ringEvent = Ring.dispatch(TEST_EVENT, obj, domNode);
+    ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
 
-    // This should not be called until the second ringevent is done!
-    ringEvent.addDoneListener(() => {
-      expect(ringEvent2.detail.test2).toEqual(true);
+    // This should not be called until the second RingaEvent is done!
+    ringaEvent.addDoneListener(() => {
+      expect(ringaEvent2.detail.test2).toEqual(true);
       done();
     });
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> 2 CommandEventWrappers
+  // RingaEvent -> 2 CommandEventWrappers
   //-----------------------------------
-  it('RingEvent -> 2 CommandEventWrapper', (done) => {
-    let ringEvent, ringEvent2, ringEvent3;
+  it('RingaEvent -> 2 CommandEventWrapper', (done) => {
+    let ringaEvent, ringaEvent2, ringaEvent3;
     let count = 0;
 
     commandThreadFactory.add(TEST_EVENT2);
     commandThreadFactory.add(TEST_EVENT2);
 
-    commandThreadFactory2.add((ringEvent) => {
-      ringEvent.detail.test = true;
+    commandThreadFactory2.add((ringaEvent) => {
+      ringaEvent.detail.test = true;
 
-      if (ringEvent2) {
-        ringEvent3 = ringEvent;
+      if (ringaEvent2) {
+        ringaEvent3 = ringaEvent;
       } else {
-        ringEvent2 = ringEvent;
+        ringaEvent2 = ringaEvent;
       }
 
       count++;
     });
 
-    ringEvent = Ring.dispatch(TEST_EVENT, undefined, domNode);
+    ringaEvent = Ringa.dispatch(TEST_EVENT, undefined, domNode);
 
-    // This should not be called until the second ringevent is done!
-    ringEvent.addDoneListener(() => {
-      expect(ringEvent2.detail.test).toEqual(true);
-      expect(ringEvent2.detail.test).toEqual(true);
+    // This should not be called until the second ringaevent is done!
+    ringaEvent.addDoneListener(() => {
+      expect(ringaEvent2.detail.test).toEqual(true);
+      expect(ringaEvent2.detail.test).toEqual(true);
       expect(count).toEqual(2);
       done();
     });
   }, 50);
 
   //-----------------------------------
-  // RingEvent -> CommandEventWrappers
+  // RingaEvent -> CommandEventWrappers
   //-----------------------------------
-  it('RingEvent -> 100 CommandEventWrapper', (done) => {
-    let ringEvent;
+  it('RingaEvent -> 100 CommandEventWrapper', (done) => {
+    let ringaEvent;
     let count = 0;
 
     for (let i = 0; i < 100; i++) {
@@ -241,20 +241,20 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       count++;
     });
 
-    ringEvent = Ring.dispatch(TEST_EVENT, undefined, domNode);
+    ringaEvent = Ringa.dispatch(TEST_EVENT, undefined, domNode);
 
-    // This should not be called until the second ringevent is done!
-    ringEvent.addDoneListener(() => {
+    // This should not be called until the second ringaevent is done!
+    ringaEvent.addDoneListener(() => {
       expect(count).toEqual(100);
       done();
     });
   }, 1000);
 
   //-----------------------------------
-  // RingEvent -> 100 CommandEventWrappers
+  // RingaEvent -> 100 CommandEventWrappers
   //-----------------------------------
-  it('RingEvent -> 100 CommandEventWrapper', (done) => {
-    let ringEvent;
+  it('RingaEvent -> 100 CommandEventWrapper', (done) => {
+    let ringaEvent;
     let count = 0;
 
     for (let i = 0; i < 100; i++) {
@@ -265,24 +265,24 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       count++;
     });
 
-    ringEvent = Ring.dispatch(TEST_EVENT, undefined, domNode);
+    ringaEvent = Ringa.dispatch(TEST_EVENT, undefined, domNode);
 
-    // This should not be called until the second ringevent is done!
-    ringEvent.addDoneListener(() => {
+    // This should not be called until the second ringaevent is done!
+    ringaEvent.addDoneListener(() => {
       expect(count).toEqual(100);
       done();
     });
   }, 1000);
 
   //-----------------------------------
-  // RingEvent -> 20 CommandEventWrappers Sequence Test
+  // RingaEvent -> 20 CommandEventWrappers Sequence Test
   //-----------------------------------
-  it('RingEvent -> 20 CommandEventWrapper Sequence Test', (done) => {
-    let ringEvent;
+  it('RingaEvent -> 20 CommandEventWrapper Sequence Test', (done) => {
+    let ringaEvent;
     let sequence = '';
 
     for (let i = 0; i < 21; i++) {
-      commandThreadFactory.add(Ring.EventFactory(TEST_EVENT2, {
+      commandThreadFactory.add(Ringa.EventFactory(TEST_EVENT2, {
         val: i
       }));
     }
@@ -291,19 +291,19 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       sequence+=val.toString();
     });
 
-    ringEvent = Ring.dispatch(TEST_EVENT, undefined, domNode);
+    ringaEvent = Ringa.dispatch(TEST_EVENT, undefined, domNode);
 
-    // This should not be called until the second ringevent is done!
-    ringEvent.addDoneListener(() => {
+    // This should not be called until the second ringaevent is done!
+    ringaEvent.addDoneListener(() => {
       expect(sequence).toEqual('01234567891011121314151617181920');
       done();
     });
   }, 1000);
 
   //------------------------------------------------
-  // RingEvent -> 10 CommandEventWrappers Depth Test
+  // RingaEvent -> 10 CommandEventWrappers Depth Test
   //------------------------------------------------
-  it('RingEvent -> 10 CommandEventWrapper Sequence Test', (done) => {
+  it('RingaEvent -> 10 CommandEventWrapper Sequence Test', (done) => {
     let sequence = '';
 
     for (let i = 0; i < 10; i++) {
@@ -325,7 +325,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       controller.addListener(eventType, arr);
     }
 
-    Ring.dispatch('TestEvent_0', undefined, domNode)
+    Ringa.dispatch('TestEvent_0', undefined, domNode)
       .addDoneListener(() => {
         expect(sequence).toEqual('01234567899876543210');
         done();

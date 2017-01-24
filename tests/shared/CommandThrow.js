@@ -1,6 +1,6 @@
-import Ring from '../../src/index';
+import Ringa from '../../src/index';
 
-class CommandThrow extends Ring.Command {
+class CommandThrow extends Ringa.Command {
   execute(error) {
     throw Error(error);
   }

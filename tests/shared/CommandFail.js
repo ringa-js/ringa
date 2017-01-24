@@ -1,6 +1,6 @@
-import Ring from '../../src/index';
+import Ringa from '../../src/index';
 
-class CommandFail extends Ring.Command {
+class CommandFail extends Ringa.Command {
   execute(error, kill) {
     this.fail(error, kill);
   }

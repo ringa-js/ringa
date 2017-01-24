@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ring from '../src/index';
+import Ringa from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -35,7 +35,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   it('Memory -> 1 Command Cleanup Thread', (done) => {
     commandThreadFactory.add(CommandSimple);
 
-    let ringEvent = Ring.dispatch(TEST_EVENT, {testObject: {}}, domNode).addDoneListener(() => {
+    let ringaEvent = Ringa.dispatch(TEST_EVENT, {testObject: {}}, domNode).addDoneListener(() => {
       expect(controller.commandThreads._list.length).toEqual(0);
       done();
     });
@@ -59,7 +59,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       ]);
     }
 
-    Ring.dispatch('TestEvent_0', undefined, domNode)
+    Ringa.dispatch('TestEvent_0', undefined, domNode)
       .addDoneListener(() => {
         expect(controller.commandThreads._list.length).toEqual(0);
         expect(_fin).toEqual(true);

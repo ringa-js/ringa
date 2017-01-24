@@ -1,10 +1,9 @@
-import RingObject from './RingObject';
 import CommandAbstract from './CommandAbstract';
 import CommandFunctionWrapper from './commands/CommandFunctionWrapper';
 import CommandPromiseWrapper from './commands/CommandPromiseWrapper';
 import CommandEventWrapper from './commands/CommandEventWrapper';
 import CommandsParallelWrapper from './commands/CommandsParallelWrapper';
-import RingEventFactory from './RingEventFactory';
+import RingaEventFactory from './RingaEventFactory';
 import {getArgNames} from './util/function';
 
 class CommandFactory {
@@ -30,8 +29,8 @@ class CommandFactory {
 
   build(commandThread) {
     if (typeof this.executee === 'string') {
-      let ringEventFactory = new RingEventFactory(this.executee);
-      return new CommandEventWrapper(commandThread, ringEventFactory);
+      let ringaEventFactory = new RingaEventFactory(this.executee);
+      return new CommandEventWrapper(commandThread, ringaEventFactory);
     } else if (typeof this.executee.then === 'function') {
       return new CommandPromiseWrapper(commandThread, this.executee);
     } else if (typeof this.executee === 'function') {
@@ -50,11 +49,11 @@ class CommandFactory {
     } else if (this.executee instanceof Array) {
       // This might be a group of CommandAbstracts that should be run synchronously
       return new CommandsParallelWrapper(commandThread, this.executee);
-    } else if (typeof this.executee === 'object' && this.executee instanceof RingEventFactory) {
+    } else if (typeof this.executee === 'object' && this.executee instanceof RingaEventFactory) {
       return new CommandEventWrapper(commandThread, this.executee);
     }
 
-    throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ring: ' + typeof this.executee + ': ' + this.executee);
+    throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ringa: ' + typeof this.executee + ': ' + this.executee);
   }
 }
 

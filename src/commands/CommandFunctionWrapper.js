@@ -1,5 +1,5 @@
 import CommandAbstract from '../CommandAbstract';
-import {buildArgumentsFromRingEvent} from '../util/command';
+import {buildArgumentsFromRingaEvent} from '../util/command';
 import {getArgNames} from '../util/function';
 
 /**
@@ -36,7 +36,7 @@ class CommandFunctionWrapper extends CommandAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    const args = buildArgumentsFromRingEvent(this, this.expectedArguments, this.ringEvent);
+    const args = buildArgumentsFromRingaEvent(this, this.expectedArguments, this.ringaEvent);
 
     const donePassedAsArg = this.expectedArguments.indexOf('done') !== -1;
 

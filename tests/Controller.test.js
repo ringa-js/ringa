@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ring from '../src/index';
+import Ringa from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -39,7 +39,7 @@ describe('Controller', () => {
   });
 
   it('should allow you to override the default options', () => {
-    let c = new Ring.Controller('c', domNode, {
+    let c = new Ringa.Controller('c', domNode, {
       timeout: 1,
       throwKillsThread: false
     });
@@ -111,11 +111,11 @@ describe('Controller', () => {
   });
 
   it('should allow you to override the preInvokeHandler', (done) => {
-    let _ringEvent;
+    let _ringaEvent;
 
-    class TC extends Ring.Controller {
-      preInvokeHandler(ringEvent) {
-        expect(ringEvent).toEqual(_ringEvent);
+    class TC extends Ringa.Controller {
+      preInvokeHandler(ringaEvent) {
+        expect(ringaEvent).toEqual(_ringaEvent);
         this.preinvokeRan = true;
       }
     };
@@ -127,7 +127,7 @@ describe('Controller', () => {
       ran = true;
     }]);
 
-    _ringEvent = Ring.dispatch('test', undefined, domNode).addDoneListener(() => {
+    _ringaEvent = Ringa.dispatch('test', undefined, domNode).addDoneListener(() => {
       expect(ran).toEqual(true);
       expect(tc.preinvokeRan).toEqual(true);
       done();
@@ -135,10 +135,10 @@ describe('Controller', () => {
   });
 
   it('should properly handle errors in preInvokeHandler', (done) => {
-    let _ringEvent;
+    let _ringaEvent;
 
-    class TC extends Ring.Controller {
-      preInvokeHandler(ringEvent) {
+    class TC extends Ringa.Controller {
+      preInvokeHandler(ringaEvent) {
         throw Error('whatever');
       }
     };
@@ -151,7 +151,7 @@ describe('Controller', () => {
       ran = true;
     }]);
 
-    _ringEvent = Ring.dispatch('test', undefined, domNode).addFailListener((event) => {
+    _ringaEvent = Ringa.dispatch('test', undefined, domNode).addFailListener((event) => {
       expect(event.error.message).toEqual('whatever');
       expect(ran).toEqual(false);
       done();
@@ -159,11 +159,11 @@ describe('Controller', () => {
   });
 
   it('should allow you to override the postInvokeHandler', (done) => {
-    let _ringEvent;
+    let _ringaEvent;
     let ran = false;
-    class TC extends Ring.Controller {
-      postInvokeHandler(ringEvent, commandThread) {
-        expect(ringEvent).toEqual(_ringEvent);
+    class TC extends Ringa.Controller {
+      postInvokeHandler(ringaEvent, commandThread) {
+        expect(ringaEvent).toEqual(_ringaEvent);
         expect(commandThread).toBeDefined();
         expect(ran).toEqual(true);
         done();
@@ -176,7 +176,7 @@ describe('Controller', () => {
       ran = true;
     }]);
 
-    _ringEvent = Ring.dispatch('test', undefined, domNode);
+    _ringaEvent = Ringa.dispatch('test', undefined, domNode);
   });
 
   it('should have a dispatch method that dispatches directly on the domNode for the controller', (done) => {

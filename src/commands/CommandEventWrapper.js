@@ -8,13 +8,13 @@ class CommandEventWrapper extends CommandAbstract {
    * Constructor for a new CommandEventWrapper
    *
    * @param commandThread The parent thread that owns this command.
-   * @param ringEventFactory The event to dispatch and watch!
+   * @param ringaEventFactory The event to dispatch and watch!
    */
-  constructor(commandThread, ringEventFactory) {
+  constructor(commandThread, ringaEventFactory) {
     super(commandThread);
 
     this.finished = false;
-    this.ringEventFactory = ringEventFactory;
+    this.ringaEventFactory = ringaEventFactory;
   }
 
   //-----------------------------------
@@ -30,17 +30,17 @@ class CommandEventWrapper extends CommandAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    this.dispatchedRingEvent = this.ringEventFactory.build(this);
+    this.dispatchedRingaEvent = this.ringaEventFactory.build(this);
 
-    this.dispatchedRingEvent.addDoneListener(this.dispatchedRingEventDoneHandler.bind(this));
-    this.dispatchedRingEvent.addFailListener(this.dispatchedRingEventFailHandler.bind(this));
+    this.dispatchedRingaEvent.addDoneListener(this.dispatchedRingaEventDoneHandler.bind(this));
+    this.dispatchedRingaEvent.addFailListener(this.dispatchedRingaEventFailHandler.bind(this));
 
-    let domNode = this.dispatchedRingEvent.domNode || this.ringEvent.target;
+    let domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
 
-    this.dispatchedRingEvent.dispatch(domNode);
+    this.dispatchedRingaEvent.dispatch(domNode);
 
-    if (this.dispatchedRingEvent.detail.requireCatch && !this.dispatchedRingEvent.caught) {
-      this.fail(Error('CommandEventWrapper::_execute(): event ' + this.dispatchedRingEvent.type + ' was expected to be caught and it was not.'))
+    if (this.dispatchedRingaEvent.detail.requireCatch && !this.dispatchedRingaEvent.caught) {
+      this.fail(Error('CommandEventWrapper::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'))
     }
   }
 
@@ -66,17 +66,17 @@ class CommandEventWrapper extends CommandAbstract {
   }
 
   toString() {
-    return this.id + ': ' + this.ringEventFactory.eventType;
+    return this.id + ': ' + this.ringaEventFactory.eventType;
   }
 
   //-----------------------------------
   // Events
   //-----------------------------------
-  dispatchedRingEventDoneHandler() {
+  dispatchedRingaEventDoneHandler() {
     this.done();
   }
 
-  dispatchedRingEventFailHandler(error) {
+  dispatchedRingaEventFailHandler(error) {
     this.fail(error);
   }
 }

@@ -1,10 +1,10 @@
 import HashArray from 'hasharray';
-import RingObject from './RingObject';
+import RingaObject from './RingaObject';
 
 /**
- * This is a proxy class for HashArray that extends RingObject.
+ * This is a proxy class for HashArray that extends RingaObject.
  */
-class RingHashArray extends RingObject {
+class RingaHashArray extends RingaObject {
   constructor(id = '[ID]', key = 'id', changeHandler = undefined, options = undefined) {
     super(id);
 
@@ -85,4 +85,4 @@ class RingHashArray extends RingObject {
   }
 }
 
-export default RingHashArray;
+export default RingaHashArray;
