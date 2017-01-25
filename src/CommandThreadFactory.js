@@ -32,7 +32,7 @@ class CommandThreadFactory extends RingaHashArray {
   // Methods
   //-----------------------------------
   build(ringaEvent) {
-    if (!this.controller) {
+    if (__DEV__ && !this.controller) {
       console.log('CommandThreadFactory::build(): controller was not set before the build method was called.');
     }
 

@@ -1,4 +1,3 @@
-import inject from './decorators/inject';
 import Command from './commands/Command';
 import CommandFactory from './CommandFactory';
 import CommandThreadFactory from './CommandThreadFactory';
@@ -6,13 +5,9 @@ import Controller from './Controller';
 import RingaEvent from './RingaEvent';
 import RingaEventFactory from './RingaEventFactory';
 
-const ForceUpdate = Symbol('ForceUpdate');
-
-export { inject, Command, CommandFactory, CommandThreadFactory, Controller, RingaEvent, ForceUpdate };
+export { Command, CommandFactory, CommandThreadFactory, Controller, RingaEvent };
 
 export default {
-  inject,
-  ForceUpdate,
   Controller,
   Command,
   CommandFactory,

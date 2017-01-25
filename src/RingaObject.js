@@ -4,7 +4,7 @@ class RingaObject {
   }
 
   toString(value) {
-    return this.id + ' ' + (value || ' | RingaObject::toString() is designed to be overridden by the subclass.');
+    return this.id + ' ' + (value || ' | RingaObject::toString() is to be overridden.');
   }
 }
 

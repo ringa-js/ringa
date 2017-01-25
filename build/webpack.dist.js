@@ -25,9 +25,9 @@ module.exports = Object.assign({
     new webpack.DefinePlugin({
       __DEV__: false
     }),
-    new webpack.optimize.DedupePlugin(),
     new webpack.optimize.UglifyJsPlugin({
       sourceMap: true
-    })
+    }),
+    new webpack.optimize.DedupePlugin()
   ]
 }, baseConfig);

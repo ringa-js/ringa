@@ -15,7 +15,7 @@ class CommandAbstract extends RingaObject {
   constructor(commandThread) {
     super();
 
-    if (!commandThread.controller) {
+    if (__DEV__ && !commandThread.controller) {
       throw Error('Command(): attempting to build a command connected to a CommandThread that has no attached controller.');
     }
 
@@ -103,7 +103,15 @@ class CommandAbstract extends RingaObject {
   // Methods
   //-----------------------------------
   _timeoutHandler() {
-    let message = 'CommandAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+    let message;
+
+    if (__DEV__) {
+      message = 'CommandAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+    }
+
+    if (!__DEV__) {
+      message = 'Ringa: command timeout exceeded ' + this.toString();
+    }
 
     console.error(message);
 

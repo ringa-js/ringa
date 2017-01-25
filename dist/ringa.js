@@ -1203,7 +1203,7 @@ var Controller = function (_RingaObject) {
 
     var _this = _possibleConstructorReturn(this, (Controller.__proto__ || Object.getPrototypeOf(Controller)).call(this, id));
 
-    if (!domNode) {
+    if (true && !domNode) {
       throw Error('Controller:constructor(): no DOMNode provided to constructor!');
     }
 
@@ -1242,11 +1242,11 @@ var Controller = function (_RingaObject) {
         commandThreadFactory = new _CommandThreadFactory2.default(this.id + '_' + eventType + '_CommandThreadFactory', commandThreadFactoryOrArray);
       } else if (typeof commandThreadFactoryOrArray.build === 'function') {
         commandThreadFactory = commandThreadFactoryOrArray;
-      } else {
+      } else if (true) {
         throw Error('Controller::addListener(): the provided commandThreadFactoryOrArray is not valid!');
       }
 
-      if (!commandThreadFactory || !(commandThreadFactory instanceof _CommandThreadFactory2.default)) {
+      if (true && !commandThreadFactory || !(commandThreadFactory instanceof _CommandThreadFactory2.default)) {
         throw Error('Controller::addListener(): commandThreadFactory not an instance of CommandThreadFactory');
       }
 

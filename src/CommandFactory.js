@@ -53,7 +53,9 @@ class CommandFactory {
       return new CommandEventWrapper(commandThread, this.executee);
     }
 
-    throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ringa: ' + typeof this.executee + ': ' + this.executee);
+    if (__DEV__) {
+      throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ringa: ' + typeof this.executee + ': ' + this.executee);
+    }
   }
 }
 

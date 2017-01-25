@@ -32,15 +32,15 @@ class CommandThread extends RingaHashArray {
   }
 
   run(ringaEvent, doneHandler, failHandler) {
-    if (this.running) {
+    if (__DEV__ && this.running) {
       throw Error('CommandThread::run(): you cannot start a thread while it is already running!');
     }
 
-    if (this.commandThreadFactory.all.length === 0) {
+    if (__DEV__ && this.commandThreadFactory.all.length === 0) {
       throw Error('CommandThread::run(): attempting to run a thread with no commands!');
     }
 
-    if (!ringaEvent) {
+    if (__DEV__ && !ringaEvent) {
       throw Error('CommandThread::run(): cannot run a thread without a RingaEvent!');
     }
 

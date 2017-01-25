@@ -20,7 +20,7 @@ class Controller extends RingaObject {
   constructor(id, domNode, options) {
     super(id);
 
-    if (!domNode) {
+    if (__DEV__ && !domNode) {
       throw Error('Controller:constructor(): no DOMNode provided to constructor!');
     }
 
@@ -53,19 +53,19 @@ class Controller extends RingaObject {
       commandThreadFactory = new CommandThreadFactory(this.id + '_' + eventType + '_CommandThreadFactory', commandThreadFactoryOrArray);
     } else if (typeof commandThreadFactoryOrArray.build === 'function') {
       commandThreadFactory = commandThreadFactoryOrArray;
-    } else {
+    } else if (__DEV__) {
       throw Error('Controller::addListener(): the provided commandThreadFactoryOrArray is not valid!');
     }
 
-    if (!commandThreadFactory || !(commandThreadFactory instanceof CommandThreadFactory)) {
+    if (__DEV__ && !commandThreadFactory || !(commandThreadFactory instanceof CommandThreadFactory)) {
       throw Error('Controller::addListener(): commandThreadFactory not an instance of CommandThreadFactory');
     }
 
-    if (commandThreadFactory.controller) {
+    if (__DEV__ && commandThreadFactory.controller) {
       throw Error('Controller::addListener(): commandThreadFactory cannot have two parent controllers!');
     }
 
-    if (this.eventTypeToCommandThreadFactory[eventType]) {
+    if (__DEV__ && this.eventTypeToCommandThreadFactory[eventType]) {
       throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getListener() to make modifications.');
     }
 
@@ -103,7 +103,9 @@ class Controller extends RingaObject {
       return commandThreadFactory;
     }
 
-    throw Error('Controller:removeListener(): could not find a listener for \'' + eventType + '\'', this);
+    if (__DEV__) {
+      throw Error('Controller:removeListener(): could not find a listener for \'' + eventType + '\'', this);
+    }
   }
 
   hasListener(eventType) {
@@ -140,7 +142,7 @@ class Controller extends RingaObject {
 
     let commandThreadFactory = this.eventTypeToCommandThreadFactory[customEvent.type];
 
-    if (!commandThreadFactory) {
+    if (__DEV__ && !commandThreadFactory) {
       throw Error('Controller::_eventHandler(): caught an event but there is no associated CommandThreadFactory! Fatal error.');
     }
 
@@ -181,7 +183,7 @@ class Controller extends RingaObject {
   }
 
   threadDoneHandler(commandThread) {
-    if (!this.commandThreads.has(commandThread.id)) {
+    if (__DEV__ && !this.commandThreads.has(commandThread.id)) {
       throw Error(`Controller::threadDoneHandler(): could not find thread with id ${commandThread.id}`);
     }
 
@@ -198,7 +200,7 @@ class Controller extends RingaObject {
     if (kill) {
       if (this.commandThreads.has(commandThread.id)) {
         this.commandThreads.remove(commandThread);
-      } else {
+      } else if (__DEV__) {
         throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${commandThread.id} was not found.`)
       }
     }

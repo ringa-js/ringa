@@ -99,14 +99,14 @@ class RingaEvent extends RingaObject {
   }
 
   _dispatch(domNode) {
-    if (this.dispatched) {
+    if (__DEV__ && this.dispatched) {
       throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
     }
 
     this.dispatched = true;
 
     // TODO this should be in dispatch not _dispatch
-    if (window.__DEV__) {
+    if (__DEV__) {
       this.dispatchStack = ErrorStackParser.parse(new Error());
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
       if (this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
@@ -167,7 +167,7 @@ class RingaEvent extends RingaObject {
    * @param handler
    */
   addListener(eventType, handler) {
-    if (typeof eventType !== 'string') {
+    if (__DEV__ && typeof eventType !== 'string') {
       throw Error('RingaEvent::addListener(): invalid eventType provided!' + eventType);
     }
 
