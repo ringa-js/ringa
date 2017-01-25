@@ -51,10 +51,6 @@ describe('Command', () => {
     expect(command.id).toEqual('testController_CommandSimple');
   });
 
-  it('should start with finished set to false', () => {
-    expect(command.finished).toEqual(false);
-  });
-
   it('should start and properly store the commandThread', () => {
     expect(command.commandThread).toEqual(commandThread);
   });

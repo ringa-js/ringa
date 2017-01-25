@@ -13,7 +13,6 @@ class CommandEventWrapper extends CommandAbstract {
   constructor(commandThread, ringaEventFactory) {
     super(commandThread);
 
-    this.finished = false;
     this.ringaEventFactory = ringaEventFactory;
   }
 
@@ -42,27 +41,6 @@ class CommandEventWrapper extends CommandAbstract {
     if (this.dispatchedRingaEvent.detail.requireCatch && !this.dispatchedRingaEvent.caught) {
       this.fail(Error('CommandEventWrapper::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'))
     }
-  }
-
-  /**
-   * Call this method when the Command is ready to hand off control back to the parent CommandThread.
-   */
-  done() {
-    this.finished = true;
-
-    super.done();
-  }
-
-  /**
-   * Call this method if an error occurred during the processing of a command.
-   *
-   * @param error The error that has occurred.
-   * @param kill True if you want the thread to die immediately.
-   */
-  fail(error, kill = false) {
-    this.finished = true;
-
-    super.fail(error, kill);
   }
 
   toString() {

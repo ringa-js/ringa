@@ -19,7 +19,6 @@ class CommandFunctionWrapper extends CommandAbstract {
     super(commandThread);
 
     this.func = func;
-    this.finished = false;
     this.expectedArguments = getArgNames(func);
   }
 
@@ -51,27 +50,6 @@ class CommandFunctionWrapper extends CommandAbstract {
     } catch (error) {
       this.fail(error);
     }
-  }
-
-  /**
-   * Call this method when the Command is ready to hand off control back to the parent CommandThread.
-   */
-  done() {
-    this.finished = true;
-
-    super.done();
-  }
-
-  /**
-   * Call this method if an error occurred during the processing of a command.
-   *
-   * @param error The error that has occurred.
-   * @param kill True if you want the thread to die immediately.
-   */
-  fail(error, kill = false) {
-    this.finished = true;
-
-    super.fail(error, kill);
   }
 
   toString() {

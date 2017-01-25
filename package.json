@@ -8,7 +8,10 @@
     "src": "src"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "npm run dist && npm run dev",
+    "dist": "webpack --progress --colors --config build/webpack.dist.js",
+    "dev": "webpack --progress --colors --config build/webpack.dev.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +34,7 @@
   "homepage": "https://github.com/jung-digital/ring#readme",
   "dependencies": {
     "babel-jest": "^18.0.0",
+    "babel-polyfill": "^6.22.0",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-react": "^6.22.0",
     "error-stack-parser": "^2.0.0",
@@ -39,5 +43,10 @@
     "react-addons-test-utils": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-test-renderer": "^15.4.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.22.1",
+    "babel-loader": "^6.2.10",
+    "webpack": "^2.2.0"
   }
 }

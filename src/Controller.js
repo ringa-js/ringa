@@ -117,6 +117,7 @@ class Controller extends RingaObject {
 
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
+    // TODO PREHOOK should allow the handler to cancel running of the thread.
     commandThread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
     return commandThread;
@@ -130,6 +131,7 @@ class Controller extends RingaObject {
     // an attached ringaEvent yet!
     customEvent.detail.ringaEvent = customEvent.detail.ringaEvent || new RingaEvent(customEvent.type, customEvent.detail, customEvent.bubbles, customEvent.cancellable);
 
+    // TODO, how do we handle two controllers handling the same event?
     if (customEvent.detail.ringaEvent.controller) {
       throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + customEvent);
     }

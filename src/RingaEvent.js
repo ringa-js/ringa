@@ -93,7 +93,7 @@ class RingaEvent extends RingaObject {
    * @param domNode
    */
   dispatch(domNode = document) {
-    setTimeout(this._dispatch.bind(this, domNode));
+    setTimeout(this._dispatch.bind(this, domNode), 0);
 
     return this;
   }
@@ -105,6 +105,7 @@ class RingaEvent extends RingaObject {
 
     this.dispatched = true;
 
+    // TODO this should be in dispatch not _dispatch
     if (window.__DEV__) {
       this.dispatchStack = ErrorStackParser.parse(new Error());
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
