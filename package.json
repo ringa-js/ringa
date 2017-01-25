@@ -8,7 +8,7 @@
     "src": "src"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --config jest.json",
     "build": "npm run dist && npm run dev",
     "dist": "webpack --progress --colors --config build/webpack.dist.js",
     "dev": "webpack --progress --colors --config build/webpack.dev.js"

@@ -1,0 +1,7 @@
+{
+  "collectCoverage": true,
+  "coverageDirectory": "./test/coverage",
+  "globals": {
+    "__DEV__": true
+  }
+}
