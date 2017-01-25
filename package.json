@@ -15,23 +15,44 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jung-digital/ring.git"
+    "url": "git+https://github.com/jung-digital/ringa.git"
   },
+  "files": [
+    "dist",
+    "src",
+    "examples"
+  ],
   "keywords": [
     "react",
     "framework",
+    "mvc",
+    "async",
+    "chaining",
+    "promise",
     "data",
     "state",
     "ioc",
     "redux",
     "flux"
   ],
-  "author": "JungDigital",
+  "authors": [
+    "Joshua Jung <joshua.p.jung@gmail.com> (https://github.com/joshjung)",
+    "Thomas Yarnall <corragon@gmail.com> (https://github.com/corragon)"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jung-digital/ring/issues"
+    "url": "https://github.com/jung-digital/ringa/issues"
   },
-  "homepage": "https://github.com/jung-digital/ring#readme",
+  "homepage": "https://github.com/jung-digital/ringa#readme",
+  "npmName": "ringa",
+  "npmFileMap": [
+    {
+      "basePath": "/dist/",
+      "files": [
+        "*.js"
+      ]
+    }
+  ],
   "dependencies": {
     "babel-jest": "^18.0.0",
     "babel-polyfill": "^6.22.0",

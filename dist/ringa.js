@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 21);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -120,7 +120,7 @@ var CommandAbstract = function (_RingaObject) {
 
     var _this = _possibleConstructorReturn(this, (CommandAbstract.__proto__ || Object.getPrototypeOf(CommandAbstract)).call(this));
 
-    if (!commandThread.controller) {
+    if (true && !commandThread.controller) {
       throw Error('Command(): attempting to build a command connected to a CommandThread that has no attached controller.');
     }
 
@@ -225,7 +225,15 @@ var CommandAbstract = function (_RingaObject) {
   }, {
     key: '_timeoutHandler',
     value: function _timeoutHandler() {
-      var message = 'CommandAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+      var message = void 0;
+
+      if (true) {
+        message = 'CommandAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+      }
+
+      if (false) {
+        message = 'Ringa: command timeout exceeded ' + this.toString();
+      }
 
       console.error(message);
 
@@ -273,7 +281,7 @@ var RingaObject = function () {
   _createClass(RingaObject, [{
     key: 'toString',
     value: function toString(value) {
-      return this.id + ' ' + (value || ' | RingaObject::toString() is designed to be overridden by the subclass.');
+      return this.id + ' ' + (value || ' | RingaObject::toString() is to be overridden.');
     }
   }]);
 
@@ -299,7 +307,7 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _errorStackParser = __webpack_require__(14);
+var _errorStackParser = __webpack_require__(12);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
@@ -404,14 +412,14 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: '_dispatch',
     value: function _dispatch(domNode) {
-      if (this.dispatched) {
+      if (true && this.dispatched) {
         throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
       }
 
       this.dispatched = true;
 
       // TODO this should be in dispatch not _dispatch
-      if (window.__DEV__) {
+      if (true) {
         this.dispatchStack = _errorStackParser2.default.parse(new Error());
         this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
         if (this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
@@ -483,7 +491,7 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'addListener',
     value: function addListener(eventType, handler) {
-      if (typeof eventType !== 'string') {
+      if (true && typeof eventType !== 'string') {
         throw Error('RingaEvent::addListener(): invalid eventType provided!' + eventType);
       }
 
@@ -562,19 +570,19 @@ var _CommandAbstract = __webpack_require__(0);
 
 var _CommandAbstract2 = _interopRequireDefault(_CommandAbstract);
 
-var _CommandFunctionWrapper = __webpack_require__(20);
+var _CommandFunctionWrapper = __webpack_require__(18);
 
 var _CommandFunctionWrapper2 = _interopRequireDefault(_CommandFunctionWrapper);
 
-var _CommandPromiseWrapper = __webpack_require__(21);
+var _CommandPromiseWrapper = __webpack_require__(19);
 
 var _CommandPromiseWrapper2 = _interopRequireDefault(_CommandPromiseWrapper);
 
-var _CommandEventWrapper = __webpack_require__(19);
+var _CommandEventWrapper = __webpack_require__(17);
 
 var _CommandEventWrapper2 = _interopRequireDefault(_CommandEventWrapper);
 
-var _CommandsParallelWrapper = __webpack_require__(22);
+var _CommandsParallelWrapper = __webpack_require__(20);
 
 var _CommandsParallelWrapper2 = _interopRequireDefault(_CommandsParallelWrapper);
 
@@ -642,7 +650,9 @@ var CommandFactory = function () {
         return new _CommandEventWrapper2.default(commandThread, this.executee);
       }
 
-      throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ringa: ' + _typeof(this.executee) + ': ' + this.executee);
+      if (true) {
+        throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ringa: ' + _typeof(this.executee) + ': ' + this.executee);
+      }
     }
   }]);
 
@@ -668,7 +678,7 @@ var _RingaHashArray2 = __webpack_require__(7);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
-var _CommandThread = __webpack_require__(18);
+var _CommandThread = __webpack_require__(16);
 
 var _CommandThread2 = _interopRequireDefault(_CommandThread);
 
@@ -723,7 +733,7 @@ var CommandThreadFactory = function (_RingaHashArray) {
   _createClass(CommandThreadFactory, [{
     key: 'build',
     value: function build(ringaEvent) {
-      if (!this.controller) {
+      if (true && !this.controller) {
         console.log('CommandThreadFactory::build(): controller was not set before the build method was called.');
       }
 
@@ -816,7 +826,7 @@ exports.default = RingaEventFactory;
 "use strict";
 
 
-module.exports = __webpack_require__(16);
+module.exports = __webpack_require__(14);
 
 /***/ }),
 /* 7 */
@@ -1250,11 +1260,11 @@ var Controller = function (_RingaObject) {
         throw Error('Controller::addListener(): commandThreadFactory not an instance of CommandThreadFactory');
       }
 
-      if (commandThreadFactory.controller) {
+      if (true && commandThreadFactory.controller) {
         throw Error('Controller::addListener(): commandThreadFactory cannot have two parent controllers!');
       }
 
-      if (this.eventTypeToCommandThreadFactory[eventType]) {
+      if (true && this.eventTypeToCommandThreadFactory[eventType]) {
         throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getListener() to make modifications.');
       }
 
@@ -1293,7 +1303,9 @@ var Controller = function (_RingaObject) {
         return commandThreadFactory;
       }
 
-      throw Error('Controller:removeListener(): could not find a listener for \'' + eventType + '\'', this);
+      if (true) {
+        throw Error('Controller:removeListener(): could not find a listener for \'' + eventType + '\'', this);
+      }
     }
   }, {
     key: 'hasListener',
@@ -1335,7 +1347,7 @@ var Controller = function (_RingaObject) {
 
       var commandThreadFactory = this.eventTypeToCommandThreadFactory[customEvent.type];
 
-      if (!commandThreadFactory) {
+      if (true && !commandThreadFactory) {
         throw Error('Controller::_eventHandler(): caught an event but there is no associated CommandThreadFactory! Fatal error.');
       }
 
@@ -1379,7 +1391,7 @@ var Controller = function (_RingaObject) {
   }, {
     key: 'threadDoneHandler',
     value: function threadDoneHandler(commandThread) {
-      if (!this.commandThreads.has(commandThread.id)) {
+      if (true && !this.commandThreads.has(commandThread.id)) {
         throw Error('Controller::threadDoneHandler(): could not find thread with id ' + commandThread.id);
       }
 
@@ -1397,7 +1409,7 @@ var Controller = function (_RingaObject) {
       if (kill) {
         if (this.commandThreads.has(commandThread.id)) {
           this.commandThreads.remove(commandThread);
-        } else {
+        } else if (true) {
           throw Error('Controller:threadFailHandler(): the CommandThread with the id ' + commandThread.id + ' was not found.');
         }
       }
@@ -1538,143 +1550,6 @@ exports.default = Command;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = inject;
-
-var _ = __webpack_require__(13);
-
-/**
- * This is a global map of all Class types to the expected injector object.
- *
- * @type {Map}
- */
-var classToInjections = new WeakMap();
-
-/**
- * The inject descriptor is used like so:
- *
- *   @inject(ClassName)
- *   this.classInstance;
- *
- * OR
- *
- *   @inject('ObjectName')
- *   this.classInstance;
- *
- * @param classTypeOrName Either a Class reference or a string representing a requested object by name.
- * @param option Could be Ring.ForceUpdate which forces the parent class ReactDOM instance to call forceUpdate
- *               when the property is set.
- */
-function inject(classTypeOrName, option) {
-  return function (target, key, descriptor) {
-    var injector = classToInjections[target.constructor.name] = classToInjections[target.constructor.name] || {};
-    injector[key] = { classTypeOrName: classTypeOrName, option: option };
-
-    target.injector = injector;
-
-    // If ForceUpdate is set, then we wrap the default setter in a method
-    // that calls forceUpdate after the set has occurred.
-    if (option === _.ForceUpdate) {
-      (function () {
-        var setter = descriptor.set;
-
-        descriptor.set = function (value) {
-          setter.call(this, value);
-
-          this.forceUpdate();
-        };
-      })();
-    }
-
-    return descriptor;
-  };
-}
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ForceUpdate = exports.RingaEvent = exports.Controller = exports.CommandThreadFactory = exports.CommandFactory = exports.Command = exports.inject = undefined;
-
-var _inject = __webpack_require__(12);
-
-var _inject2 = _interopRequireDefault(_inject);
-
-var _Command = __webpack_require__(11);
-
-var _Command2 = _interopRequireDefault(_Command);
-
-var _CommandFactory = __webpack_require__(3);
-
-var _CommandFactory2 = _interopRequireDefault(_CommandFactory);
-
-var _CommandThreadFactory = __webpack_require__(4);
-
-var _CommandThreadFactory2 = _interopRequireDefault(_CommandThreadFactory);
-
-var _Controller = __webpack_require__(10);
-
-var _Controller2 = _interopRequireDefault(_Controller);
-
-var _RingaEvent = __webpack_require__(2);
-
-var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
-
-var _RingaEventFactory = __webpack_require__(5);
-
-var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var ForceUpdate = Symbol('ForceUpdate');
-
-exports.inject = _inject2.default;
-exports.Command = _Command2.default;
-exports.CommandFactory = _CommandFactory2.default;
-exports.CommandThreadFactory = _CommandThreadFactory2.default;
-exports.Controller = _Controller2.default;
-exports.RingaEvent = _RingaEvent2.default;
-exports.ForceUpdate = ForceUpdate;
-exports.default = {
-  inject: _inject2.default,
-  ForceUpdate: ForceUpdate,
-  Controller: _Controller2.default,
-  Command: _Command2.default,
-  CommandFactory: _CommandFactory2.default,
-  CommandThreadFactory: _CommandThreadFactory2.default,
-  Event: _RingaEvent2.default,
-  dispatch: function dispatch(eventType, details) {
-    var domNode = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document;
-
-    return new _RingaEvent2.default(eventType, details).dispatch(domNode);
-  },
-  iif: function iif(condition, executor) {},
-  Spawn: function Spawn(executor) {},
-  Bind: function Bind(commandAbstract) {},
-  EventFactory: function EventFactory(eventType, detail, domNode) {
-    var requireCatch = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-    var bubbles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-    var cancellable = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
-
-    return new _RingaEventFactory2.default(eventType, detail, domNode, requireCatch, bubbles, cancellable);
-  }
-};
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1686,7 +1561,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     /* istanbul ignore next */
 
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(15)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(13)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -1870,7 +1745,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 15 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1995,7 +1870,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2004,7 +1879,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /*===========================================================================*\
  * Requires
 \*===========================================================================*/
-var JClass = __webpack_require__(17);
+var JClass = __webpack_require__(15);
 
 /*===========================================================================*\
  * HashArray
@@ -2375,7 +2250,7 @@ module.exports = HashArray;
 if (typeof window !== 'undefined') window.HashArray = HashArray;
 
 /***/ }),
-/* 17 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2717,7 +2592,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 18 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2781,15 +2656,15 @@ var CommandThread = function (_RingaHashArray) {
   }, {
     key: 'run',
     value: function run(ringaEvent, doneHandler, failHandler) {
-      if (this.running) {
+      if (true && this.running) {
         throw Error('CommandThread::run(): you cannot start a thread while it is already running!');
       }
 
-      if (this.commandThreadFactory.all.length === 0) {
+      if (true && this.commandThreadFactory.all.length === 0) {
         throw Error('CommandThread::run(): attempting to run a thread with no commands!');
       }
 
-      if (!ringaEvent) {
+      if (true && !ringaEvent) {
         throw Error('CommandThread::run(): cannot run a thread without a RingaEvent!');
       }
 
@@ -2860,7 +2735,7 @@ var CommandThread = function (_RingaHashArray) {
 exports.default = CommandThread;
 
 /***/ }),
-/* 19 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2965,7 +2840,7 @@ var CommandEventWrapper = function (_CommandAbstract) {
 exports.default = CommandEventWrapper;
 
 /***/ }),
-/* 20 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3066,7 +2941,7 @@ var CommandFunctionWrapper = function (_CommandAbstract) {
 exports.default = CommandFunctionWrapper;
 
 /***/ }),
-/* 21 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3103,7 +2978,7 @@ var CommandPromiseWrapper = function (_CommandAbstract) {
 exports.default = CommandPromiseWrapper;
 
 /***/ }),
-/* 22 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3138,6 +3013,72 @@ var CommandsParallelWrapper = function (_CommandAbstract) {
 }(_CommandAbstract3.default);
 
 exports.default = CommandsParallelWrapper;
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RingaEvent = exports.Controller = exports.CommandThreadFactory = exports.CommandFactory = exports.Command = undefined;
+
+var _Command = __webpack_require__(11);
+
+var _Command2 = _interopRequireDefault(_Command);
+
+var _CommandFactory = __webpack_require__(3);
+
+var _CommandFactory2 = _interopRequireDefault(_CommandFactory);
+
+var _CommandThreadFactory = __webpack_require__(4);
+
+var _CommandThreadFactory2 = _interopRequireDefault(_CommandThreadFactory);
+
+var _Controller = __webpack_require__(10);
+
+var _Controller2 = _interopRequireDefault(_Controller);
+
+var _RingaEvent = __webpack_require__(2);
+
+var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
+
+var _RingaEventFactory = __webpack_require__(5);
+
+var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.Command = _Command2.default;
+exports.CommandFactory = _CommandFactory2.default;
+exports.CommandThreadFactory = _CommandThreadFactory2.default;
+exports.Controller = _Controller2.default;
+exports.RingaEvent = _RingaEvent2.default;
+exports.default = {
+  Controller: _Controller2.default,
+  Command: _Command2.default,
+  CommandFactory: _CommandFactory2.default,
+  CommandThreadFactory: _CommandThreadFactory2.default,
+  Event: _RingaEvent2.default,
+  dispatch: function dispatch(eventType, details) {
+    var domNode = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document;
+
+    return new _RingaEvent2.default(eventType, details).dispatch(domNode);
+  },
+  iif: function iif(condition, executor) {},
+  Spawn: function Spawn(executor) {},
+  Bind: function Bind(commandAbstract) {},
+  EventFactory: function EventFactory(eventType, detail, domNode) {
+    var requireCatch = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+    var bubbles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+    var cancellable = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
+
+    return new _RingaEventFactory2.default(eventType, detail, domNode, requireCatch, bubbles, cancellable);
+  }
+};
 
 /***/ })
 /******/ ]);
