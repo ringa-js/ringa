@@ -51,7 +51,7 @@ class Controller extends RingaObject {
         return;
       }
 
-      this.constructor[TYPE_SNAKE_CASE] = type;
+      this.constructor[TYPE_SNAKE_CASE] = this[TYPE_SNAKE_CASE] = type;
     });
   }
 

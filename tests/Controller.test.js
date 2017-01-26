@@ -188,11 +188,17 @@ describe('Controller', () => {
   });
 
   it('should have a working addEventTypes', () => {
-    controller.addEventTypes(['whatever', 'hello world', 'to-snake-case']);
+    controller.addEventTypes(['whatever', 'hello world', 'to-snake-case', 'anotherTest']);
 
-    expect(TestController.WHATEVER.toString()).toEqual('whatever');
-    expect(TestController.HELLO_WORLD.toString()).toEqual('hello world');
-    expect(TestController.TO_SNAKE_CASE.toString()).toEqual('to-snake-case');
+    expect(TestController.WHATEVER).toEqual('whatever');
+    expect(TestController.HELLO_WORLD).toEqual('hello world');
+    expect(TestController.TO_SNAKE_CASE).toEqual('to-snake-case');
+    expect(TestController.ANOTHER_TEST).toEqual('anotherTest');
+
+    expect(controller.WHATEVER).toEqual('whatever');
+    expect(controller.HELLO_WORLD).toEqual('hello world');
+    expect(controller.TO_SNAKE_CASE).toEqual('to-snake-case');
+    expect(controller.ANOTHER_TEST).toEqual('anotherTest');
   });
 
   it('events created with addEventTypes should work', (done) => {
