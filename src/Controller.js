@@ -2,6 +2,7 @@ import CommandThreadFactory from './CommandThreadFactory';
 import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
 import RingaEvent from './RingaEvent';
+import snakeCase from 'snake-case';
 
 /**
  * Controller is the hub for events dispatched on the DOM invoking threads of commands.
@@ -42,6 +43,18 @@ class Controller extends RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  addEventTypes(types) {
+    types.forEach(type => {
+      let TYPE_SNAKE_CASE = snakeCase(type).toUpperCase();
+
+      if (this.constructor[TYPE_SNAKE_CASE]) {
+        return;
+      }
+
+      this.constructor[TYPE_SNAKE_CASE] = type;
+    });
+  }
+
   getListener(eventType) {
     return this.eventTypeToCommandThreadFactory[eventType];
   }
@@ -54,7 +67,7 @@ class Controller extends RingaObject {
     } else if (typeof commandThreadFactoryOrArray.build === 'function') {
       commandThreadFactory = commandThreadFactoryOrArray;
     } else if (__DEV__) {
-      throw Error('Controller::addListener(): the provided commandThreadFactoryOrArray is not valid!');
+      throw Error('Controller::addListener(): the provided commandThreadFactoryOrArray is not valid! Did you forget to wrap in []?');
     }
 
     if (__DEV__ && !commandThreadFactory || !(commandThreadFactory instanceof CommandThreadFactory)) {

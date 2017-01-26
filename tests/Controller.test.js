@@ -186,4 +186,20 @@ describe('Controller', () => {
 
     controller.dispatch('test1', undefined);
   });
+
+  it('should have a working addEventTypes', () => {
+    controller.addEventTypes(['whatever', 'hello world', 'to-snake-case']);
+
+    expect(TestController.WHATEVER.toString()).toEqual('whatever');
+    expect(TestController.HELLO_WORLD.toString()).toEqual('hello world');
+    expect(TestController.TO_SNAKE_CASE.toString()).toEqual('to-snake-case');
+  });
+
+  it('events created with addEventTypes should work', (done) => {
+    controller.addEventTypes(['test event types']);
+
+    controller.addListener(TestController.TEST_EVENT_TYPES, [() => {}]);
+
+    Ringa.dispatch(TestController.TEST_EVENT_TYPES, undefined, domNode).then(_ => done());
+  });
 });

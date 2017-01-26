@@ -1,6 +1,8 @@
 # ringa
 
-A framework and design patterns for the action and data management lifecycle of a modularized Javascript application.
+Ringa is yet another Javascript control library designed to make writing code fun and extremely organized.
+ 
+Ringa is designed for applications that are expected to substantially scale over time and for developing shared libraries.
 
 # install
 

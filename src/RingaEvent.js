@@ -107,8 +107,15 @@ class RingaEvent extends RingaObject {
 
     // TODO this should be in dispatch not _dispatch
     if (__DEV__) {
+      setTimeout(() => {
+        if (!this.caught) {
+          console.warn('RingaEvent::dispatch(): the RingaEvent \'' + this.type + '\' was never caught! Did you dispatch on the proper DOM node?');
+        }
+      }, 0);
+
       this.dispatchStack = ErrorStackParser.parse(new Error());
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
+
       if (this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
         this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
       }
@@ -172,6 +179,11 @@ class RingaEvent extends RingaObject {
     }
 
     this.listeners[eventType] = this.listeners[eventType] || [];
+
+    if (this.listeners[eventType].indexOf(handler) !== -1) {
+      throw Error('RingaEvent::addListener(): the same function was added as a listener twice');
+    }
+
     this.listeners[eventType].push(handler);
 
     return this;
@@ -183,6 +195,21 @@ class RingaEvent extends RingaObject {
 
   addFailListener(handler) {
     return this.addListener(RingaEvent.FAIL, handler);
+  }
+
+  then(resolve, reject) {
+    if (resolve) {
+      if (!reject) {
+        this.addFailListener(resolve.bind(undefined, undefined));
+      }
+
+      this.addDoneListener(resolve);
+    }
+    if (reject) this.addFailListener(reject);
+  }
+
+  catch(reject) {
+    this.addFailListener(reject);
   }
 }
 
