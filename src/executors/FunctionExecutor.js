@@ -1,22 +1,22 @@
-import CommandAbstract from '../CommandAbstract';
-import {buildArgumentsFromRingaEvent} from '../util/command';
+import CommandAbstract from '../Executor';
+import {buildArgumentsFromRingaEvent} from '../util/executors';
 import {getArgNames} from '../util/function';
 
 /**
- * CommandFunctionWrapper is a wrapper for a single function. As a general rule you will not use this directly.
+ * FunctionExecutor is a wrapper for a single function. As a general rule you will not use this directly.
  */
-class CommandFunctionWrapper extends CommandAbstract {
+class FunctionExecutor extends CommandAbstract {
   //-----------------------------------
   // Constructor
   //-----------------------------------
   /**
    * Constructor for a new Command. This *must* be called via super() from a subclass constructor.
    *
-   * @param commandThread The parent thread that owns this command.
+   * @param thread The parent thread that owns this command.
    * @param func The function that is run when the CommandThread calls _execute().
    */
-  constructor(commandThread, func) {
-    super(commandThread);
+  constructor(thread, func) {
+    super(thread);
 
     this.func = func;
     this.expectedArguments = getArgNames(func);
@@ -57,4 +57,4 @@ class CommandFunctionWrapper extends CommandAbstract {
   }
 }
 
-export default CommandFunctionWrapper;
+export default FunctionExecutor;

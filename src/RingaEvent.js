@@ -127,7 +127,7 @@ class RingaEvent extends RingaObject {
   }
 
   /**
-   * Completely kills the current Ringa thread, keeping any subsequent commands from running.
+   * Completely kills the current Ringa thread, keeping any subsequent executors from running.
    */
   fail(error) {
     this.killed = true;

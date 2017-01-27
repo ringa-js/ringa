@@ -10,29 +10,29 @@ class CommandAbstract extends RingaObject {
   /**
    * Constructor for a new Command. This *must* be called via super() from a subclass constructor.
    *
-   * @param commandThread The parent thread that owns this command.
+   * @param thread The parent thread that owns this command.
    */
-  constructor(commandThread) {
+  constructor(thread) {
     super();
 
-    if (__DEV__ && !commandThread.controller) {
+    if (__DEV__ && !thread.controller) {
       throw Error('Command(): attempting to build a command connected to a CommandThread that has no attached controller.');
     }
 
-    this.id = commandThread.controller.id + '_' + this.constructor.name;
+    this.id = thread.controller.id + '_' + this.constructor.name;
 
-    this.commandThread = commandThread;
+    this.thread = thread;
   }
 
   //-----------------------------------
   // Properties
   //-----------------------------------
   get ringaEvent() {
-    return this.commandThread.ringaEvent;
+    return this.thread.ringaEvent;
   }
 
   get controller() {
-    return this.commandThread.controller;
+    return this.thread.controller;
   }
 
   //-----------------------------------
@@ -91,7 +91,7 @@ class CommandAbstract extends RingaObject {
   }
 
   /**
-   * By default is this commands id.
+   * By default is this executors id.
    *
    * @returns {string|*}
    */

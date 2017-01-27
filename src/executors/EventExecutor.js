@@ -1,17 +1,17 @@
-import CommandAbstract from '../CommandAbstract';
+import CommandAbstract from '../Executor';
 
-class CommandEventWrapper extends CommandAbstract {
+class EventExecutor extends CommandAbstract {
   //-----------------------------------
   // Constructor
   //-----------------------------------
   /**
-   * Constructor for a new CommandEventWrapper
+   * Constructor for a new EventExecutor
    *
-   * @param commandThread The parent thread that owns this command.
+   * @param thread The parent thread that owns this command.
    * @param ringaEventFactory The event to dispatch and watch!
    */
-  constructor(commandThread, ringaEventFactory) {
-    super(commandThread);
+  constructor(thread, ringaEventFactory) {
+    super(thread);
 
     this.ringaEventFactory = ringaEventFactory;
   }
@@ -39,7 +39,7 @@ class CommandEventWrapper extends CommandAbstract {
     this.dispatchedRingaEvent.dispatch(domNode);
 
     if (this.dispatchedRingaEvent.detail.requireCatch && !this.dispatchedRingaEvent.caught) {
-      this.fail(Error('CommandEventWrapper::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'))
+      this.fail(Error('EventExecutor::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'))
     }
   }
 
@@ -59,4 +59,4 @@ class CommandEventWrapper extends CommandAbstract {
   }
 }
 
-export default CommandEventWrapper;
+export default EventExecutor;

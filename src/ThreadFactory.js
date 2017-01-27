@@ -1,8 +1,8 @@
 import RingaHashArray from './RingaHashArray';
-import CommandThread from './CommandThread';
-import CommandFactory from './CommandFactory';
+import CommandThread from './Thread';
+import CommandFactory from './ExecutorFactory';
 
-class CommandThreadFactory extends RingaHashArray {
+class ThreadFactory extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -33,7 +33,7 @@ class CommandThreadFactory extends RingaHashArray {
   //-----------------------------------
   build(ringaEvent) {
     if (__DEV__ && !this.controller) {
-      console.log('CommandThreadFactory::build(): controller was not set before the build method was called.');
+      console.log('ThreadFactory::build(): controller was not set before the build method was called.');
     }
 
     let commandThread = new CommandThread(this.id + '_Thread' + this.threadId, this);
@@ -44,4 +44,4 @@ class CommandThreadFactory extends RingaHashArray {
   }
 }
 
-export default CommandThreadFactory;
+export default ThreadFactory;

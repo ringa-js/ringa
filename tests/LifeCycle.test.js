@@ -13,8 +13,8 @@ const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
 describe('LifeCycle (event -> controller -> thread -> command', () => {
-  let command, domNode, reactNode, commandThreadFactory,
-      commandThreadFactory2, controller;
+  let command, domNode, reactNode, threadFactory,
+      threadFactory2, controller;
 
   beforeEach(() => {
     domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
@@ -25,8 +25,8 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       timeout: 500
     });
 
-    commandThreadFactory = controller.addListener(TEST_EVENT);
-    commandThreadFactory2 = controller.addListener(TEST_EVENT2);
+    threadFactory = controller.addListener(TEST_EVENT);
+    threadFactory2 = controller.addListener(TEST_EVENT2);
   });
 
   //-----------------------------------
@@ -37,7 +37,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       value: 'test'
     };
 
-    commandThreadFactory.add(CommandSimple);
+    threadFactory.add(CommandSimple);
 
     let ringaEvent = Ringa.dispatch(TEST_EVENT, { testObject }, domNode).addDoneListener(() => {
       expect(testObject.executed).toEqual(true);
@@ -53,7 +53,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       value: 'test'
     };
 
-    commandThreadFactory.addAll([CommandSimple,CommandSimple]);
+    threadFactory.addAll([CommandSimple,CommandSimple]);
 
     let ringaEvent = Ringa.dispatch(TEST_EVENT, { testObject }, domNode);
 
@@ -69,7 +69,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   it('RingaEvent -> 1 Function', (done) => {
     let a = 0;
 
-    commandThreadFactory.add(() => {
+    threadFactory.add(() => {
       a = 1;
     });
 
@@ -87,7 +87,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   it('RingaEvent -> 2 Functions', (done) => {
     let a = 0;
 
-    commandThreadFactory.add(() => {
+    threadFactory.add(() => {
       a = 1;
     },() => {
       a = 2;
@@ -107,7 +107,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   it('RingaEvent -> 1 Function, modify event', (done) => {
     let obj = {};
 
-    commandThreadFactory.add((ringaEvent) => {
+    threadFactory.add((ringaEvent) => {
       ringaEvent.detail.itsWorking = true;
     });
 
@@ -125,11 +125,11 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   it('RingaEvent -> 2 Functions, modify event', (done) => {
     let obj = {};
 
-    commandThreadFactory.add((ringaEvent) => {
+    threadFactory.add((ringaEvent) => {
       ringaEvent.detail.test1 = true;
     });
 
-    commandThreadFactory.add((ringaEvent) => {
+    threadFactory.add((ringaEvent) => {
       ringaEvent.detail.test2 = true;
     });
 
@@ -149,7 +149,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
     let ringaEvent2, ringaEvent;
     let obj = {}, obj2 = {};
 
-    commandThreadFactory.add((ringaEvent) => {
+    threadFactory.add((ringaEvent) => {
       ringaEvent.detail.test1 = true;
       ringaEvent2 = Ringa.dispatch(TEST_EVENT2, obj2, domNode);
 
@@ -162,7 +162,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       });
     });
 
-    commandThreadFactory2.add((ringaEvent) => {
+    threadFactory2.add((ringaEvent) => {
       ringaEvent.detail.test2 = true;
     });
 
@@ -170,15 +170,15 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 50);
 
   //-----------------------------------
-  // RingaEvent -> CommandEventWrapper
+  // RingaEvent -> EventExecutor
   //-----------------------------------
-  it('RingaEvent -> CommandEventWrapper', (done) => {
+  it('RingaEvent -> EventExecutor', (done) => {
     let ringaEvent, ringaEvent2;
     let obj = {};
 
-    commandThreadFactory.add(TEST_EVENT2);
+    threadFactory.add(TEST_EVENT2);
 
-    commandThreadFactory2.add((ringaEvent) => {
+    threadFactory2.add((ringaEvent) => {
       ringaEvent.detail.test2 = true;
 
       ringaEvent2 = ringaEvent;
@@ -194,16 +194,16 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 50);
 
   //-----------------------------------
-  // RingaEvent -> 2 CommandEventWrappers
+  // RingaEvent -> 2 EventExecutors
   //-----------------------------------
-  it('RingaEvent -> 2 CommandEventWrapper', (done) => {
+  it('RingaEvent -> 2 EventExecutor', (done) => {
     let ringaEvent, ringaEvent2, ringaEvent3;
     let count = 0;
 
-    commandThreadFactory.add(TEST_EVENT2);
-    commandThreadFactory.add(TEST_EVENT2);
+    threadFactory.add(TEST_EVENT2);
+    threadFactory.add(TEST_EVENT2);
 
-    commandThreadFactory2.add((ringaEvent) => {
+    threadFactory2.add((ringaEvent) => {
       ringaEvent.detail.test = true;
 
       if (ringaEvent2) {
@@ -227,17 +227,17 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 50);
 
   //-----------------------------------
-  // RingaEvent -> CommandEventWrappers
+  // RingaEvent -> EventExecutors
   //-----------------------------------
-  it('RingaEvent -> 100 CommandEventWrapper', (done) => {
+  it('RingaEvent -> 100 EventExecutor', (done) => {
     let ringaEvent;
     let count = 0;
 
     for (let i = 0; i < 100; i++) {
-      commandThreadFactory.add(TEST_EVENT2);
+      threadFactory.add(TEST_EVENT2);
     }
 
-    commandThreadFactory2.add(() => {
+    threadFactory2.add(() => {
       count++;
     });
 
@@ -251,17 +251,17 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 1000);
 
   //-----------------------------------
-  // RingaEvent -> 100 CommandEventWrappers
+  // RingaEvent -> 100 EventExecutors
   //-----------------------------------
-  it('RingaEvent -> 100 CommandEventWrapper', (done) => {
+  it('RingaEvent -> 100 EventExecutor', (done) => {
     let ringaEvent;
     let count = 0;
 
     for (let i = 0; i < 100; i++) {
-      commandThreadFactory.add(TEST_EVENT2);
+      threadFactory.add(TEST_EVENT2);
     }
 
-    commandThreadFactory2.add(() => {
+    threadFactory2.add(() => {
       count++;
     });
 
@@ -275,19 +275,19 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 1000);
 
   //-----------------------------------
-  // RingaEvent -> 20 CommandEventWrappers Sequence Test
+  // RingaEvent -> 20 EventExecutors Sequence Test
   //-----------------------------------
-  it('RingaEvent -> 20 CommandEventWrapper Sequence Test', (done) => {
+  it('RingaEvent -> 20 EventExecutor Sequence Test', (done) => {
     let ringaEvent;
     let sequence = '';
 
     for (let i = 0; i < 21; i++) {
-      commandThreadFactory.add(Ringa.EventFactory(TEST_EVENT2, {
+      threadFactory.add(Ringa.EventFactory(TEST_EVENT2, {
         val: i
       }));
     }
 
-    commandThreadFactory2.add((val) => {
+    threadFactory2.add((val) => {
       sequence+=val.toString();
     });
 
@@ -301,9 +301,9 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   }, 1000);
 
   //------------------------------------------------
-  // RingaEvent -> 10 CommandEventWrappers Depth Test
+  // RingaEvent -> 10 EventExecutors Depth Test
   //------------------------------------------------
-  it('RingaEvent -> 10 CommandEventWrapper Sequence Test', (done) => {
+  it('RingaEvent -> 10 EventExecutor Sequence Test', (done) => {
     let sequence = '';
 
     for (let i = 0; i < 10; i++) {

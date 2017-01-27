@@ -1,5 +1,5 @@
 /**
- * This method is used for injecting RingaEvent.detail properties into a function owned by a CommandAbstract. It uses the data
+ * This method is used for injecting RingaEvent.detail properties into a function owned by a Executor. It uses the data
  * gathered from introspecting a provided function to determine a set of arguments to
  * call the function with. It maps everything on ringaEvent.detail to arguments on the function.
  *
@@ -21,35 +21,35 @@
  * ringaEvent: the ringaEvent itself (instead of one of its detail properties)
  * customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
  * target: the target DOMNode that triggered the customEvent was dispatched on.
- * done: the parent CommandAbstract::done(). CommandFunction is an example of where this is needed.
- * fail: the parent CommandAbstract::fail(). CommandFunction is an example of where this is needed.
+ * done: the parent Executor::done(). CommandFunction is an example of where this is needed.
+ * fail: the parent Executor::fail(). CommandFunction is an example of where this is needed.
  *
- * @param commandAbstract The CommandAbstract subclass instance.
+ * @param executor The Executor subclass instance.
  * @param expectedArguments An array of argument names that the target function expects.
  * @param ringaEvent An instance of RingaEvent that has been dispatched and contains a details Object with properties to be injected.
  *
  * @returns {Array}
  */
-export const buildArgumentsFromRingaEvent = function(commandAbstract, expectedArguments, ringaEvent) {
+export const buildArgumentsFromRingaEvent = function(executor, expectedArguments, ringaEvent) {
   let args = [];
 
   if (!(expectedArguments instanceof Array)) {
     throw Error('buildArgumentsFromRingaEvent(): An internal error has occurred in that expectedArguments is not an Array!');
   }
 
-  let injections = commandAbstract._injections = commandAbstract._injections || {
-      controller: commandAbstract.controller,
-      commandThread: commandAbstract.commandThread,
+  let injections = executor._injections = executor._injections || {
+      controller: executor.controller,
+      thread: executor.thread,
       ringaEvent: ringaEvent,
       customEvent: ringaEvent.customEvent,
       target: ringaEvent.target,
-      done: commandAbstract.done,
-      fail: commandAbstract.fail
+      done: executor.done,
+      fail: executor.fail
     };
 
   // Merge controller.options.injections into our injector
-  for (var key in commandAbstract.controller.options.injections) {
-    injections[key] = commandAbstract.controller.options.injections[key];
+  for (var key in executor.controller.options.injections) {
+    injections[key] = executor.controller.options.injections[key];
   }
 
   expectedArguments.forEach((argName) => {
@@ -58,7 +58,7 @@ export const buildArgumentsFromRingaEvent = function(commandAbstract, expectedAr
     } else if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
     } else {
-      let message = commandAbstract.toString() +
+      let message = executor.toString() +
       ': the property \'' +
       argName +
       '\' was not provided on the dispatched ringaEvent.' +

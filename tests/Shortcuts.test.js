@@ -12,7 +12,7 @@ import CommandSimple from './shared/CommandSimple';
 const TEST_EVENT = 'testEvent';
 
 describe('Shortcuts / Wrappers', () => {
-  let command, domNode, reactNode, commandThreadFactory, commandThread, controller;
+  let command, domNode, reactNode, threadFactory, thread, controller;
 
   beforeEach(() => {
     domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
@@ -23,14 +23,14 @@ describe('Shortcuts / Wrappers', () => {
       timeout: 50
     });
 
-    commandThreadFactory = new Ringa.CommandThreadFactory('testCommandThreadFactory', [
+    threadFactory = new Ringa.ThreadFactory('testCommandThreadFactory', [
       CommandSimple
     ]);
 
-    controller.addListener(TEST_EVENT, commandThreadFactory);
+    controller.addListener(TEST_EVENT, threadFactory);
 
     // Build a thread but do not run it right away because we are testing!
-    commandThread = commandThreadFactory.build(new Ringa.Event(TEST_EVENT), false);
+    thread = threadFactory.build(new Ringa.Event(TEST_EVENT), false);
   });
 
   it('Ringa.dispatch() should dispatch and manage an event', (done) => {

@@ -207,7 +207,7 @@ var CommandAbstract = function (_RingaObject) {
     }
 
     /**
-     * By default is this commands id.
+     * By default is this executors id.
      *
      * @returns {string|*}
      */
@@ -442,7 +442,7 @@ var RingaEvent = function (_RingaObject) {
     }
 
     /**
-     * Completely kills the current Ringa thread, keeping any subsequent commands from running.
+     * Completely kills the current Ringa thread, keeping any subsequent executors from running.
      */
 
   }, {
@@ -632,7 +632,7 @@ var CommandFactory = function () {
   // Constructor
   //-----------------------------------
   /**
-   * Constructs a CommandFactory.
+   * Constructs a ExecutorFactory.
    *
    * @param executee This can be a Class, a instance, a function... we determine what type of
    *   CommandAbstract to build based on what is passed in. This makes things extensible.
@@ -682,7 +682,7 @@ var CommandFactory = function () {
       }
 
       if (true) {
-        throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ringa: ' + _typeof(this.executee) + ': ' + this.executee);
+        throw Error('ExecutorFactory::build(): the type of executee you provided is not supported by Ringa: ' + _typeof(this.executee) + ': ' + this.executee);
       }
     }
   }]);
@@ -765,7 +765,7 @@ var CommandThreadFactory = function (_RingaHashArray) {
     key: 'build',
     value: function build(ringaEvent) {
       if (true && !this.controller) {
-        console.log('CommandThreadFactory::build(): controller was not set before the build method was called.');
+        console.log('ThreadFactory::build(): controller was not set before the build method was called.');
       }
 
       var commandThread = new _CommandThread2.default(this.id + '_Thread' + this.threadId, this);
@@ -1228,7 +1228,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /**
- * Controller is the hub for events dispatched on the DOM invoking threads of commands.
+ * Controller is the hub for events dispatched on the DOM invoking threads of executors.
  */
 var Controller = function (_RingaObject) {
   _inherits(Controller, _RingaObject);
@@ -1307,7 +1307,7 @@ var Controller = function (_RingaObject) {
       }
 
       if (true && !commandThreadFactory || !(commandThreadFactory instanceof _CommandThreadFactory2.default)) {
-        throw Error('Controller::addListener(): commandThreadFactory not an instance of CommandThreadFactory');
+        throw Error('Controller::addListener(): commandThreadFactory not an instance of ThreadFactory');
       }
 
       if (true && commandThreadFactory.controller) {
@@ -1398,7 +1398,7 @@ var Controller = function (_RingaObject) {
       var commandThreadFactory = this.eventTypeToCommandThreadFactory[customEvent.type];
 
       if (true && !commandThreadFactory) {
-        throw Error('Controller::_eventHandler(): caught an event but there is no associated CommandThreadFactory! Fatal error.');
+        throw Error('Controller::_eventHandler(): caught an event but there is no associated ThreadFactory! Fatal error.');
       }
 
       customEvent.detail.ringaEvent.caught = true;
@@ -1520,7 +1520,7 @@ var Command = function (_CommandAbstract) {
    * Constructor for a new Command. This *must* be called via super() from a subclass constructor.
    *
    * @param commandThread The parent thread that owns this command.
-   * @param argNames For efficiency, the CommandFactory instrospects this Command's execute(...) arguments.
+   * @param argNames For efficiency, the ExecutorFactory instrospects this Command's execute(...) arguments.
    */
   function Command(commandThread, argNames) {
     _classCallCheck(this, Command);
@@ -2870,7 +2870,7 @@ var CommandThread = function (_RingaHashArray) {
       }
 
       if (true && this.commandThreadFactory.all.length === 0) {
-        throw Error('CommandThread::run(): attempting to run a thread with no commands!');
+        throw Error('CommandThread::run(): attempting to run a thread with no executors!');
       }
 
       if (true && !ringaEvent) {

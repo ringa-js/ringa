@@ -1,11 +1,11 @@
-import CommandThreadFactory from './CommandThreadFactory';
+import CommandThreadFactory from './ThreadFactory';
 import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
 import RingaEvent from './RingaEvent';
 import snakeCase from 'snake-case';
 
 /**
- * Controller is the hub for events dispatched on the DOM invoking threads of commands.
+ * Controller is the hub for events dispatched on the DOM invoking threads of executors.
  */
 class Controller extends RingaObject {
   //-----------------------------------
@@ -33,11 +33,17 @@ class Controller extends RingaObject {
     this.options.consoleLogFails = this.options.consoleLogFails === undefined ? true : false;
     this.options.injections = this.options.injections || {};
 
-    this.commandThreads = new HashArray('id');
+    this.threads = new HashArray('id');
 
     this.eventTypeToCommandThreadFactory = new Map();
 
     this._eventHandler = this._eventHandler.bind(this);
+  }
+  //-----------------------------------
+  // Properties
+  //-----------------------------------
+  get injections() {
+    return this.options.injections;
   }
 
   //-----------------------------------
@@ -59,23 +65,23 @@ class Controller extends RingaObject {
     return this.eventTypeToCommandThreadFactory[eventType];
   }
 
-  addListener(eventType, commandThreadFactoryOrArray) {
-    let commandThreadFactory;
+  addListener(eventType, threadFactoryOrArray) {
+    let threadFactory;
 
-    if (!commandThreadFactoryOrArray || commandThreadFactoryOrArray instanceof Array) {
-      commandThreadFactory = new CommandThreadFactory(this.id + '_' + eventType + '_CommandThreadFactory', commandThreadFactoryOrArray);
-    } else if (typeof commandThreadFactoryOrArray.build === 'function') {
-      commandThreadFactory = commandThreadFactoryOrArray;
+    if (!threadFactoryOrArray || threadFactoryOrArray instanceof Array) {
+      threadFactory = new CommandThreadFactory(this.id + '_' + eventType + '_CommandThreadFactory', threadFactoryOrArray);
+    } else if (typeof threadFactoryOrArray.build === 'function') {
+      threadFactory = threadFactoryOrArray;
     } else if (__DEV__) {
-      throw Error('Controller::addListener(): the provided commandThreadFactoryOrArray is not valid! Did you forget to wrap in []?');
+      throw Error('Controller::addListener(): the provided threadFactoryOrArray is not valid! Did you forget to wrap in []?');
     }
 
-    if (__DEV__ && !commandThreadFactory || !(commandThreadFactory instanceof CommandThreadFactory)) {
-      throw Error('Controller::addListener(): commandThreadFactory not an instance of CommandThreadFactory');
+    if (__DEV__ && !threadFactory || !(threadFactory instanceof CommandThreadFactory)) {
+      throw Error('Controller::addListener(): threadFactory not an instance of ThreadFactory');
     }
 
-    if (__DEV__ && commandThreadFactory.controller) {
-      throw Error('Controller::addListener(): commandThreadFactory cannot have two parent controllers!');
+    if (__DEV__ && threadFactory.controller) {
+      throw Error('Controller::addListener(): threadFactory cannot have two parent controllers!');
     }
 
     if (__DEV__ && this.eventTypeToCommandThreadFactory[eventType]) {
@@ -84,9 +90,9 @@ class Controller extends RingaObject {
 
     this.addEventTypes([eventType]);
 
-    commandThreadFactory.controller = this;
+    threadFactory.controller = this;
 
-    this.eventTypeToCommandThreadFactory[eventType] = commandThreadFactory;
+    this.eventTypeToCommandThreadFactory[eventType] = threadFactory;
 
     if (typeof eventType === 'string') {
       this.domNode.addEventListener(eventType, this._eventHandler);
@@ -104,18 +110,18 @@ class Controller extends RingaObject {
       }
     }
 
-    return commandThreadFactory;
+    return threadFactory;
   }
 
   removeListener(eventType) {
-    let commandThreadFactory = this.eventTypeToCommandThreadFactory[eventType];
+    let threadFactory = this.eventTypeToCommandThreadFactory[eventType];
 
-    if (commandThreadFactory) {
+    if (threadFactory) {
       delete this.eventTypeToCommandThreadFactory[eventType];
 
       this.domNode.removeEventListener(eventType, this._eventHandler);
 
-      return commandThreadFactory;
+      return threadFactory;
     }
 
     if (__DEV__) {
@@ -127,17 +133,17 @@ class Controller extends RingaObject {
     return this.getListener(eventType) !== undefined;
   }
 
-  invoke(ringaEvent, commandThreadFactory) {
-    let commandThread = commandThreadFactory.build(ringaEvent);
+  invoke(ringaEvent, threadFactory) {
+    let thread = threadFactory.build(ringaEvent);
 
-    this.commandThreads.add(commandThread);
+    this.threads.add(thread);
 
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
     // TODO PREHOOK should allow the handler to cancel running of the thread.
-    commandThread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
+    thread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
-    return commandThread;
+    return thread;
   }
 
   //-----------------------------------
@@ -155,10 +161,10 @@ class Controller extends RingaObject {
 
     customEvent.detail.ringaEvent.controller = this;
 
-    let commandThreadFactory = this.eventTypeToCommandThreadFactory[customEvent.type];
+    let threadFactory = this.eventTypeToCommandThreadFactory[customEvent.type];
 
-    if (__DEV__ && !commandThreadFactory) {
-      throw Error('Controller::_eventHandler(): caught an event but there is no associated CommandThreadFactory! Fatal error.');
+    if (__DEV__ && !threadFactory) {
+      throw Error('Controller::_eventHandler(): caught an event but there is no associated ThreadFactory! Fatal error.');
     }
 
     customEvent.detail.ringaEvent.caught = true;
@@ -180,11 +186,11 @@ class Controller extends RingaObject {
     }
 
     try {
-      let commandThread = this.invoke(customEvent.detail.ringaEvent, commandThreadFactory);
+      let thread = this.invoke(customEvent.detail.ringaEvent, threadFactory);
 
-      this.postInvokeHandler(customEvent.detail.ringaEvent, commandThread);
+      this.postInvokeHandler(customEvent.detail.ringaEvent, thread);
     } catch (error) {
-      this.threadFailHandler(commandThread, error);
+      this.threadFailHandler(thread, error);
     }
   }
 
@@ -193,34 +199,34 @@ class Controller extends RingaObject {
     return false;
   }
 
-  postInvokeHandler(ringaEvent, commandThread) {
+  postInvokeHandler(ringaEvent, thread) {
     // Can be extended by a subclass
   }
 
-  threadDoneHandler(commandThread) {
-    if (__DEV__ && !this.commandThreads.has(commandThread.id)) {
-      throw Error(`Controller::threadDoneHandler(): could not find thread with id ${commandThread.id}`);
+  threadDoneHandler(thread) {
+    if (__DEV__ && !this.threads.has(thread.id)) {
+      throw Error(`Controller::threadDoneHandler(): could not find thread with id ${thread.id}`);
     }
 
-    this.commandThreads.remove(commandThread);
+    this.threads.remove(thread);
 
-    commandThread.ringaEvent._done();
+    thread.ringaEvent._done();
   }
 
-  threadFailHandler(commandThread, error, kill) {
+  threadFailHandler(thread, error, kill) {
     if (this.options.consoleLogFails) {
       console.error(error);
     }
 
     if (kill) {
-      if (this.commandThreads.has(commandThread.id)) {
-        this.commandThreads.remove(commandThread);
+      if (this.threads.has(thread.id)) {
+        this.threads.remove(thread);
       } else if (__DEV__) {
-        throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${commandThread.id} was not found.`)
+        throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${thread.id} was not found.`)
       }
     }
 
-    commandThread.ringaEvent._fail(error);
+    thread.ringaEvent._fail(error);
   }
 
   dispatch(eventType, details) {

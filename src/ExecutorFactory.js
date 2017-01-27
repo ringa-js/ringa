@@ -1,17 +1,17 @@
-import CommandAbstract from './CommandAbstract';
-import CommandFunctionWrapper from './commands/CommandFunctionWrapper';
-import CommandPromiseWrapper from './commands/CommandPromiseWrapper';
-import CommandEventWrapper from './commands/CommandEventWrapper';
-import CommandsParallelWrapper from './commands/CommandsParallelWrapper';
+import CommandAbstract from './Executor';
+import FunctionExecutor from './executors/FunctionExecutor';
+import PromiseExecutor from './executors/PromiseExecutor';
+import EventExecutor from './executors/EventExecutor';
+import ParallelExecutor from './executors/ParallelExecutor';
 import RingaEventFactory from './RingaEventFactory';
 import {getArgNames} from './util/function';
 
-class CommandFactory {
+class ExecutorFactory {
   //-----------------------------------
   // Constructor
   //-----------------------------------
   /**
-   * Constructs a CommandFactory.
+   * Constructs a ExecutorFactory.
    *
    * @param executee This can be a Class, a instance, a function... we determine what type of
    *   CommandAbstract to build based on what is passed in. This makes things extensible.
@@ -27,15 +27,15 @@ class CommandFactory {
     this.argNames = getArgNames(instance.execute);
   }
 
-  build(commandThread) {
+  build(thread) {
     if (typeof this.executee === 'string') {
       let ringaEventFactory = new RingaEventFactory(this.executee);
-      return new CommandEventWrapper(commandThread, ringaEventFactory);
+      return new EventExecutor(thread, ringaEventFactory);
     } else if (typeof this.executee.then === 'function') {
-      return new CommandPromiseWrapper(commandThread, this.executee);
+      return new PromiseExecutor(thread, this.executee);
     } else if (typeof this.executee === 'function') {
       if (this.executee.prototype instanceof CommandAbstract) {
-        let instance = new this.executee(commandThread, this.argNames);
+        let instance = new this.executee(thread, this.argNames);
 
         if (!this.argNames) {
           this.cacheArguments(instance);
@@ -44,19 +44,19 @@ class CommandFactory {
 
         return instance;
       } else {
-        return new CommandFunctionWrapper(commandThread, this.executee);
+        return new FunctionExecutor(thread, this.executee);
       }
     } else if (this.executee instanceof Array) {
       // This might be a group of CommandAbstracts that should be run synchronously
-      return new CommandsParallelWrapper(commandThread, this.executee);
+      return new ParallelExecutor(thread, this.executee);
     } else if (typeof this.executee === 'object' && this.executee instanceof RingaEventFactory) {
-      return new CommandEventWrapper(commandThread, this.executee);
+      return new EventExecutor(thread, this.executee);
     }
 
     if (__DEV__) {
-      throw Error('CommandFactory::build(): the type of executee you provided is not supported by Ringa: ' + typeof this.executee + ': ' + this.executee);
+      throw Error('ExecutorFactory::build(): the type of executee you provided is not supported by Ringa: ' + typeof this.executee + ': ' + this.executee);
     }
   }
 }
 
-export default CommandFactory;
+export default ExecutorFactory;

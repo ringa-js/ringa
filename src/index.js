@@ -1,17 +1,17 @@
-import Command from './commands/Command';
-import CommandFactory from './CommandFactory';
-import CommandThreadFactory from './CommandThreadFactory';
+import Command from './executors/Command';
+import ExecutorFactory from './ExecutorFactory';
+import ThreadFactory from './ThreadFactory';
 import Controller from './Controller';
 import RingaEvent from './RingaEvent';
 import RingaEventFactory from './RingaEventFactory';
 
-export { Command, CommandFactory, CommandThreadFactory, Controller, RingaEvent };
+export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent };
 
 export default {
   Controller,
   Command,
-  CommandFactory,
-  CommandThreadFactory,
+  ExecutorFactory,
+  ThreadFactory,
   Event: RingaEvent,
   dispatch: (eventType, details, domNode = document) => {
     return new RingaEvent(eventType, details).dispatch(domNode);

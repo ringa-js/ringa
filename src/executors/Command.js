@@ -1,5 +1,5 @@
-import CommandAbstract from '../CommandAbstract';
-import {buildArgumentsFromRingaEvent} from '../util/command';
+import CommandAbstract from '../Executor';
+import {buildArgumentsFromRingaEvent} from '../util/executors';
 
 /**
  * Command is the base class for all command objects that are run in a Ringa application or module.
@@ -11,11 +11,11 @@ class Command extends CommandAbstract {
   /**
    * Constructor for a new Command. This *must* be called via super() from a subclass constructor.
    *
-   * @param commandThread The parent thread that owns this command.
-   * @param argNames For efficiency, the CommandFactory instrospects this Command's execute(...) arguments.
+   * @param thread The parent thread that owns this command.
+   * @param argNames For efficiency, the ExecutorFactory instrospects this Command's execute(...) arguments.
    */
-  constructor(commandThread, argNames) {
-    super(commandThread);
+  constructor(thread, argNames) {
+    super(thread);
 
     this.argNames = argNames;
   }
@@ -34,7 +34,7 @@ class Command extends CommandAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    let args = buildArgumentsFromRingaEvent(this, this.argNames, this.commandThread.ringaEvent);
+    let args = buildArgumentsFromRingaEvent(this, this.argNames, this.thread.ringaEvent);
 
     const donePassedAsArg = this.argNames.indexOf('done') !== -1;
 

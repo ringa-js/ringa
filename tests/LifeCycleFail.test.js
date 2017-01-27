@@ -15,8 +15,8 @@ const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
 describe('LifeCycle (event -> controller -> thread -> command', () => {
-  let command, domNode, reactNode, commandThreadFactory,
-    commandThreadFactory2, controller;
+  let command, domNode, reactNode, threadFactory,
+    threadFactory2, controller;
 
   beforeEach(() => {
     domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
@@ -27,15 +27,15 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       timeout: 500
     });
 
-    commandThreadFactory = controller.addListener(TEST_EVENT);
-    commandThreadFactory2 = controller.addListener(TEST_EVENT2);
+    threadFactory = controller.addListener(TEST_EVENT);
+    threadFactory2 = controller.addListener(TEST_EVENT2);
   });
 
   //-----------------------------------
   // RingaEvent -> 1 Command throw
   //-----------------------------------
   it('RingaEvent -> 1 Command throw', (done) => {
-    commandThreadFactory.add(CommandThrow);
+    threadFactory.add(CommandThrow);
 
     controller.options.consoleLogFails = false;
 
@@ -53,8 +53,8 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   // RingaEvent -> 1 Command Fail Call (kill false)
   //----------------------------------------------
   it('RingaEvent -> 1 Command Fail Call (kill false)', (done) => {
-    commandThreadFactory.add(CommandFail);
-    commandThreadFactory.add(CommandSimple);
+    threadFactory.add(CommandFail);
+    threadFactory.add(CommandSimple);
 
     controller.options.consoleLogFails = false;
 
@@ -74,8 +74,8 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   // RingaEvent -> 1 Command Fail Call (kill true)
   //----------------------------------------------
   it('RingaEvent -> 1 Command Fail Call (kill true)', (done) => {
-    commandThreadFactory.add(CommandFail);
-    commandThreadFactory.add(CommandSimple);
+    threadFactory.add(CommandFail);
+    threadFactory.add(CommandSimple);
 
     controller.options.consoleLogFails = false;
 

@@ -9,12 +9,12 @@ import Ringa from '../src/index';
 import CommandSimple from './shared/CommandSimple';
 import CommandComplexArgs from './shared/CommandComplexArgs';
 import {getArgNames} from '../src/util/function';
-import {buildArgumentsFromRingaEvent} from '../src/util/command';
+import {buildArgumentsFromRingaEvent} from '../src/util/executors';
 
 const TEST_EVENT = 'testEvent';
 
 describe('Command', () => {
-  let command, commandComplex, domNode, reactNode, commandThreadFactory, commandThread, controller;
+  let command, commandComplex, domNode, reactNode, threadFactory, thread, controller;
 
   beforeEach(() => {
     domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
@@ -25,17 +25,17 @@ describe('Command', () => {
       timeout: 50
     });
 
-    commandThreadFactory = new Ringa.CommandThreadFactory('testCommandThreadFactory', [
+    threadFactory = new Ringa.ThreadFactory('testCommandThreadFactory', [
       CommandSimple
     ]);
 
-    controller.addListener(TEST_EVENT, commandThreadFactory);
+    controller.addListener(TEST_EVENT, threadFactory);
 
     // Build a thread but do not run it right away because we are testing!
-    commandThread = commandThreadFactory.build(new Ringa.Event(TEST_EVENT), false);
+    thread = threadFactory.build(new Ringa.Event(TEST_EVENT), false);
 
-    command = new CommandSimple(commandThread, ['testObject']);
-    commandComplex = new CommandComplexArgs(commandThread);
+    command = new CommandSimple(thread, ['testObject']);
+    commandComplex = new CommandComplexArgs(thread);
 
     commandComplex.argNames = getArgNames(commandComplex.execute);
   });
@@ -43,30 +43,30 @@ describe('Command', () => {
   it('should have properly setup the beforeEach objects', () => {
     expect(domNode.nodeType).toEqual(1);
     expect(controller.id).toEqual('testController');
-    expect(commandThreadFactory.id).toEqual('testCommandThreadFactory');
-    expect(commandThread.id).toEqual('testCommandThreadFactory_Thread0');
+    expect(threadFactory.id).toEqual('testCommandThreadFactory');
+    expect(thread.id).toEqual('testCommandThreadFactory_Thread0');
   });
 
   it('should have a properly defined id', () => {
     expect(command.id).toEqual('testController_CommandSimple');
   });
 
-  it('should start and properly store the commandThread', () => {
-    expect(command.commandThread).toEqual(commandThread);
+  it('should start and properly store the thread', () => {
+    expect(command.thread).toEqual(thread);
   });
 
   it('should start and store the cached argNames', () => {
     let argNames = ['testObject'];
-    command = new CommandSimple(commandThread, argNames);
+    command = new CommandSimple(thread, argNames);
     expect(command.argNames).toEqual(argNames);
   });
 
-  it('should proxy the ringaEvent property from the commandThread', () => {
-    expect(command.ringaEvent).toEqual(commandThread.ringaEvent);
+  it('should proxy the ringaEvent property from the thread', () => {
+    expect(command.ringaEvent).toEqual(thread.ringaEvent);
   });
 
-  it('should proxy the controller property from the commandThread', () => {
-    expect(command.controller).toEqual(commandThread.controller);
+  it('should proxy the controller property from the thread', () => {
+    expect(command.controller).toEqual(thread.controller);
   });
 
   it('should have a working buildArgumentsFromRingaEvent function (success scenario 1)', () => {
@@ -79,11 +79,11 @@ describe('Command', () => {
 
     let args = buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
 
-    // ringaEvent, target, controller, commandThread, testObject, a, b, c
+    // ringaEvent, target, controller, thread, testObject, a, b, c
     expect(args[0]).toEqual(ringaEvent);
     expect(args[1]).toEqual(null);
     expect(args[2]).toEqual(controller);
-    expect(args[3]).toEqual(commandThread);
+    expect(args[3]).toEqual(thread);
     expect(args[4]).toEqual('test');
     expect(args[5]).toEqual('a');
     expect(args[6]).toEqual('b');

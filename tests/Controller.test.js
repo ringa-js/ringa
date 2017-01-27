@@ -13,8 +13,8 @@ const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
 describe('Controller', () => {
-  let command, domNode, reactNode, commandThreadFactory,
-    commandThreadFactory2, controller;
+  let command, domNode, reactNode, threadFactory,
+    threadFactory2, controller;
 
   beforeEach(() => {
     domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
@@ -23,8 +23,8 @@ describe('Controller', () => {
 
     controller = new TestController('testController', domNode);
 
-    commandThreadFactory = controller.addListener(TEST_EVENT);
-    commandThreadFactory2 = controller.addListener(TEST_EVENT2);
+    threadFactory = controller.addListener(TEST_EVENT);
+    threadFactory2 = controller.addListener(TEST_EVENT2);
   });
 
   it('should have a properly defined id', () => {
@@ -36,6 +36,10 @@ describe('Controller', () => {
     expect(controller.options.injections).toBeDefined();
     expect(controller.options.timeout).toEqual(5000);
     expect(controller.options.throwKillsThread).toEqual(true);
+  });
+
+  it('should have an injections property', () => {
+    expect(controller.options.injections).toEqual(controller.injections);
   });
 
   it('should allow you to override the default options', () => {
@@ -59,7 +63,7 @@ describe('Controller', () => {
     }).toThrow();
   });
 
-  it('should automatically convert an array to a CommandThreadFactory and return it during addListener', () => {
+  it('should automatically convert an array to a ThreadFactory and return it during addListener', () => {
     let ctf = controller.addListener('test', [() => {}]);
     expect(ctf).toBeDefined();
   });
@@ -83,19 +87,19 @@ describe('Controller', () => {
     expect(controller.hasListener('test2')).toEqual(false);
   });
 
-  it('should error if the provided array or CommandThreadFactory to addListener is not a valid type (function)', () => {
+  it('should error if the provided array or ThreadFactory to addListener is not a valid type (function)', () => {
     expect(() => {
       controller.addListener('test', () => {});
     }).toThrow();
   });
 
-  it('should error if the provided array or CommandThreadFactory to addListener is not a valid type (object)', () => {
+  it('should error if the provided array or ThreadFactory to addListener is not a valid type (object)', () => {
     expect(() => {
       controller.addListener('test', {});
     }).toThrow();
   });
 
-  it('should error if the provided array or CommandThreadFactory to addListener is not a valid type (string)', () => {
+  it('should error if the provided array or ThreadFactory to addListener is not a valid type (string)', () => {
     expect(() => {
       controller.addListener('test', 'blah');
     }).toThrow();
