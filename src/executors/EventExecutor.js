@@ -1,4 +1,4 @@
-import CommandAbstract from '../Executor';
+import CommandAbstract from '../ExecutorAbstract';
 
 class EventExecutor extends CommandAbstract {
   //-----------------------------------

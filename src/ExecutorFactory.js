@@ -1,4 +1,4 @@
-import CommandAbstract from './Executor';
+import CommandAbstract from './ExecutorAbstract';
 import FunctionExecutor from './executors/FunctionExecutor';
 import PromiseExecutor from './executors/PromiseExecutor';
 import EventExecutor from './executors/EventExecutor';

@@ -3,7 +3,7 @@ import RingaObject from './RingaObject';
 /**
  * Command is the base class for all command objects that are run in a Ringa application or module.
  */
-class CommandAbstract extends RingaObject {
+class ExecutorAbstract extends RingaObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -16,7 +16,7 @@ class CommandAbstract extends RingaObject {
     super();
 
     if (__DEV__ && !thread.controller) {
-      throw Error('Command(): attempting to build a command connected to a CommandThread that has no attached controller.');
+      throw Error('ExecutorAbstract(): attempting to build a command connected to a CommandThread that has no attached controller.');
     }
 
     this.id = thread.controller.id + '_' + this.constructor.name;
@@ -106,7 +106,7 @@ class CommandAbstract extends RingaObject {
     let message;
 
     if (__DEV__) {
-      message = 'CommandAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+      message = 'ExecutorAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
     }
 
     if (!__DEV__) {
@@ -119,4 +119,4 @@ class CommandAbstract extends RingaObject {
   }
 }
 
-export default CommandAbstract;
+export default ExecutorAbstract;
