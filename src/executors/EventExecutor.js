@@ -1,6 +1,6 @@
-import CommandAbstract from '../ExecutorAbstract';
+import ExecutorAbstract from '../ExecutorAbstract';
 
-class EventExecutor extends CommandAbstract {
+class EventExecutor extends ExecutorAbstract {
   //-----------------------------------
   // Constructor
   //-----------------------------------

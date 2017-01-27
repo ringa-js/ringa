@@ -1,4 +1,4 @@
-import CommandThreadFactory from './ThreadFactory';
+import ThreadFactory from './ThreadFactory';
 import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
 import RingaEvent from './RingaEvent';
@@ -29,13 +29,14 @@ class Controller extends RingaObject {
 
     this.options = options || {};
     this.options.timeout = this.options.timeout || 5000;
-    this.options.throwKillsThread = this.options.throwKillsThread === undefined ? true : false;
-    this.options.consoleLogFails = this.options.consoleLogFails === undefined ? true : false;
+    this.options.throwKillsThread = this.options.throwKillsThread === undefined ? true : this.options.throwKillsThread;
+    this.options.consoleLogFails = this.options.consoleLogFails === undefined ? true : this.options.consoleLogFails;
     this.options.injections = this.options.injections || {};
+    this.options.warnOnDetailOverwrite = this.options.warnOnDetailOverwrite === undefined ? true : this.options.warnOnDetailOverwrite;
 
     this.threads = new HashArray('id');
 
-    this.eventTypeToCommandThreadFactory = new Map();
+    this.eventTypeToThreadFactory = new Map();
 
     this._eventHandler = this._eventHandler.bind(this);
   }
@@ -62,21 +63,21 @@ class Controller extends RingaObject {
   }
 
   getListener(eventType) {
-    return this.eventTypeToCommandThreadFactory[eventType];
+    return this.eventTypeToThreadFactory[eventType];
   }
 
   addListener(eventType, threadFactoryOrArray) {
     let threadFactory;
 
     if (!threadFactoryOrArray || threadFactoryOrArray instanceof Array) {
-      threadFactory = new CommandThreadFactory(this.id + '_' + eventType + '_CommandThreadFactory', threadFactoryOrArray);
+      threadFactory = new ThreadFactory(this.id + '_' + eventType + '_ThreadFactory', threadFactoryOrArray);
     } else if (typeof threadFactoryOrArray.build === 'function') {
       threadFactory = threadFactoryOrArray;
     } else if (__DEV__) {
       throw Error('Controller::addListener(): the provided threadFactoryOrArray is not valid! Did you forget to wrap in []?');
     }
 
-    if (__DEV__ && !threadFactory || !(threadFactory instanceof CommandThreadFactory)) {
+    if (__DEV__ && !threadFactory || !(threadFactory instanceof ThreadFactory)) {
       throw Error('Controller::addListener(): threadFactory not an instance of ThreadFactory');
     }
 
@@ -84,7 +85,7 @@ class Controller extends RingaObject {
       throw Error('Controller::addListener(): threadFactory cannot have two parent controllers!');
     }
 
-    if (__DEV__ && this.eventTypeToCommandThreadFactory[eventType]) {
+    if (__DEV__ && this.eventTypeToThreadFactory[eventType]) {
       throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getListener() to make modifications.');
     }
 
@@ -92,7 +93,7 @@ class Controller extends RingaObject {
 
     threadFactory.controller = this;
 
-    this.eventTypeToCommandThreadFactory[eventType] = threadFactory;
+    this.eventTypeToThreadFactory[eventType] = threadFactory;
 
     if (typeof eventType === 'string') {
       this.domNode.addEventListener(eventType, this._eventHandler);
@@ -114,10 +115,10 @@ class Controller extends RingaObject {
   }
 
   removeListener(eventType) {
-    let threadFactory = this.eventTypeToCommandThreadFactory[eventType];
+    let threadFactory = this.eventTypeToThreadFactory[eventType];
 
     if (threadFactory) {
-      delete this.eventTypeToCommandThreadFactory[eventType];
+      delete this.eventTypeToThreadFactory[eventType];
 
       this.domNode.removeEventListener(eventType, this._eventHandler);
 
@@ -161,7 +162,7 @@ class Controller extends RingaObject {
 
     customEvent.detail.ringaEvent.controller = this;
 
-    let threadFactory = this.eventTypeToCommandThreadFactory[customEvent.type];
+    let threadFactory = this.eventTypeToThreadFactory[customEvent.type];
 
     if (__DEV__ && !threadFactory) {
       throw Error('Controller::_eventHandler(): caught an event but there is no associated ThreadFactory! Fatal error.');
@@ -190,6 +191,7 @@ class Controller extends RingaObject {
 
       this.postInvokeHandler(customEvent.detail.ringaEvent, thread);
     } catch (error) {
+      console.error(error);
       this.threadFailHandler(thread, error);
     }
   }
@@ -231,6 +233,10 @@ class Controller extends RingaObject {
 
   dispatch(eventType, details) {
     return new RingaEvent(eventType, details).dispatch(this.domNode);
+  }
+
+  toString() {
+    return this.id;
   }
 }
 

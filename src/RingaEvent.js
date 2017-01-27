@@ -141,7 +141,7 @@ class RingaEvent extends RingaObject {
   }
 
   toString() {
-    console.log('[' + this.type + ']', this.detail, this.target, this.stack);
+    return `RingaEvent [ '${this.type}' caught by ${this.controller ? this.controller.toString() : ''} ] `;
   }
 
   _done() {

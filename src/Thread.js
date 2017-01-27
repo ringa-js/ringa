@@ -4,11 +4,11 @@ class Thread extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id, commandThreadFactory, options) {
+  constructor(id, threadFactory, options) {
     super(id);
 
     this.options = options;
-    this.commandThreadFactory = commandThreadFactory;
+    this.threadFactory = threadFactory;
 
     this.running = false;
 
@@ -17,17 +17,17 @@ class Thread extends RingaHashArray {
   }
 
   get controller() {
-    return this.commandThreadFactory.controller;
+    return this.threadFactory.controller;
   }
 
   //-----------------------------------
   // Methods
   //-----------------------------------
-  buildCommands() {
-    this.commandThreadFactory.all.forEach((commandFactory) => {
-      let command = commandFactory.build(this);
+  buildExecutors() {
+    this.threadFactory.all.forEach((executorFactory) => {
+      let executor = executorFactory.build(this);
 
-      this.add(command);
+      this.add(executor);
     });
   }
 
@@ -36,7 +36,7 @@ class Thread extends RingaHashArray {
       throw Error('Thread::run(): you cannot start a thread while it is already running!');
     }
 
-    if (__DEV__ && this.commandThreadFactory.all.length === 0) {
+    if (__DEV__ && this.threadFactory.all.length === 0) {
       throw Error('Thread::run(): attempting to run a thread with no executors!');
     }
 
@@ -48,7 +48,7 @@ class Thread extends RingaHashArray {
     this.doneHandler = doneHandler;
     this.failHandler = failHandler;
 
-    this.buildCommands();
+    this.buildExecutors();
 
     // The current command we are running
     this.index = 0;
