@@ -282,7 +282,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
     let sequence = '';
 
     for (let i = 0; i < 21; i++) {
-      threadFactory.add(Ringa.EventFactory(TEST_EVENT2, {
+      threadFactory.add(Ringa.event(TEST_EVENT2, {
         val: i
       }));
     }
@@ -290,6 +290,8 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
     threadFactory2.add((val) => {
       sequence+=val.toString();
     });
+
+    controller.options.warnOnDetailOverwrite = false;
 
     ringaEvent = Ringa.dispatch(TEST_EVENT, undefined, domNode);
 
@@ -303,7 +305,7 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   //------------------------------------------------
   // RingaEvent -> 10 EventExecutors Depth Test
   //------------------------------------------------
-  it('RingaEvent -> 10 EventExecutor Sequence Test', (done) => {
+  it('RingaEvent -> 10 EventExecutor Depth Test', (done) => {
     let sequence = '';
 
     for (let i = 0; i < 10; i++) {
@@ -330,5 +332,47 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
         expect(sequence).toEqual('01234567899876543210');
         done();
       });
+  }, 1000);
+
+  //------------------------------------------------
+  // RingaEvent -> Verify details are passed to secondary chain for function
+  //------------------------------------------------
+  it('RingaEvent -> Verify details are passed to secondary chain for function', (done) => {
+    controller.addListener('TestEvent', [
+      (property) => {
+        expect(property).toEqual('some words');
+        done();
+      }
+      ]);
+
+    controller.addListener('StartEvent', [
+      'TestEvent'
+      ]);
+
+    Ringa.dispatch('StartEvent', {
+      property: 'some words'
+    }, domNode);
+
+  }, 1000);
+
+  //------------------------------------------------
+  // RingaEvent -> Verify warning on event executor detail property overwrite
+  //------------------------------------------------
+  it('RingaEvent -> Verify warning on event executor detail property overwrite', (done) => {
+    controller.addListener('TestEvent', [
+      (property) => {
+        expect(property).toEqual('some words');
+        done();
+      }
+      ]);
+
+    controller.addListener('StartEvent', [
+      'TestEvent'
+      ]);
+
+    Ringa.dispatch('StartEvent', {
+      property: 'some words'
+    }, domNode);
+
   }, 1000);
 });

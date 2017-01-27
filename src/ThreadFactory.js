@@ -1,12 +1,12 @@
 import RingaHashArray from './RingaHashArray';
-import CommandThread from './Thread';
-import CommandFactory from './ExecutorFactory';
+import Thread from './Thread';
+import ExecutorFactory from './ExecutorFactory';
 
 class ThreadFactory extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id, commandFactories, options) {
+  constructor(id, executorFactories, options) {
     super(id || 'commandFactory');
 
     options = options || {};
@@ -14,15 +14,15 @@ class ThreadFactory extends RingaHashArray {
 
     let addOne = this._hashArray.addOne;
     this._hashArray.addOne = function(obj) {
-      if (!(obj instanceof CommandFactory)) {
-        obj = new CommandFactory(obj);
+      if (!(obj instanceof ExecutorFactory)) {
+        obj = new ExecutorFactory(obj);
       }
 
       addOne.call(this, obj);
     }
 
-    if (commandFactories) {
-      this.addAll(commandFactories);
+    if (executorFactories) {
+      this.addAll(executorFactories);
     }
 
     this.threadId = 0;
@@ -36,7 +36,7 @@ class ThreadFactory extends RingaHashArray {
       console.log('ThreadFactory::build(): controller was not set before the build method was called.');
     }
 
-    let commandThread = new CommandThread(this.id + '_Thread' + this.threadId, this);
+    let commandThread = new Thread(this.id + '_Thread' + this.threadId, this);
 
     this.threadId++;
 

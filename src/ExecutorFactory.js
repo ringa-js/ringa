@@ -1,4 +1,4 @@
-import CommandAbstract from './ExecutorAbstract';
+import ExecutorAbstract from './ExecutorAbstract';
 import FunctionExecutor from './executors/FunctionExecutor';
 import PromiseExecutor from './executors/PromiseExecutor';
 import EventExecutor from './executors/EventExecutor';
@@ -14,7 +14,7 @@ class ExecutorFactory {
    * Constructs a ExecutorFactory.
    *
    * @param executee This can be a Class, a instance, a function... we determine what type of
-   *   CommandAbstract to build based on what is passed in. This makes things extensible.
+   *   ExecutorAbstract to build based on what is passed in. This makes things extensible.
    */
   constructor(executee) {
     this.executee = executee;
@@ -34,7 +34,7 @@ class ExecutorFactory {
     } else if (typeof this.executee.then === 'function') {
       return new PromiseExecutor(thread, this.executee);
     } else if (typeof this.executee === 'function') {
-      if (this.executee.prototype instanceof CommandAbstract) {
+      if (this.executee.prototype instanceof ExecutorAbstract) {
         let instance = new this.executee(thread, this.argNames);
 
         if (!this.argNames) {
@@ -47,7 +47,7 @@ class ExecutorFactory {
         return new FunctionExecutor(thread, this.executee);
       }
     } else if (this.executee instanceof Array) {
-      // This might be a group of CommandAbstracts that should be run synchronously
+      // This might be a group of ExecutorAbstracts that should be run synchronously
       return new ParallelExecutor(thread, this.executee);
     } else if (typeof this.executee === 'object' && this.executee instanceof RingaEventFactory) {
       return new EventExecutor(thread, this.executee);

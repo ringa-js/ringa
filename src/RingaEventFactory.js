@@ -1,4 +1,6 @@
 import RingaEvent from './RingaEvent';
+import { mergeRingaEventDetails } from './util/ringaEvent';
+
 
 class RingaEventFactory {
   //-----------------------------------
@@ -16,12 +18,10 @@ class RingaEventFactory {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  build(callee) {
-    let newDetail = {};
+  build(executor) {
+    let newDetail = mergeRingaEventDetails(executor.ringaEvent, this.detail, executor.controller.options.warnOnDetailOverwrite);
 
-    Object.assign(newDetail, this.detail);
-
-    newDetail._callee = callee;
+    newDetail._executor = executor;
     newDetail.requireCatch = this.requireCatch;
 
     return new RingaEvent(this.eventType, newDetail, this.bubbles, this.cancellable);
