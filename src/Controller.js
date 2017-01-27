@@ -82,6 +82,8 @@ class Controller extends RingaObject {
       throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getListener() to make modifications.');
     }
 
+    this.addEventTypes([eventType]);
+
     commandThreadFactory.controller = this;
 
     this.eventTypeToCommandThreadFactory[eventType] = commandThreadFactory;

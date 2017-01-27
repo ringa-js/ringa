@@ -208,4 +208,11 @@ describe('Controller', () => {
 
     Ringa.dispatch(TestController.TEST_EVENT_TYPES, undefined, domNode).then(_ => done());
   });
+
+  it('should auto-add event types as snake case properties', () => {
+    controller.addListener('testingThis out', [() => {}]);
+
+    expect(TestController.TESTING_THIS_OUT).toEqual('testingThis out');
+    expect(controller.TESTING_THIS_OUT).toEqual('testingThis out');
+  });
 });
