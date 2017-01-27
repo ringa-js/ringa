@@ -23,7 +23,7 @@ describe('Shortcuts / Wrappers', () => {
       timeout: 50
     });
 
-    threadFactory = new Ringa.ThreadFactory('testCommandThreadFactory', [
+    threadFactory = new Ringa.ThreadFactory('testThreadFactory', [
       CommandSimple
     ]);
 

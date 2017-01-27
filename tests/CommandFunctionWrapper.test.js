@@ -35,9 +35,9 @@ describe('CommandFunctionWrapper', () => {
     let _ringaEvent;
     let _controller = controller;
 
-    controller.addListener(TEST_EVENT, [(val1, ringaEvent, val2, controller, val3) => {
-      expect(_ringaEvent).toEqual(ringaEvent);
-      expect(_controller).toEqual(controller);
+    controller.addListener(TEST_EVENT, [(val1, $ringaEvent, val2, $controller, val3) => {
+      expect(_ringaEvent).toEqual($ringaEvent);
+      expect(_controller).toEqual($controller);
 
       expect(val1).toEqual(1);
       expect(val2).toEqual(2);

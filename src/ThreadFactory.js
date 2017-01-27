@@ -33,7 +33,7 @@ class ThreadFactory extends RingaHashArray {
   //-----------------------------------
   build(ringaEvent) {
     if (__DEV__ && !this.controller) {
-      console.log('ThreadFactory::build(): controller was not set before the build method was called.');
+      throw Error('ThreadFactory::build(): controller was not set before the build method was called.');
     }
 
     let commandThread = new Thread(this.id + '_Thread' + this.threadId, this);

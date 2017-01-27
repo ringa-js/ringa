@@ -38,11 +38,12 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
   }
 
   let injections = executor._injections = executor._injections || {
-      controller: executor.controller,
-      thread: executor.thread,
-      ringaEvent: ringaEvent,
-      customEvent: ringaEvent.customEvent,
-      target: ringaEvent.target,
+      $controller: executor.controller,
+      $thread: executor.thread,
+      $ringaEvent: ringaEvent,
+      $customEvent: ringaEvent.customEvent,
+      $target: ringaEvent.target,
+      $detail: ringaEvent.detail,
       done: executor.done,
       fail: executor.fail
     };

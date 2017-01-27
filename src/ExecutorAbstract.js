@@ -16,7 +16,7 @@ class ExecutorAbstract extends RingaObject {
     super();
 
     if (__DEV__ && !thread.controller) {
-      throw Error('ExecutorAbstract(): attempting to build a command connected to a CommandThread that has no attached controller.');
+      throw Error('ExecutorAbstract(): attempting to build a command connected to a Thread that has no attached controller.');
     }
 
     this.id = thread.controller.id + '_' + this.constructor.name;
@@ -53,7 +53,7 @@ class ExecutorAbstract extends RingaObject {
   }
 
   /**
-   * Internal execution method called by CommandThread only. This must be overridden in a
+   * Internal execution method called by Thread only. This must be overridden in a
    * subclass to provide the appropriate functionality.
    *
    * @param doneHandler The handler to call when done() is called.
@@ -68,7 +68,7 @@ class ExecutorAbstract extends RingaObject {
   }
 
   /**
-   * Call this method when the Command is ready to hand off control back to the parent CommandThread.
+   * Call this method when the Command is ready to hand off control back to the parent Thread.
    */
   done() {
     this.endTimeoutCheck();

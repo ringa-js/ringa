@@ -1,4 +1,5 @@
 import ThreadFactory from './ThreadFactory';
+import ExecutorFactory from './ExecutorFactory';
 import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
 import RingaEvent from './RingaEvent';
@@ -66,15 +67,21 @@ class Controller extends RingaObject {
     return this.eventTypeToThreadFactory[eventType];
   }
 
-  addListener(eventType, threadFactoryOrArray) {
+  addListener(eventType, executor) {
     let threadFactory;
 
-    if (!threadFactoryOrArray || threadFactoryOrArray instanceof Array) {
-      threadFactory = new ThreadFactory(this.id + '_' + eventType + '_ThreadFactory', threadFactoryOrArray);
-    } else if (typeof threadFactoryOrArray.build === 'function') {
-      threadFactory = threadFactoryOrArray;
+    //console.log(executor.prototype);
+
+    if (executor && !(executor instanceof ThreadFactory) && !(executor instanceof Array)) {
+      executor = [executor];
+    }
+
+    if (!executor || executor instanceof Array) {
+      threadFactory = new ThreadFactory(this.id + '_' + eventType + '_ThreadFactory', executor);
+    } else if (executor instanceof ThreadFactory) {
+      threadFactory = executor;
     } else if (__DEV__) {
-      throw Error('Controller::addListener(): the provided threadFactoryOrArray is not valid! Did you forget to wrap in []?');
+      throw Error('Controller::addListener(): the provided executor is not valid! Did you forget to wrap in []?');
     }
 
     if (__DEV__ && !threadFactory || !(threadFactory instanceof ThreadFactory)) {

@@ -87,24 +87,6 @@ describe('Controller', () => {
     expect(controller.hasListener('test2')).toEqual(false);
   });
 
-  it('should error if the provided array or ThreadFactory to addListener is not a valid type (function)', () => {
-    expect(() => {
-      controller.addListener('test', () => {});
-    }).toThrow();
-  });
-
-  it('should error if the provided array or ThreadFactory to addListener is not a valid type (object)', () => {
-    expect(() => {
-      controller.addListener('test', {});
-    }).toThrow();
-  });
-
-  it('should error if the provided array or ThreadFactory to addListener is not a valid type (string)', () => {
-    expect(() => {
-      controller.addListener('test', 'blah');
-    }).toThrow();
-  });
-
   it('should allow you to remove a listener', () => {
     let ctf1 = controller.addListener('test', []);
     expect(controller.hasListener('test')).toEqual(true);
@@ -218,5 +200,19 @@ describe('Controller', () => {
 
     expect(TestController.TESTING_THIS_OUT).toEqual('testingThis out');
     expect(controller.TESTING_THIS_OUT).toEqual('testingThis out');
+  });
+
+  it('should take a passed in ExecutorFactory and wrap in an array (function)', (done) => {
+    controller.addListener('fin', () => {done();});
+
+    Ringa.dispatch('fin', undefined, domNode);
+  });
+
+  it('should take a passed in ExecutorFactory and wrap in an array (event)', (done) => {
+
+    controller.addListener('fin', () => {done();});
+    controller.addListener('start', 'fin');
+
+    Ringa.dispatch('start', undefined, domNode);
   });
 });
