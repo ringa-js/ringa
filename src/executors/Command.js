@@ -32,18 +32,24 @@ class Command extends CommandAbstract {
    * @private
    */
   _execute(doneHandler, failHandler) {
+    let ret;
+
     super._execute(doneHandler, failHandler);
 
     let args = buildArgumentsFromRingaEvent(this, this.argNames, this.thread.ringaEvent);
 
     const donePassedAsArg = this.argNames.indexOf('done') !== -1;
 
-    // If the function returns true, we continue on the next immediate cycle.
+    ret = this.execute.apply(this, args);
+
+    // If the function returns true, we continue on the next immediate cycle assuming it didn't return a promise.
     // If, however the function requested that 'done' be passed, we assume it is an asynchronous
     // function and let the function determine when it will call done.
-    if (this.execute.apply(this, args) && !donePassedAsArg) {
+    if (!ret && !donePassedAsArg) {
       this.done();
     }
+
+    return ret;
   }
 
   /**

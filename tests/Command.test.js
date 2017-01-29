@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import Ringa from '../src/index';
 import CommandSimple from './shared/CommandSimple';
 import CommandComplexArgs from './shared/CommandComplexArgs';
+import CommandPromise from './shared/CommandPromise';
 import {getArgNames} from '../src/util/function';
 import {buildArgumentsFromRingaEvent} from '../src/util/executors';
 
@@ -109,5 +110,35 @@ describe('Command', () => {
     expect(() => {
       buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
     }).toThrow();
+  });
+
+  it('should work properly when a promise is returned', (done) => {
+
+    controller.addListener('promiseTest', [
+      CommandPromise,
+      $lastPromiseResult => {
+        expect($lastPromiseResult.someValue).toEqual('someValue');
+        done();
+      }
+    ]);
+
+    Ringa.dispatch('promiseTest', {
+      shouldFail: false
+    }, domNode);
+  });
+
+  it('should work properly when a promise is returned and fails', (done) => {
+
+    controller.addListener('promiseTest', [
+      CommandPromise,
+      $lastPromiseError => {
+        expect($lastPromiseError).toEqual('someError');
+        done();
+      }
+    ]);
+
+    Ringa.dispatch('promiseTest', {
+      shouldFail: true
+    }, domNode);
   });
 });

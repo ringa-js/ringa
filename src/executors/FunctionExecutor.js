@@ -33,6 +33,8 @@ class FunctionExecutor extends CommandAbstract {
    * @private
    */
   _execute(doneHandler, failHandler) {
+    let ret;
+
     super._execute(doneHandler, failHandler);
 
     const args = buildArgumentsFromRingaEvent(this, this.expectedArguments, this.ringaEvent);
@@ -42,7 +44,7 @@ class FunctionExecutor extends CommandAbstract {
     try {
       // If the function requested that 'done' be passed, we assume it is an asynchronous
       // function and let the function determine when it will call done.
-      this.func.apply(undefined, args);
+      ret = this.func.apply(undefined, args);
 
       if (!donePassedAsArg) {
         this.done();
@@ -50,6 +52,8 @@ class FunctionExecutor extends CommandAbstract {
     } catch (error) {
       this.fail(error);
     }
+
+    return ret;
   }
 
   toString() {

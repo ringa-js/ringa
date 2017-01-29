@@ -1,4 +1,5 @@
 import RingaHashArray from './RingaHashArray';
+import {isPromise} from './util/type';
 
 class Thread extends RingaHashArray {
   //-----------------------------------
@@ -58,9 +59,29 @@ class Thread extends RingaHashArray {
 
   executeNext() {
     let command = this.all[this.index];
+    let promise;
 
     try {
-      command._execute(this._commandDoneHandler.bind(this), this._commandFailHandler.bind(this));
+      promise = command._execute(this._commandDoneHandler.bind(this), this._commandFailHandler.bind(this));
+
+      if (promise) {
+        if (isPromise(promise)) {
+          this.ringaEvent.detail._promise = promise;
+
+          promise.then((result) => {
+            this.ringaEvent.lastPromiseResult = result;
+
+            this._commandDoneHandler();
+          });
+          promise.catch((error) => {
+            this.ringaEvent.lastPromiseError = error;
+
+            this._commandFailHandler();
+          });
+        } else if (__DEV__) {
+          throw Error(`Thread::executeNext(): command ${command.toString()} returned something that is not a promise, ${promise}`);
+        }
+      }
     } catch (error) {
       this._commandFailHandler(error);
     }
@@ -76,6 +97,8 @@ class Thread extends RingaHashArray {
   _commandDoneHandler(error) {
     this.index++;
 
+    delete this.ringaEvent.detail._promise;
+
     if (this.index < this.all.length) {
       setTimeout(this.executeNext.bind(this), 0);
     } else {
@@ -87,6 +110,8 @@ class Thread extends RingaHashArray {
     this.error = error;
 
     this.failHandler(this, error, kill);
+
+    delete this.ringaEvent.detail._promise;
 
     if (!kill) {
       this._commandDoneHandler(error);
