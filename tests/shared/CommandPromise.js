@@ -1,14 +1,14 @@
 import Ringa from '../../src/index';
 
-class CommandSimple extends Ringa.Command {
+class CommandPromise extends Ringa.Command {
   execute(shouldFail) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (shouldFail) reject('someError');
-        else resolve({someValue: 'someValue'});
+        if (shouldFail) reject('CommandPromise:someError');
+        else resolve({someValue: 'CommandPromise:someValue'});
       }, 10);
     });
   }
 }
 
-export default CommandSimple;
+export default CommandPromise;

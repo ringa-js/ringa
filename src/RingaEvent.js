@@ -1,5 +1,6 @@
 import RingaObject from './RingaObject';
 import ErrorStackParser from 'error-stack-parser';
+import {ringaEventToDebugString} from './util/debug';
 
 let eventIx = 0;
 
@@ -33,7 +34,7 @@ class RingaEvent extends RingaObject {
    * @param cancelable
    */
   constructor(type, detail = {}, bubbles = true, cancelable = true) {
-    super('event_' + type + '_' + eventIx++);
+    super(`RingaEvent[${type}, ${eventIx++}]`);
 
     this.detail = detail;
     detail.ringaEvent = this;
@@ -130,8 +131,6 @@ class RingaEvent extends RingaObject {
    * Completely kills the current Ringa thread, keeping any subsequent executors from running.
    */
   fail(error) {
-    this.killed = true;
-
     this.pushError(error);
   }
 
@@ -141,7 +140,8 @@ class RingaEvent extends RingaObject {
   }
 
   toString() {
-    return `RingaEvent [ '${this.type}' caught by ${this.controller ? this.controller.toString() : ''} ] `;
+    return 'whatever';
+    //return `RingaEvent [ '${this.type}' caught by ${this.controller ? this.controller.toString() : ''} ] `;
   }
 
   _done() {
@@ -210,6 +210,10 @@ class RingaEvent extends RingaObject {
 
   catch(reject) {
     this.addFailListener(reject);
+  }
+
+  toDebugString() {
+    return ringaEventToDebugString(this);
   }
 }
 

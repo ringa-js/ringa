@@ -12,7 +12,7 @@ import CommandSimple from './shared/CommandSimple';
 const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
-describe('LifeCycle (event -> controller -> thread -> command', () => {
+describe('LifeCycle', () => {
   let command, domNode, reactNode, threadFactory,
       threadFactory2, controller;
 

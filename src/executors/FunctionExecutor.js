@@ -1,11 +1,11 @@
-import CommandAbstract from '../ExecutorAbstract';
+import ExecutorAbstract from '../ExecutorAbstract';
 import {buildArgumentsFromRingaEvent} from '../util/executors';
 import {getArgNames} from '../util/function';
 
 /**
  * FunctionExecutor is a wrapper for a single function. As a general rule you will not use this directly.
  */
-class FunctionExecutor extends CommandAbstract {
+class FunctionExecutor extends ExecutorAbstract {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -33,27 +33,27 @@ class FunctionExecutor extends CommandAbstract {
    * @private
    */
   _execute(doneHandler, failHandler) {
-    let ret;
+    let promise;
 
     super._execute(doneHandler, failHandler);
 
     const args = buildArgumentsFromRingaEvent(this, this.expectedArguments, this.ringaEvent);
 
+    // If the function requested that 'done' be passed, we assume it is an asynchronous
+    // function and let the function determine when it will call done.
     const donePassedAsArg = this.expectedArguments.indexOf('done') !== -1;
 
-    try {
-      // If the function requested that 'done' be passed, we assume it is an asynchronous
-      // function and let the function determine when it will call done.
-      ret = this.func.apply(undefined, args);
+    // Functions can return a promise and if they do, our Thread will wait for the promise to finish.
+    promise = this.func.apply(undefined, args);
 
-      if (!donePassedAsArg) {
-        this.done();
-      }
-    } catch (error) {
-      this.fail(error);
+    // We call done if:
+    // 1) A promise is not returned AND
+    // 2) 'done' was not passed as an argument
+    if (!promise && !donePassedAsArg) {
+      this.done();
     }
 
-    return ret;
+    return promise;
   }
 
   toString() {

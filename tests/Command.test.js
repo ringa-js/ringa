@@ -117,7 +117,7 @@ describe('Command', () => {
     controller.addListener('promiseTest', [
       CommandPromise,
       $lastPromiseResult => {
-        expect($lastPromiseResult.someValue).toEqual('someValue');
+        expect($lastPromiseResult.someValue).toEqual('CommandPromise:someValue');
         done();
       }
     ]);
@@ -129,10 +129,12 @@ describe('Command', () => {
 
   it('should work properly when a promise is returned and fails', (done) => {
 
+    controller.options.consoleLogFails = false;
+
     controller.addListener('promiseTest', [
       CommandPromise,
       $lastPromiseError => {
-        expect($lastPromiseError).toEqual('someError');
+        expect($lastPromiseError).toEqual('CommandPromise:someError');
         done();
       }
     ]);

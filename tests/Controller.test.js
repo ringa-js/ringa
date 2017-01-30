@@ -7,7 +7,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Ringa from '../src/index';
 import TestController from './shared/TestController';
-import CommandSimple from './shared/CommandSimple';
 
 const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';

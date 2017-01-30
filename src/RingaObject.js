@@ -10,6 +10,6 @@ export default class RingaObject {
   // Methods
   //-----------------------------------
   toString(value) {
-    return this.id + ' ' + (value || ` | RingaObject::toString() is to be overridden: ${this.constructor.name}` );
+    return this.id + ' ' + (value || '' );
   }
 };

@@ -1,4 +1,5 @@
 import RingaObject from './RingaObject';
+import {now} from './util/debug';
 
 /**
  * Command is the base class for all command objects that are run in a Ringa application or module.
@@ -22,6 +23,11 @@ class ExecutorAbstract extends RingaObject {
     this.id = thread.controller.id + '_' + this.constructor.name;
 
     this.thread = thread;
+
+    this.startTime = this.endTime = undefined;
+
+    this.done = this.done.bind(this);
+    this.fail = this.fail.bind(this);
   }
 
   //-----------------------------------
@@ -35,12 +41,20 @@ class ExecutorAbstract extends RingaObject {
     return this.thread.controller;
   }
 
+  get timeout() {
+    if (this._timeout === undefined && this.controller.options.timeout === undefined) {
+      return -1;
+    }
+
+    return this._timeout !== undefined ? this.timeout : this.controller.options.timeout;
+  }
+
   //-----------------------------------
   // Methods
   //-----------------------------------
   startTimeoutCheck() {
-    if (this.controller.options.timeout !== -1) {
-      this._timeoutToken = setTimeout(this._timeoutHandler.bind(this), this.controller.options.timeout);
+    if (this.timeout !== -1) {
+      this._timeoutToken = setTimeout(this._timeoutHandler.bind(this), this.timeout);
     }
   }
 
@@ -64,6 +78,8 @@ class ExecutorAbstract extends RingaObject {
     this.doneHandler = doneHandler;
     this.failHandler = failHandler;
 
+    this.startTime = now();
+
     this.startTimeoutCheck();
   }
 
@@ -71,7 +87,13 @@ class ExecutorAbstract extends RingaObject {
    * Call this method when the Command is ready to hand off control back to the parent Thread.
    */
   done() {
+    if (__DEV__ && this.error) {
+      throw new Error('ExecutorAbstract::done(): called done on a executor that has already errored!');
+    }
+
     this.endTimeoutCheck();
+
+    this.endTime = now();
 
     this.doneHandler(true);
   }
@@ -84,6 +106,8 @@ class ExecutorAbstract extends RingaObject {
    */
   fail(error, kill = false) {
     this.endTimeoutCheck();
+
+    this.endTime = now();
 
     this.error = error;
 
@@ -99,9 +123,6 @@ class ExecutorAbstract extends RingaObject {
     return this.id;
   }
 
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
   _timeoutHandler() {
     let message;
 
@@ -112,8 +133,6 @@ class ExecutorAbstract extends RingaObject {
     if (!__DEV__) {
       message = 'Ringa: command timeout exceeded ' + this.toString();
     }
-
-    console.error(message);
 
     this.fail(new Error(message), this);
   }

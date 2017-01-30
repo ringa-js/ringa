@@ -7,8 +7,6 @@ class CommandComplexArgs extends Ringa.Command {
         throw new Error('CommandComplexArgs: invalid arguments');
       }
     }
-
-    return true;
   }
 }
 

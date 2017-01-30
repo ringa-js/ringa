@@ -42,6 +42,10 @@ class Command extends CommandAbstract {
 
     ret = this.execute.apply(this, args);
 
+    if (this.error) {
+      return undefined;
+    }
+
     // If the function returns true, we continue on the next immediate cycle assuming it didn't return a promise.
     // If, however the function requested that 'done' be passed, we assume it is an asynchronous
     // function and let the function determine when it will call done.

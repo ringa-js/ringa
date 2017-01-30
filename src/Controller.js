@@ -146,6 +146,7 @@ class Controller extends RingaObject {
 
     this.threads.add(thread);
 
+    ringaEvent.thread = thread;
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
     // TODO PREHOOK should allow the handler to cancel running of the thread.
@@ -198,7 +199,6 @@ class Controller extends RingaObject {
 
       this.postInvokeHandler(customEvent.detail.ringaEvent, thread);
     } catch (error) {
-      console.error(error);
       this.threadFailHandler(thread, error);
     }
   }
@@ -224,7 +224,7 @@ class Controller extends RingaObject {
 
   threadFailHandler(thread, error, kill) {
     if (this.options.consoleLogFails) {
-      console.error(error);
+      console.error(error, thread.toString());
     }
 
     if (kill) {

@@ -53,15 +53,56 @@ describe('CommandFunctionWrapper', () => {
     });
   });
 
-  it('asynchronous should work', (done) => {
-    let _done = done;
-
-    controller.addListener(TEST_EVENT, [(done) => {
+  it('asynchronous should work through a passed in done() call', (done) => {
+    controller.addListener(TEST_EVENT, (done) => {
       setTimeout(() => {
-        _done();
+        done(); // TEST_EVENT done()
       }, 50);
-    }]);
+    });
 
-    controller.dispatch(TEST_EVENT);
+    controller.dispatch(TEST_EVENT).then(() => {
+      done();
+    });
+  });
+
+  let promiseTest = (shouldFail) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (shouldFail) reject('someError');
+        else resolve({someValue: 'someValue'});
+      }, 10);
+    });
+  }
+
+  it('should work properly when a promise is returned', (done) => {
+
+    controller.addListener('promiseTest', [
+      promiseTest,
+      $lastPromiseResult => {
+        expect($lastPromiseResult.someValue).toEqual('someValue');
+        done();
+      }
+    ]);
+
+    Ringa.dispatch('promiseTest', {
+      shouldFail: false
+    }, domNode);
+  });
+
+  it('should work properly when a promise is returned and fails', (done) => {
+
+    controller.options.consoleLogFails = false;
+
+    controller.addListener('promiseTest', [
+      promiseTest,
+      $lastPromiseError => {
+        expect($lastPromiseError).toEqual('someError');
+        done();
+      }
+    ]);
+
+    Ringa.dispatch('promiseTest', {
+      shouldFail: true
+    }, domNode);
   });
 });

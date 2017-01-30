@@ -14,7 +14,7 @@ import CommandSimple from './shared/CommandSimple';
 const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
-describe('LifeCycle (event -> controller -> thread -> command', () => {
+describe('LifeCycle', () => {
   let command, domNode, reactNode, threadFactory,
     threadFactory2, controller;
 
@@ -53,6 +53,8 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
   // RingaEvent -> 1 Command Fail Call (kill false)
   //----------------------------------------------
   it('RingaEvent -> 1 Command Fail Call (kill false)', (done) => {
+    let didFail = false;
+
     threadFactory.add(CommandFail);
     threadFactory.add(CommandSimple);
 
@@ -63,9 +65,11 @@ describe('LifeCycle (event -> controller -> thread -> command', () => {
       kill: false,
       testObject: {}
     }, domNode).addDoneListener(() => {
+      expect(didFail).toEqual(true);
       expect(ringaEvent.detail.testObject.count).toEqual(1);
       done();
     }).addFailListener((event) => {
+      didFail = true;
       expect(event.error).toEqual('some error');
     });
   }, 50);

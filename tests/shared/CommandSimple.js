@@ -5,8 +5,6 @@ class CommandSimple extends Ringa.Command {
     testObject.executed = true;
     testObject.count = testObject.count ? testObject.count : 0;
     testObject.count++;
-
-    return true;
   }
 }
 

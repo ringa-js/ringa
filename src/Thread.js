@@ -62,7 +62,7 @@ class Thread extends RingaHashArray {
     let promise;
 
     try {
-      promise = command._execute(this._commandDoneHandler.bind(this), this._commandFailHandler.bind(this));
+      promise = command._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
 
       if (promise) {
         if (isPromise(promise)) {
@@ -71,19 +71,19 @@ class Thread extends RingaHashArray {
           promise.then((result) => {
             this.ringaEvent.lastPromiseResult = result;
 
-            this._commandDoneHandler();
+            this._executorDoneHandler();
           });
           promise.catch((error) => {
             this.ringaEvent.lastPromiseError = error;
 
-            this._commandFailHandler();
+            this._executorFailHandler(error);
           });
         } else if (__DEV__) {
           throw Error(`Thread::executeNext(): command ${command.toString()} returned something that is not a promise, ${promise}`);
         }
       }
     } catch (error) {
-      this._commandFailHandler(error);
+      this._executorFailHandler(error);
     }
   }
 
@@ -94,10 +94,12 @@ class Thread extends RingaHashArray {
   //-----------------------------------
   // Events
   //-----------------------------------
-  _commandDoneHandler(error) {
+  _executorDoneHandler() {
     this.index++;
 
-    delete this.ringaEvent.detail._promise;
+    if (this.ringaEvent.detail._promise) {
+      delete this.ringaEvent.detail._promise;
+    }
 
     if (this.index < this.all.length) {
       setTimeout(this.executeNext.bind(this), 0);
@@ -106,15 +108,17 @@ class Thread extends RingaHashArray {
     }
   }
 
-  _commandFailHandler(error, kill) {
+  _executorFailHandler(error, kill) {
     this.error = error;
 
     this.failHandler(this, error, kill);
 
-    delete this.ringaEvent.detail._promise;
+    if (this.ringaEvent.detail._promise) {
+      delete this.ringaEvent.detail._promise;
+    }
 
     if (!kill) {
-      this._commandDoneHandler(error);
+      this._executorDoneHandler();
     }
   }
 }
