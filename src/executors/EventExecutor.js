@@ -51,6 +51,8 @@ class EventExecutor extends ExecutorAbstract {
   // Events
   //-----------------------------------
   dispatchedRingaEventDoneHandler() {
+    this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
+
     this.done();
   }
 

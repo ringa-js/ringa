@@ -12,12 +12,13 @@ const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
 describe('Controller', () => {
-  let command, domNode, reactNode, threadFactory,
-    threadFactory2, controller;
+  let command, domNode, reactNode, threadFactory, threadFactory2, controller;
 
   beforeEach(() => {
+    let ran = Math.random();
+
     domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
-      <div>Controller Attach Point</div>
+      <div key={ran.toString()}>Controller Attach Point</div>
     ));
 
     controller = new TestController('testController', domNode);
@@ -214,4 +215,38 @@ describe('Controller', () => {
 
     Ringa.dispatch('start', undefined, domNode);
   });
+
+  it('should have a watch() that works properly (1/2)', (done) => {
+    let a = 0;
+
+    controller.addListener('fin', () => {a = 3;});
+    controller.addListener('start', 'fin');
+
+    controller.watch(['start'], () => {
+      expect(a).toEqual(3);
+      done();
+    });
+
+    Ringa.dispatch('start', undefined, domNode);
+  }, 50);
+
+  it('should have a watch() that works properly (2/2)', (done) => {
+    let a = 0;
+    let count = 0;
+
+    controller.addListener('fin', () => {a = 3;});
+    controller.addListener('start', 'fin');
+
+    controller.watch(['start', 'fin'], ($ringaEvent) => {
+      if (count === 0) {
+        expect($ringaEvent.type).toEqual('fin');
+        count = 1;
+      } else if (count === 1) {
+        expect($ringaEvent.type).toEqual('start');
+        done();
+      }
+    });
+
+    Ringa.dispatch('start', undefined, domNode);
+  }, 50);
 });

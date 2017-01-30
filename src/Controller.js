@@ -1,9 +1,10 @@
 import ThreadFactory from './ThreadFactory';
-import ExecutorFactory from './ExecutorFactory';
 import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
 import RingaEvent from './RingaEvent';
 import snakeCase from 'snake-case';
+import {buildArgumentsFromRingaEvent} from './util/executors';
+import {getArgNames} from './util/function';
 
 /**
  * Controller is the hub for events dispatched on the DOM invoking threads of executors.
@@ -38,9 +39,12 @@ class Controller extends RingaObject {
     this.threads = new HashArray('id');
 
     this.eventTypeToThreadFactory = new Map();
+    this.eventTypeToWatchers = new Map();
+    this.watcherToArgNames = new Map();
 
     this._eventHandler = this._eventHandler.bind(this);
   }
+
   //-----------------------------------
   // Properties
   //-----------------------------------
@@ -219,6 +223,23 @@ class Controller extends RingaObject {
 
     this.threads.remove(thread);
 
+    let watchers = this.eventTypeToWatchers[thread.ringaEvent.type];
+    if (watchers && watchers.length) {
+      let executor = {
+        controller: this,
+        toString: () => {
+          return 'Controller::watch() for ' + thread.ringaEvent.toString();
+        }
+      };
+
+      watchers.forEach(watcher => {
+        let argNames = this.watcherToArgNames[watcher];
+        let args = buildArgumentsFromRingaEvent(executor, argNames, thread.ringaEvent);
+
+        watcher.apply(undefined, args);
+      });
+    }
+
     thread.ringaEvent._done();
   }
 
@@ -244,6 +265,32 @@ class Controller extends RingaObject {
 
   toString() {
     return this.id;
+  }
+
+  watch(eventTypes, injectableCallback) {
+    if (__DEV__ && !(eventTypes instanceof Array)) {
+      throw new Error('Controller::watch(): eventTypes is not an Array!');
+    }
+
+    eventTypes.forEach(eventType => {
+      this.eventTypeToWatchers[eventType] = this.eventTypeToWatchers[eventType] || [];
+      this.eventTypeToWatchers[eventType].push(injectableCallback);
+      this.watcherToArgNames[injectableCallback] = getArgNames(injectableCallback);
+    });
+  }
+
+  unwatch(eventTypes, injectableCallback) {
+    if (__DEV__ && !(eventTypes instanceof Array)) {
+      throw new Error('Controller::watch(): eventTypes is not an Array!');
+    }
+
+    let ix;
+
+    eventTypes.forEach(eventType => {
+      if ((ix = this.eventTypeToWatchers[eventType].indexOf(injectableCallback)) !== -1) {
+        this.eventTypeToWatchers[eventType].splice(ix, 1);
+      }
+    });
   }
 }
 

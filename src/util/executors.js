@@ -47,7 +47,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
       done: executor.done,
       fail: executor.fail,
       $lastPromiseResult: ringaEvent.lastPromiseResult,
-      $lastPromiseError: ringaEvent.lastPromiseError,
+      $lastPromiseError: ringaEvent.lastPromiseError
     };
 
   // Merge controller.options.injections into our injector

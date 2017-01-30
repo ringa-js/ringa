@@ -2,7 +2,7 @@
   "name": "ringa",
   "version": "0.0.1",
   "description": "A framework for the data lifecycle of a highly modularized React application.",
-  "main": "./src/index.js",
+  "main": "./dist/ringa.min.js",
   "directories": {
     "example": "example",
     "src": "src"

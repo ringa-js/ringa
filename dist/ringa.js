@@ -3523,6 +3523,8 @@ var EventExecutor = function (_ExecutorAbstract) {
   }, {
     key: 'dispatchedRingaEventDoneHandler',
     value: function dispatchedRingaEventDoneHandler() {
+      this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
+
       this.done();
     }
   }, {
