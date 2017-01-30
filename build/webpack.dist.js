@@ -26,7 +26,20 @@ module.exports = Object.assign({
       __DEV__: false
     }),
     new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true
+      sourceMap: true,
+      mangle: {
+        except: [
+          '$controller',
+          '$thread',
+          '$ringaEvent',
+          '$customEvent',
+          '$target',
+          '$detail',
+          'done',
+          'fail',
+          '$lastPromiseResult',
+          '$lastPromiseError']
+      }
     }),
     new webpack.optimize.DedupePlugin()
   ]

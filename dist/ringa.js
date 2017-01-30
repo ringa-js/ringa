@@ -1598,32 +1598,13 @@ var Controller = function (_RingaObject) {
   }, {
     key: 'threadDoneHandler',
     value: function threadDoneHandler(thread) {
-      var _this3 = this;
-
       if (true && !this.threads.has(thread.id)) {
         throw Error('Controller::threadDoneHandler(): could not find thread with id ' + thread.id);
       }
 
       this.threads.remove(thread);
 
-      var watchers = this.eventTypeToWatchers[thread.ringaEvent.type];
-      if (watchers && watchers.length) {
-        (function () {
-          var executor = {
-            controller: _this3,
-            toString: function toString() {
-              return 'Controller::watch() for ' + thread.ringaEvent.toString();
-            }
-          };
-
-          watchers.forEach(function (watcher) {
-            var argNames = _this3.watcherToArgNames[watcher];
-            var args = (0, _executors.buildArgumentsFromRingaEvent)(executor, argNames, thread.ringaEvent);
-
-            watcher.apply(undefined, args);
-          });
-        })();
-      }
+      this.notify(thread.ringaEvent);
 
       thread.ringaEvent._done();
     }
@@ -1653,6 +1634,32 @@ var Controller = function (_RingaObject) {
     key: 'toString',
     value: function toString() {
       return this.id;
+    }
+  }, {
+    key: 'notify',
+    value: function notify(ringaEvent, eventType) {
+      var _this3 = this;
+
+      eventType = eventType || ringaEvent.type;
+
+      var watchers = this.eventTypeToWatchers[eventType];
+      if (watchers && watchers.length) {
+        (function () {
+          var executor = {
+            controller: _this3,
+            toString: function toString() {
+              return 'Controller::watch() for ' + eventType;
+            }
+          };
+
+          watchers.forEach(function (watcher) {
+            var argNames = _this3.watcherToArgNames[watcher];
+            var args = (0, _executors.buildArgumentsFromRingaEvent)(executor, argNames, ringaEvent);
+
+            watcher.apply(undefined, args);
+          });
+        })();
+      }
     }
   }, {
     key: 'watch',
@@ -3808,6 +3815,7 @@ exports.iif = iif;
 exports.spawn = spawn;
 exports.assign = assign;
 exports.event = event;
+exports.notify = notify;
 
 var _Command = __webpack_require__(13);
 
@@ -3856,6 +3864,11 @@ function event(eventType, detail, domNode) {
 
   return new _RingaEventFactory2.default(eventType, detail, domNode, requireCatch, bubbles, cancellable);
 };
+function notify(eventType) {
+  return function ($controller, $ringaEvent) {
+    $controller.notify($ringaEvent, eventType);
+  };
+};
 
 exports.Command = _Command2.default;
 exports.ExecutorFactory = _ExecutorFactory2.default;
@@ -3872,7 +3885,8 @@ exports.default = {
   iif: iif,
   spawn: spawn,
   event: event,
-  assign: assign
+  assign: assign,
+  notify: notify
 };
 
 /***/ })

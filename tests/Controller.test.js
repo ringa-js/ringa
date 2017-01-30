@@ -249,4 +249,19 @@ describe('Controller', () => {
 
     Ringa.dispatch('start', undefined, domNode);
   }, 50);
+
+  it('should have a watch() that works properly with injections', (done) => {
+    let model = controller.injections.model = {
+      someValue: 'someValue'
+    };
+
+    controller.addListener('start', () => {});
+
+    controller.watch(['start'], (model) => {
+      expect(model.someValue).toEqual('someValue');
+      done();
+    });
+
+    Ringa.dispatch('start', undefined, domNode);
+  }, 50);
 });

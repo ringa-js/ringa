@@ -6,7 +6,6 @@ import RingaEvent from './RingaEvent';
 import RingaEventFactory from './RingaEventFactory';
 import AssignFactory from './factories/AssignFactory';
 
-
 export function dispatch (eventType, details, domNode = document) {
   return new RingaEvent(eventType, details).dispatch(domNode);
 };
@@ -22,6 +21,11 @@ export function assign (executor, detail) {
 export function event (eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true) {
   return new RingaEventFactory(eventType, detail, domNode, requireCatch, bubbles, cancellable);
 };
+export function notify(eventType) {
+  return ($controller, $ringaEvent) => {
+    $controller.notify($ringaEvent, eventType);
+  };
+};
 
 export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent };
 
@@ -35,5 +39,6 @@ export default {
   iif,
   spawn,
   event,
-  assign
+  assign,
+  notify
 };

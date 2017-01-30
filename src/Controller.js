@@ -223,22 +223,7 @@ class Controller extends RingaObject {
 
     this.threads.remove(thread);
 
-    let watchers = this.eventTypeToWatchers[thread.ringaEvent.type];
-    if (watchers && watchers.length) {
-      let executor = {
-        controller: this,
-        toString: () => {
-          return 'Controller::watch() for ' + thread.ringaEvent.toString();
-        }
-      };
-
-      watchers.forEach(watcher => {
-        let argNames = this.watcherToArgNames[watcher];
-        let args = buildArgumentsFromRingaEvent(executor, argNames, thread.ringaEvent);
-
-        watcher.apply(undefined, args);
-      });
-    }
+    this.notify(thread.ringaEvent);
 
     thread.ringaEvent._done();
   }
@@ -265,6 +250,27 @@ class Controller extends RingaObject {
 
   toString() {
     return this.id;
+  }
+
+  notify(ringaEvent, eventType) {
+    eventType = eventType || ringaEvent.type;
+
+    let watchers = this.eventTypeToWatchers[eventType];
+    if (watchers && watchers.length) {
+      let executor = {
+        controller: this,
+        toString: () => {
+          return 'Controller::watch() for ' + eventType;
+        }
+      };
+
+      watchers.forEach(watcher => {
+        let argNames = this.watcherToArgNames[watcher];
+        let args = buildArgumentsFromRingaEvent(executor, argNames, ringaEvent);
+
+        watcher.apply(undefined, args);
+      });
+    }
   }
 
   watch(eventTypes, injectableCallback) {
