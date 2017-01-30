@@ -89,11 +89,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _debug = __webpack_require__(8);
+var _debug = __webpack_require__(10);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -286,6 +286,49 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var RingaObject = function () {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function RingaObject(id) {
+    _classCallCheck(this, RingaObject);
+
+    this.id = id;
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
+
+  _createClass(RingaObject, [{
+    key: 'toString',
+    value: function toString(value) {
+      return this.id + ' ' + (value || '');
+    }
+  }]);
+
+  return RingaObject;
+}();
+
+exports.default = RingaObject;
+;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -310,11 +353,11 @@ var _ParallelExecutor = __webpack_require__(29);
 
 var _ParallelExecutor2 = _interopRequireDefault(_ParallelExecutor);
 
-var _RingaEventFactory = __webpack_require__(4);
+var _RingaEventFactory = __webpack_require__(6);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
-var _function = __webpack_require__(10);
+var _function = __webpack_require__(5);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -386,49 +429,6 @@ var ExecutorFactory = function () {
 exports.default = ExecutorFactory;
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var RingaObject = function () {
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function RingaObject(id) {
-    _classCallCheck(this, RingaObject);
-
-    this.id = id;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-
-
-  _createClass(RingaObject, [{
-    key: 'toString',
-    value: function toString(value) {
-      return this.id + ' ' + (value || '');
-    }
-  }]);
-
-  return RingaObject;
-}();
-
-exports.default = RingaObject;
-;
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -441,7 +441,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
@@ -449,7 +449,7 @@ var _errorStackParser = __webpack_require__(16);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
-var _debug = __webpack_require__(8);
+var _debug = __webpack_require__(10);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -736,6 +736,114 @@ exports.default = RingaEvent;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+/**
+ * This method is used for injecting RingaEvent.detail properties into a function owned by a Executor. It uses the data
+ * gathered from introspecting a provided function to determine a set of arguments to
+ * call the function with. It maps everything on ringaEvent.detail to arguments on the function.
+ *
+ * If our function is:
+ *
+ *    execute(user, filter) {...}
+ *
+ *  Then expectedArguments should be ['user', 'filter']
+ *
+ *  To generate the expected arguments, see util/function.js::getArgNames.
+ *
+ * We want to find ringaEvent.detail['user'] and ringaEvent.detail['filter']
+ * and pass those through and error if one of them is missing.
+ *
+ * Note that there are other properties that can be requested in the arguments list of execute:
+ *
+ * controller: the Controller object that is handling this thread
+ * commandThread: the CommandThread object that built this Command
+ * ringaEvent: the ringaEvent itself (instead of one of its detail properties)
+ * customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
+ * target: the target DOMNode that triggered the customEvent was dispatched on.
+ * done: the parent Executor::done(). CommandFunction is an example of where this is needed.
+ * fail: the parent Executor::fail(). CommandFunction is an example of where this is needed.
+ *
+ * @param executor The Executor subclass instance.
+ * @param expectedArguments An array of argument names that the target function expects.
+ * @param ringaEvent An instance of RingaEvent that has been dispatched and contains a details Object with properties to be injected.
+ *
+ * @returns {Array}
+ */
+var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = function buildArgumentsFromRingaEvent(executor, expectedArguments, ringaEvent) {
+  var args = [];
+
+  if (!(expectedArguments instanceof Array)) {
+    throw Error('buildArgumentsFromRingaEvent(): An internal error has occurred in that expectedArguments is not an Array!');
+  }
+
+  var injections = executor._injections = executor._injections || {
+    $controller: executor.controller,
+    $thread: executor.thread,
+    $ringaEvent: ringaEvent,
+    $customEvent: ringaEvent.customEvent,
+    $target: ringaEvent.target,
+    $detail: ringaEvent.detail,
+    done: executor.done,
+    fail: executor.fail,
+    $lastPromiseResult: ringaEvent.lastPromiseResult,
+    $lastPromiseError: ringaEvent.lastPromiseError
+  };
+
+  // Merge controller.options.injections into our injector
+  for (var key in executor.controller.options.injections) {
+    injections[key] = executor.controller.options.injections[key];
+  }
+
+  expectedArguments.forEach(function (argName) {
+    if (ringaEvent.detail && ringaEvent.detail.hasOwnProperty(argName)) {
+      args.push(ringaEvent.detail[argName]);
+    } else if (injections.hasOwnProperty(argName)) {
+      args.push(injections[argName]);
+    } else {
+      var message = executor.toString() + ': the property \'' + argName + '\' was not provided on the dispatched ringaEvent.' + 'Expected Arguments were: [\'' + expectedArguments.join('\'.\'') + '\'] Dispatched from: ' + (ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.');
+
+      throw Error(message);
+    }
+  });
+
+  return args;
+};
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * This function returns the arguments for another method as an array.
+ *
+ * TODO: this should give some indication in its return on which arguments are optional (e.g. func(a=1,b=2,c='whatever'))
+ *
+ * @param func
+ * @returns {Array}
+ */
+var getArgNames = exports.getArgNames = function getArgNames(func) {
+  var s = func.toString();
+  s = s.substring(s.indexOf('(') + 1, s.indexOf(')'));
+  s = s.replace(/[\r\n\s]*/g, '');
+  s = s.replace(/\\+['"]/g, '').replace(/=\s*(["']).*?\1/g, '').replace(/=.*?(,|$)/g, '');
+  return s.length !== 0 ? s.split(',') : [];
+};
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -796,7 +904,7 @@ var RingaEventFactory = function () {
 exports.default = RingaEventFactory;
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -808,7 +916,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(7);
+var _RingaHashArray2 = __webpack_require__(9);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -816,7 +924,7 @@ var _Thread = __webpack_require__(26);
 
 var _Thread2 = _interopRequireDefault(_Thread);
 
-var _ExecutorFactory = __webpack_require__(1);
+var _ExecutorFactory = __webpack_require__(2);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
@@ -885,7 +993,7 @@ var ThreadFactory = function (_RingaHashArray) {
 exports.default = ThreadFactory;
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -894,7 +1002,7 @@ exports.default = ThreadFactory;
 module.exports = __webpack_require__(17);
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -906,11 +1014,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hasharray = __webpack_require__(6);
+var _hasharray = __webpack_require__(8);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
@@ -1116,7 +1224,7 @@ var RingaHashArray = function (_RingaObject) {
 exports.default = RingaHashArray;
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1184,114 +1292,6 @@ function ringaEventToDebugString(ringaEvent) {
 }
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-/**
- * This method is used for injecting RingaEvent.detail properties into a function owned by a Executor. It uses the data
- * gathered from introspecting a provided function to determine a set of arguments to
- * call the function with. It maps everything on ringaEvent.detail to arguments on the function.
- *
- * If our function is:
- *
- *    execute(user, filter) {...}
- *
- *  Then expectedArguments should be ['user', 'filter']
- *
- *  To generate the expected arguments, see util/function.js::getArgNames.
- *
- * We want to find ringaEvent.detail['user'] and ringaEvent.detail['filter']
- * and pass those through and error if one of them is missing.
- *
- * Note that there are other properties that can be requested in the arguments list of execute:
- *
- * controller: the Controller object that is handling this thread
- * commandThread: the CommandThread object that built this Command
- * ringaEvent: the ringaEvent itself (instead of one of its detail properties)
- * customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
- * target: the target DOMNode that triggered the customEvent was dispatched on.
- * done: the parent Executor::done(). CommandFunction is an example of where this is needed.
- * fail: the parent Executor::fail(). CommandFunction is an example of where this is needed.
- *
- * @param executor The Executor subclass instance.
- * @param expectedArguments An array of argument names that the target function expects.
- * @param ringaEvent An instance of RingaEvent that has been dispatched and contains a details Object with properties to be injected.
- *
- * @returns {Array}
- */
-var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = function buildArgumentsFromRingaEvent(executor, expectedArguments, ringaEvent) {
-  var args = [];
-
-  if (!(expectedArguments instanceof Array)) {
-    throw Error('buildArgumentsFromRingaEvent(): An internal error has occurred in that expectedArguments is not an Array!');
-  }
-
-  var injections = executor._injections = executor._injections || {
-    $controller: executor.controller,
-    $thread: executor.thread,
-    $ringaEvent: ringaEvent,
-    $customEvent: ringaEvent.customEvent,
-    $target: ringaEvent.target,
-    $detail: ringaEvent.detail,
-    done: executor.done,
-    fail: executor.fail,
-    $lastPromiseResult: ringaEvent.lastPromiseResult,
-    $lastPromiseError: ringaEvent.lastPromiseError
-  };
-
-  // Merge controller.options.injections into our injector
-  for (var key in executor.controller.options.injections) {
-    injections[key] = executor.controller.options.injections[key];
-  }
-
-  expectedArguments.forEach(function (argName) {
-    if (ringaEvent.detail && ringaEvent.detail.hasOwnProperty(argName)) {
-      args.push(ringaEvent.detail[argName]);
-    } else if (injections.hasOwnProperty(argName)) {
-      args.push(injections[argName]);
-    } else {
-      var message = executor.toString() + ': the property \'' + argName + '\' was not provided on the dispatched ringaEvent.' + 'Expected Arguments were: [\'' + expectedArguments.join('\'.\'') + '\'] Dispatched from: ' + (ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.');
-
-      throw Error(message);
-    }
-  });
-
-  return args;
-};
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-/**
- * This function returns the arguments for another method as an array.
- *
- * TODO: this should give some indication in its return on which arguments are optional (e.g. func(a=1,b=2,c='whatever'))
- *
- * @param func
- * @returns {Array}
- */
-var getArgNames = exports.getArgNames = function getArgNames(func) {
-  var s = func.toString();
-  s = s.substring(s.indexOf('(') + 1, s.indexOf(')'));
-  s = s.replace(/[\r\n\s]*/g, '');
-  s = s.replace(/\\+['"]/g, '').replace(/=\s*(["']).*?\1/g, '').replace(/=.*?(,|$)/g, '');
-  return s.length !== 0 ? s.split(',') : [];
-};
-
-/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1335,19 +1335,15 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ThreadFactory = __webpack_require__(5);
+var _ThreadFactory = __webpack_require__(7);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
-var _ExecutorFactory = __webpack_require__(1);
-
-var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
-
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _hasharray = __webpack_require__(6);
+var _hasharray = __webpack_require__(8);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -1358,6 +1354,10 @@ var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 var _snakeCase = __webpack_require__(24);
 
 var _snakeCase2 = _interopRequireDefault(_snakeCase);
+
+var _executors = __webpack_require__(4);
+
+var _function = __webpack_require__(5);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1404,10 +1404,13 @@ var Controller = function (_RingaObject) {
     _this.threads = new _hasharray2.default('id');
 
     _this.eventTypeToThreadFactory = new Map();
+    _this.eventTypeToWatchers = new Map();
+    _this.watcherToArgNames = new Map();
 
     _this._eventHandler = _this._eventHandler.bind(_this);
     return _this;
   }
+
   //-----------------------------------
   // Properties
   //-----------------------------------
@@ -1595,11 +1598,32 @@ var Controller = function (_RingaObject) {
   }, {
     key: 'threadDoneHandler',
     value: function threadDoneHandler(thread) {
+      var _this3 = this;
+
       if (true && !this.threads.has(thread.id)) {
         throw Error('Controller::threadDoneHandler(): could not find thread with id ' + thread.id);
       }
 
       this.threads.remove(thread);
+
+      var watchers = this.eventTypeToWatchers[thread.ringaEvent.type];
+      if (watchers && watchers.length) {
+        (function () {
+          var executor = {
+            controller: _this3,
+            toString: function toString() {
+              return 'Controller::watch() for ' + thread.ringaEvent.toString();
+            }
+          };
+
+          watchers.forEach(function (watcher) {
+            var argNames = _this3.watcherToArgNames[watcher];
+            var args = (0, _executors.buildArgumentsFromRingaEvent)(executor, argNames, thread.ringaEvent);
+
+            watcher.apply(undefined, args);
+          });
+        })();
+      }
 
       thread.ringaEvent._done();
     }
@@ -1629,6 +1653,38 @@ var Controller = function (_RingaObject) {
     key: 'toString',
     value: function toString() {
       return this.id;
+    }
+  }, {
+    key: 'watch',
+    value: function watch(eventTypes, injectableCallback) {
+      var _this4 = this;
+
+      if (true && !(eventTypes instanceof Array)) {
+        throw new Error('Controller::watch(): eventTypes is not an Array!');
+      }
+
+      eventTypes.forEach(function (eventType) {
+        _this4.eventTypeToWatchers[eventType] = _this4.eventTypeToWatchers[eventType] || [];
+        _this4.eventTypeToWatchers[eventType].push(injectableCallback);
+        _this4.watcherToArgNames[injectableCallback] = (0, _function.getArgNames)(injectableCallback);
+      });
+    }
+  }, {
+    key: 'unwatch',
+    value: function unwatch(eventTypes, injectableCallback) {
+      var _this5 = this;
+
+      if (true && !(eventTypes instanceof Array)) {
+        throw new Error('Controller::watch(): eventTypes is not an Array!');
+      }
+
+      var ix = void 0;
+
+      eventTypes.forEach(function (eventType) {
+        if ((ix = _this5.eventTypeToWatchers[eventType].indexOf(injectableCallback)) !== -1) {
+          _this5.eventTypeToWatchers[eventType].splice(ix, 1);
+        }
+      });
     }
   }, {
     key: 'injections',
@@ -1661,7 +1717,7 @@ var _ExecutorAbstract = __webpack_require__(0);
 
 var _ExecutorAbstract2 = _interopRequireDefault(_ExecutorAbstract);
 
-var _executors = __webpack_require__(9);
+var _executors = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1784,7 +1840,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _ExecutorFactory2 = __webpack_require__(1);
+var _ExecutorFactory2 = __webpack_require__(2);
 
 var _ExecutorFactory3 = _interopRequireDefault(_ExecutorFactory2);
 
@@ -3270,7 +3326,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(7);
+var _RingaHashArray2 = __webpack_require__(9);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -3558,9 +3614,9 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _executors = __webpack_require__(9);
+var _executors = __webpack_require__(4);
 
-var _function = __webpack_require__(10);
+var _function = __webpack_require__(5);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3757,11 +3813,11 @@ var _Command = __webpack_require__(13);
 
 var _Command2 = _interopRequireDefault(_Command);
 
-var _ExecutorFactory = __webpack_require__(1);
+var _ExecutorFactory = __webpack_require__(2);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _ThreadFactory = __webpack_require__(5);
+var _ThreadFactory = __webpack_require__(7);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
@@ -3773,7 +3829,7 @@ var _RingaEvent = __webpack_require__(3);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _RingaEventFactory = __webpack_require__(4);
+var _RingaEventFactory = __webpack_require__(6);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
