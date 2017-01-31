@@ -3,10 +3,14 @@ import ExecutorFactory from './ExecutorFactory';
 import ThreadFactory from './ThreadFactory';
 import Controller from './Controller';
 import RingaEvent from './RingaEvent';
+import RingaObject from './RingaObject';
 import RingaEventFactory from './RingaEventFactory';
 import AssignFactory from './factories/AssignFactory';
 import Model from './Model';
 import ModelWatcher from './ModelWatcher';
+
+import {ids} from './RingaObject';
+import {executorCounts} from './ExecutorAbstract';
 
 export function dispatch (eventType, details, domNode = document) {
   return new RingaEvent(eventType, details).dispatch(domNode);
@@ -34,7 +38,12 @@ export function notify(eventType) {
   };
 }
 
-export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent };
+export function __hardReset() {
+  ids.map = {};
+  executorCounts.map = new Map();
+}
+
+export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject };
 
 export default {
   Controller,
@@ -44,6 +53,7 @@ export default {
   Event: RingaEvent,
   Model,
   ModelWatcher,
+  RingaObject,
   dispatch,
   iif,
   spawn,

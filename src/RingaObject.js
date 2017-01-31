@@ -1,17 +1,34 @@
-let ids = {};
+export const ids = {
+  map: {}
+};
 
 export default class RingaObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
   constructor(id) {
-    if (ids[id]) {
-      throw new Error(`Duplicate Ringa id discovered: '${id}'. Call RingaObject::destroy() to clear up the id.`);
+    if (id) {
+      this.id = id;
+    } else {
+      this._id = '[UNSET]';
+    }
+  }
+
+  //-----------------------------------
+  // Properties
+  //-----------------------------------
+  set id(value) {
+    if (ids.map[value]) {
+      console.warn(`Duplicate Ringa id discovered: '${value}'. Call RingaObject::destroy() to clear up the id.`);
     }
 
-    this.id = id;
+    ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.
 
-    ids[id] = true; // We do not create a reference to the object because this would create a memory leak.
+    this._id = value;
+  }
+
+  get id() {
+    return this._id;
   }
 
   //-----------------------------------

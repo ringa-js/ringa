@@ -4,7 +4,7 @@ window.__DEV__ = true;
 
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
-import Ringa from '../src/index';
+import Ringa, {__hardReset} from '../src/index';
 import ModelSimple from './shared/ModelSimple';
 
 describe('ModelWatcher', () => {
@@ -23,11 +23,7 @@ describe('ModelWatcher', () => {
   });
 
   afterEach(() => {
-    model1.destroy();
-    model2.destroy();
-    model3.destroy();
-
-    watcher.destroy();
+    __hardReset();
   });
 
   //-----------------------------------

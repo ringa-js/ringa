@@ -1,6 +1,10 @@
 import RingaObject from './RingaObject';
 import {now} from './util/debug';
 
+export const executorCounts = {
+  map: new Map()
+};
+
 /**
  * Command is the base class for all command objects that are run in a Ringa application or module.
  */
@@ -20,7 +24,8 @@ class ExecutorAbstract extends RingaObject {
       throw Error('ExecutorAbstract(): attempting to build a command connected to a Thread that has no attached controller.');
     }
 
-    this.id = thread.controller.id + '_' + this.constructor.name;
+    let i = executorCounts.map[this.constructor] = executorCounts.map[this.constructor] ? executorCounts.map[this.constructor] + 1 : 1;
+    this.id = thread.controller.id + '_' + this.constructor.name + '_' + i;
 
     this.thread = thread;
 

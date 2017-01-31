@@ -1,10 +1,10 @@
-import CommandAbstract from '../ExecutorAbstract';
+import ExecutorAbstract from '../ExecutorAbstract';
 import {buildArgumentsFromRingaEvent} from '../util/executors';
 
 /**
  * Command is the base class for all command objects that are run in a Ringa application or module.
  */
-class Command extends CommandAbstract {
+class Command extends ExecutorAbstract {
   //-----------------------------------
   // Constructor
   //-----------------------------------
