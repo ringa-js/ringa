@@ -37,7 +37,7 @@ describe('ModelWatcher', () => {
     let callback = () => {};
     watcher.watch('model1', callback);
 
-    expect(watcher.idToWatchees[model1.id].all[0]).toEqual(callback);
+    expect(watcher.idToWatchees[model1.id].all[0].handler).toEqual(callback);
     expect(watcher.idToWatchees[model1.id].byPath).toEqual({});
   });
 
@@ -48,7 +48,7 @@ describe('ModelWatcher', () => {
     let callback = () => {};
     watcher.watch(ModelSimple, callback);
 
-    expect(watcher.classToWatchees[ModelSimple].all[0]).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].all[0].handler).toEqual(callback);
     expect(watcher.classToWatchees[ModelSimple].byPath).toEqual({});
   });
 
@@ -60,7 +60,7 @@ describe('ModelWatcher', () => {
     watcher.watch(ModelSimple, 'path', callback);
 
     expect(watcher.classToWatchees[ModelSimple].all.length).toEqual(0);
-    expect(watcher.classToWatchees[ModelSimple].byPath['path'][0]).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].byPath['path'][0].handler).toEqual(callback);
   });
 
   //-----------------------------------
@@ -71,7 +71,7 @@ describe('ModelWatcher', () => {
     watcher.watch(ModelSimple, 'path.whatever', callback);
 
     expect(watcher.classToWatchees[ModelSimple].all.length).toEqual(0);
-    expect(watcher.classToWatchees[ModelSimple].byPath['path.whatever'][0]).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].byPath['path.whatever'][0].handler).toEqual(callback);
   });
 
   //-----------------------------------
@@ -79,21 +79,22 @@ describe('ModelWatcher', () => {
   //-----------------------------------
   it('Has a working watch() method (5)', () => {
     let callback = () => {};
-    watcher.watch(ModelSimple, 'path.whatever', callback);
+    watcher.watch(ModelSimple, 'path.whatever.superdeep', callback);
     watcher.watch(ModelSimple, 'path2', callback);
     watcher.watch(ModelSimple, callback);
 
     expect(watcher.classToWatchees[ModelSimple].all.length).toEqual(1);
-    expect(watcher.classToWatchees[ModelSimple].all[0]).toEqual(callback);
-    expect(watcher.classToWatchees[ModelSimple].byPath['path.whatever'][0]).toEqual(callback);
-    expect(watcher.classToWatchees[ModelSimple].byPath['path2'][0]).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].all[0].handler).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].byPath['path.whatever.superdeep'][0].handler).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].byPath['path.whatever'][0].handler).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].byPath['path'][0].handler).toEqual(callback);
+    expect(watcher.classToWatchees[ModelSimple].byPath['path2'][0].handler).toEqual(callback);
   });
 
   //-----------------------------------
   // Has a working watch() method (6)
   //-----------------------------------
   it('Has a working watch() method (throw)', () => {
-
     expect(() => {
       watcher.watch({}, 'path.whatever', callback);
     }).toThrow();
@@ -118,11 +119,14 @@ describe('ModelWatcher', () => {
       expect(arg.length).toEqual(1);
       expect(arg[0].model === model1).toEqual(true);
       expect(arg[0].value).toEqual('someNewValue');
+      expect(arg[0].watchedValue === model1).toEqual(true);
+      expect(arg[0].path).toEqual('prop1');
+      expect(arg[0].watchedPath).toEqual(undefined);
       done();
     });
 
     model1.prop1 = 'someNewValue';
-  }, 5);
+  }, 50);
 
   //-----------------------------------
   // Injection by id and path (1)
@@ -174,8 +178,10 @@ describe('ModelWatcher', () => {
   //-----------------------------------
   it('Injection by id and deep path (2)', (done) => {
     watcher.watch('model1', 'prop1.deep', (arg) => {
-      console.log(arg);
-      expect(arg[0].value).toEqual('someNewValue');
+      expect(arg[0].value).toEqual({
+        deep: 'someNewValue'
+      });
+      expect(arg[0].watchedValue).toEqual('someNewValue');
       done();
     });
 

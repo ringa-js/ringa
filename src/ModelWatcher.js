@@ -1,12 +1,24 @@
 import RingaObject from './RingaObject';
 
 function objPath(obj, path) {
+  if (!path) {
+    return obj;
+  }
   path = path.split('.');
   let i = 0;
   while (obj && i < path.length) {
     obj = obj[path[i++]];
   }
   return obj;
+}
+
+function pathAll(propertyPath) {
+  // if propertyPath === 'when.harry.met.sally'
+  // then paths = ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
+  return propertyPath.split('.').reduce((a, v, i) => {
+    a[i] = i === 0 ? v : a[i-1] + '.' + v;
+    return a;
+  }, []);
 }
 
 class Watchees {
@@ -18,32 +30,35 @@ class Watchees {
   add(model, propertyPath, watchee) {
     let watcheeObj;
 
-    if (watcheeObj = this.watcheesMap[watchee]) {
-      watcheeObj.arg.push({
-        model,
-        propertyPath
-      });
+    let arg = {
+      model,
+      path: propertyPath,
+      value: objPath(model, propertyPath),
+      watchedPath: watchee.propertyPath,
+      watchedValue: objPath(model, watchee.propertyPath)
+    };
+
+    if (watcheeObj = this.watcheesMap[watchee.handler]) {
+      watcheeObj.arg.push(arg);
 
       return;
     }
 
     watcheeObj = {
-      arg: [{
-        model,
-        path: propertyPath,
-        value: objPath(model, propertyPath)
-      }],
-      watchee
+      arg: [arg],
+      handler: watchee.handler
     };
 
     this.watchees.push(watcheeObj);
-    this.watcheesMap[watchee] = watcheeObj;
+    this.watcheesMap[watchee.handler] = watcheeObj;
   }
 
   notify() {
     this.watchees.forEach(watcheeObj => {
-      watcheeObj.watchee.call(undefined, watcheeObj.arg);
+      watcheeObj.handler.call(undefined, watcheeObj.arg);
     });
+
+    this.clear();
   }
 
   clear() {
@@ -102,11 +117,20 @@ class ModelInjector extends RingaObject {
       throw new Error(`ModelWatcher::watch(): can only watch by Class or id`);
     }
 
+    let watchee = {
+      handler,
+      propertyPath
+    };
+
     if (!propertyPath) {
-      group.all.push(handler);
+      group.all.push(watchee);
     } else {
-      group.byPath[propertyPath] = group.byPath[propertyPath] || []
-      group.byPath[propertyPath].push(handler);
+      let paths = pathAll(propertyPath);
+
+      paths.forEach(path => {
+        group.byPath[path] = group.byPath[path] || []
+        group.byPath[path].push(watchee);
+      });
     }
   }
 
@@ -166,12 +190,7 @@ class ModelInjector extends RingaObject {
     };
 
     if (propertyPath) {
-      // if propertyPath === 'when.harry.met.sally'
-      // then paths = ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
-      paths = propertyPath.split('.').reduce((a, v, i) => {
-        a[i] = i === 0 ? v : a[i-1] + '.' + v;
-        return a;
-      }, []);
+      paths = pathAll(propertyPath);
 
       byPathFor = (watcheesByPath) => {
         // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
