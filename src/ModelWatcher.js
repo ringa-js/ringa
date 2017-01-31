@@ -223,11 +223,11 @@ class ModelInjector extends RingaObject {
     // Note: we have to account for everything the model has extended in the prototype chain because a watcher
     // may have requested to watch a base class and someone might have extended that... kindof a PITA but gotta
     // cover all bases (no pun intended).
-    let p = model.prototype;
+    let p = model.constructor;
 
     while (p) {
       if (this.classToWatchees[p.constructor]) {
-        this.classToWatchees[p.constructor].forEach(watcheeGroup);
+        watcheeGroup(this.classToWatchees[p.constructor]);
       }
 
       p = p.prototype;

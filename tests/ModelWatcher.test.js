@@ -6,6 +6,7 @@ import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import Ringa, {__hardReset} from '../src/index';
 import ModelSimple from './shared/ModelSimple';
+import ModelSimpleExt from './shared/ModelSimpleExt';
 
 describe('ModelWatcher', () => {
   let model1, model2, model3, watcher;
@@ -13,7 +14,7 @@ describe('ModelWatcher', () => {
   beforeEach(() => {
     model1 = new ModelSimple('model1');
     model2 = new ModelSimple('model2');
-    model3 = new ModelSimple('model3');
+    model3 = new ModelSimpleExt('model3');
 
     watcher = new Ringa.ModelWatcher('modelWatcher');
 
@@ -108,6 +109,17 @@ describe('ModelWatcher', () => {
   }, 5);
 
   //-----------------------------------
+  // Injection by id (1.5)
+  //-----------------------------------
+  it('Injection by id (1.5)', (done) => {
+    watcher.watch(ModelSimple, () => {
+      done();
+    });
+
+    model1.prop1 = 'someNewValue';
+  }, 5);
+
+  //-----------------------------------
   // Injection by id (2)
   //-----------------------------------
   it('Injection by id (2)', (done) => {
@@ -183,6 +195,92 @@ describe('ModelWatcher', () => {
 
     model1.prop1 = {
       deep: 'someNewValue'
+    };
+  }, 50);
+
+  //-----------------------------------
+  // Injection by id and deep path (3)
+  //-----------------------------------
+  it('Injection by id and deep path (3)', (done) => {
+    // prop1.deep.deeper doesn't exist!
+    watcher.watch('model1', 'prop1.deep.deeper', (arg) => {
+      expect(arg[0].value).toEqual({
+        deep: 'someNewValue'
+      });
+      expect(arg[0].watchedValue).toEqual(undefined);
+      done();
+    });
+
+    model1.prop1 = {
+      deep: 'someNewValue'
+    };
+  }, 50);
+
+  //-----------------------------------
+  // Injection multiple separate handlers (1)
+  //-----------------------------------
+  it('Injection multiple separate handlers (1)', (done) => {
+    let prop1Handler = false;
+    watcher.watch('model1', 'prop1', (arg) => {
+      expect(arg[0].value).toEqual('prop1val');
+      prop1Handler = true;
+    });
+
+    watcher.watch('model1', 'prop2', (arg) => {
+      expect(arg[0].value).toEqual('prop2val');
+      expect(prop1Handler).toEqual(true);
+      done();
+    });
+
+    model1.prop1 = 'prop1val';
+    model1.prop2 = 'prop2val';
+  }, 50);
+
+  //-----------------------------------
+  // Injection multiple separate handlers (2)
+  //-----------------------------------
+  it('Injection multiple separate handlers (2)', (done) => {
+    let prop1Handler = false;
+    watcher.watch('model1', 'prop1', (arg) => {
+      expect(arg[0].value).toEqual('prop1val');
+      prop1Handler = true;
+    });
+
+    watcher.watch('model2', 'prop2', (arg) => {
+      expect(arg[0].value).toEqual('prop2val');
+      expect(prop1Handler).toEqual(true);
+      done();
+    });
+
+    model1.prop1 = 'prop1val';
+    model2.prop2 = 'prop2val';
+  }, 50);
+
+  //-----------------------------------
+  // Injection multiple combined handlers (1)
+  //-----------------------------------
+  it('Injection multiple combined handlers (1)', (done) => {
+    let handler = (arg) => {
+      expect(arg[0].model).toEqual(model1);
+      expect(arg[0].value).toEqual('prop1val');
+      expect(arg[1].model).toEqual(model2);
+      expect(arg[1].value).toEqual('prop2val');
+      expect(arg[2].model).toEqual(model3);
+      expect(arg[2].watchedValue).toEqual('whatever');
+      expect(arg[2].value).toEqual({
+        value: 'whatever'
+      });
+      done();
+    };
+
+    watcher.watch('model1', 'prop1', handler);
+    watcher.watch('model2', 'prop2', handler);
+    watcher.watch('model3', 'prop3.value', handler);
+
+    model1.prop1 = 'prop1val';
+    model2.prop2 = 'prop2val';
+    model3.prop3 = {
+      value: 'whatever'
     };
   }, 50);
 });

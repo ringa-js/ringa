@@ -20,7 +20,7 @@ export default class ModelSimple extends Model {
   set prop2(value) {
     this._prop2 = value;
 
-    this.notify('prop1');
+    this.notify('prop2');
   }
 
   get prop2() {
