@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa from '../src/index';
+import Ringa, {__hardReset} from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -27,6 +27,10 @@ describe('LifeCycle', () => {
 
     threadFactory = controller.addListener(TEST_EVENT);
     threadFactory2 = controller.addListener(TEST_EVENT2);
+  });
+
+  afterEach(() => {
+    __hardReset();
   });
 
   //-----------------------------------
