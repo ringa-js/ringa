@@ -315,14 +315,16 @@ describe('ModelWatcher', () => {
   //--------------------------------------------------------------------------------
   // Injection collision (requesting same type model that exists more than once) (1)
   //--------------------------------------------------------------------------------
-  it.only('Injection collision (requesting same type model that exists more than once) (1)', (done) => {
+  it('Injection collision (requesting same type model that exists more than once) (1)', (done) => {
     let handler = (arg) => {
       expect(arg[0].model).toEqual(model1);
       expect(arg[0].value).toEqual('prop1val');
       expect(arg[1].model).toEqual(model2);
       expect(arg[1].value).toEqual('prop2val');
       expect(arg[2].model).toEqual(modelExt3);
-      expect(arg[2].watchedValue).toEqual('whatever');
+      expect(arg[2].watchedValue).toEqual({
+        value:'whatever'
+      });
       expect(arg[2].value).toEqual({
         value: 'whatever'
       });
