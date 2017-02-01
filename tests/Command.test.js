@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa from '../src/index';
+import Ringa, {__hardReset} from '../src/index';
 import CommandSimple from './shared/CommandSimple';
 import CommandComplexArgs from './shared/CommandComplexArgs';
 import CommandPromise from './shared/CommandPromise';
@@ -41,6 +41,10 @@ describe('Command', () => {
     commandComplex.argNames = getArgNames(commandComplex.execute);
   });
 
+  afterEach(() => {
+    __hardReset();
+  });
+
   it('should have properly setup the beforeEach objects', () => {
     expect(domNode.nodeType).toEqual(1);
     expect(controller.id).toEqual('testController');
@@ -49,7 +53,7 @@ describe('Command', () => {
   });
 
   it('should have a properly defined id', () => {
-    expect(command.id).toEqual('testController_CommandSimple');
+    expect(command.id).toEqual('testController_CommandSimple_1');
   });
 
   it('should start and properly store the thread', () => {

@@ -95,6 +95,8 @@ class Thread extends RingaHashArray {
   // Events
   //-----------------------------------
   _executorDoneHandler() {
+    this.all[this.index].destroy();
+
     this.index++;
 
     if (this.ringaEvent.detail._promise) {
@@ -109,6 +111,8 @@ class Thread extends RingaHashArray {
   }
 
   _executorFailHandler(error, kill) {
+    this.all[this.index].destroy();
+
     this.error = error;
 
     this.failHandler(this, error, kill);

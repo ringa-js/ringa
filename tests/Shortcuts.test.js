@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa from '../src/index';
+import Ringa, {__hardReset} from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -31,6 +31,10 @@ describe('Shortcuts / Wrappers', () => {
 
     // Build a thread but do not run it right away because we are testing!
     thread = threadFactory.build(new Ringa.Event(TEST_EVENT), false);
+  });
+
+  afterEach(() => {
+    __hardReset();
   });
 
   it('Ringa.dispatch() should dispatch and manage an event', (done) => {

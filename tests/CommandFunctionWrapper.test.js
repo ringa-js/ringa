@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa from '../src/index';
+import Ringa, {__hardReset} from '../src/index';
 import TestController from './shared/TestController';
 
 const TEST_EVENT = 'testEvent';
@@ -21,6 +21,10 @@ describe('CommandFunctionWrapper', () => {
     controller = new TestController('testController', domNode, {
       timeout: 500
     });
+  });
+
+  afterEach(() => {
+    __hardReset();
   });
 
   it('basic case should work', (done) => {
