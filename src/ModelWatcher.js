@@ -102,17 +102,15 @@ class ModelInjector extends RingaObject {
     }
 
     let group;
+    let defaultGroup = {
+      all: [],
+      byPath: {}
+    };
 
     if (typeof classOrId === 'function') {
-      group = this.classToWatchees[classOrId] = this.classToWatchees[classOrId] || {
-        all: [],
-        byPath: {}
-      };
+      group = this.classToWatchees[classOrId] = this.classToWatchees[classOrId] || defaultGroup;
     } else if (typeof classOrId === 'string') {
-      group = this.idToWatchees[classOrId] = this.idToWatchees[classOrId] || {
-        all: [],
-        byPath: {}
-      };
+      group = this.idToWatchees[classOrId] = this.idToWatchees[classOrId] || defaultGroup;
     } else if (__DEV__) {
       throw new Error(`ModelWatcher::watch(): can only watch by Class or id`);
     }
@@ -205,7 +203,7 @@ class ModelInjector extends RingaObject {
       }
     } else {
       // Well, its a little insane, but if a propertyPath isn't specified, we just notify everyone.
-      // This is where we should do some performance metrics so developers don't write code that has massive
+      // TODO: This is where we should do some performance metrics so developers don't write code that has massive
       // performance hits because every handler gets notified at once.
       byPathFor = (watcheesByPath) => {
         for (var key in watcheesByPath) {
@@ -226,16 +224,20 @@ class ModelInjector extends RingaObject {
     let p = model.constructor;
 
     while (p) {
-      if (this.classToWatchees[p.constructor]) {
-        watcheeGroup(this.classToWatchees[p.constructor]);
+      if (this.classToWatchees[p]) {
+        watcheeGroup(this.classToWatchees[p]);
       }
 
-      p = p.prototype;
+      p = p.__proto__;
     }
 
     if (timeout !== -1) {
-      setTimeout(() => {
+      if (this.timeoutToken) {
+        return;
+      }
+      this.timeoutToken = setTimeout(() => {
         this.nextWatchees.notify();
+        this.timeoutToken = undefined;
       }, timeout);
     } else {
       this.nextWatchees.notify();

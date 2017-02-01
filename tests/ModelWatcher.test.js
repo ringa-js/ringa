@@ -9,18 +9,18 @@ import ModelSimple from './shared/ModelSimple';
 import ModelSimpleExt from './shared/ModelSimpleExt';
 
 describe('ModelWatcher', () => {
-  let model1, model2, model3, watcher;
+  let model1, model2, modelExt3, watcher;
 
   beforeEach(() => {
     model1 = new ModelSimple('model1');
     model2 = new ModelSimple('model2');
-    model3 = new ModelSimpleExt('model3');
+    modelExt3 = new ModelSimpleExt('modelExt3');
 
     watcher = new Ringa.ModelWatcher('modelWatcher');
 
     watcher.addModel(model1);
     watcher.addModel(model2);
-    watcher.addModel(model3);
+    watcher.addModel(modelExt3);
   });
 
   afterEach(() => {
@@ -265,7 +265,7 @@ describe('ModelWatcher', () => {
       expect(arg[0].value).toEqual('prop1val');
       expect(arg[1].model).toEqual(model2);
       expect(arg[1].value).toEqual('prop2val');
-      expect(arg[2].model).toEqual(model3);
+      expect(arg[2].model).toEqual(modelExt3);
       expect(arg[2].watchedValue).toEqual('whatever');
       expect(arg[2].value).toEqual({
         value: 'whatever'
@@ -275,11 +275,66 @@ describe('ModelWatcher', () => {
 
     watcher.watch('model1', 'prop1', handler);
     watcher.watch('model2', 'prop2', handler);
-    watcher.watch('model3', 'prop3.value', handler);
+    watcher.watch('modelExt3', 'prop3.value', handler);
 
     model1.prop1 = 'prop1val';
     model2.prop2 = 'prop2val';
-    model3.prop3 = {
+    modelExt3.prop3 = {
+      value: 'whatever'
+    };
+  }, 50);
+
+  //-----------------------------------------
+  // Injection multiple combined handlers (2)
+  //-----------------------------------------
+  it('Injection multiple combined handlers (2)', (done) => {
+    let handler = (arg) => {
+      expect(arg[0].model).toEqual(model1);
+      expect(arg[0].value).toEqual('prop1val');
+      expect(arg[1].model).toEqual(model2);
+      expect(arg[1].value).toEqual('prop2val');
+      expect(arg[2].model).toEqual(modelExt3);
+      expect(arg[2].watchedValue).toEqual('whatever');
+      expect(arg[2].value).toEqual({
+        value: 'whatever'
+      });
+      done();
+    };
+
+    watcher.watch('model1', 'prop1', handler);
+    watcher.watch('model2', 'prop2', handler);
+    watcher.watch(ModelSimpleExt, 'prop3.value', handler);
+
+    model1.prop1 = 'prop1val';
+    model2.prop2 = 'prop2val';
+    modelExt3.prop3 = {
+      value: 'whatever'
+    };
+  }, 50);
+
+  //--------------------------------------------------------------------------------
+  // Injection collision (requesting same type model that exists more than once) (1)
+  //--------------------------------------------------------------------------------
+  it.only('Injection collision (requesting same type model that exists more than once) (1)', (done) => {
+    let handler = (arg) => {
+      expect(arg[0].model).toEqual(model1);
+      expect(arg[0].value).toEqual('prop1val');
+      expect(arg[1].model).toEqual(model2);
+      expect(arg[1].value).toEqual('prop2val');
+      expect(arg[2].model).toEqual(modelExt3);
+      expect(arg[2].watchedValue).toEqual('whatever');
+      expect(arg[2].value).toEqual({
+        value: 'whatever'
+      });
+      done();
+    };
+
+    watcher.watch(ModelSimple, 'prop1', handler);
+
+    // This should trigger the handler once but with a notification for each of the models!
+    model1.prop1 = 'prop1val';
+    model2.prop1 = 'prop2val';
+    modelExt3.prop1 = {
       value: 'whatever'
     };
   }, 50);
