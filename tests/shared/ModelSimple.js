@@ -5,6 +5,10 @@ export default class ModelSimple extends Model {
   // prop1
   //-----------------------------------
   set prop1(value) {
+    if (this._prop1 === value) {
+      return;
+    }
+
     this._prop1 = value;
 
     this.notify('prop1');
