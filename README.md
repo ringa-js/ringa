@@ -1,192 +1,155 @@
 # ringa
 
-Ringa is yet another Javascript control library designed to make writing code fun and extremely organized.
- 
-Ringa is designed for applications that are expected to substantially scale over time and for developing shared libraries.
+Ringa is a highly extensible ES6 MVC-inspired library designed to help you build scalable and highly debuggable applications.
+
+*Note: this project is still in Alpha and will be released February, 2017.*
 
 # install
 
     npm install ringa
 
-# quick example
+# features
 
-In `MyController.js`:
+**Controllers**
 
-    import Ringa from 'ringa';
+* Attach to DOM nodes (or simulated ones)
+* Use DOM events for communication (bubble, capture, stopPropagation, etc.)
+* Manage asynchronous code in clean, readable trees of tasks
+* Rollback of each completed task in the tree if a task fails or is cancelled (COMING SOON)
+
+**Asynchronous Task Trees**
+
+* Tasks can be Promises, Ringa commands, functions, dispatch of a new Ringa Event, or your own customization
+* Arguments are injected into tasks by argument name (similar to AngularJS)
+* Tasks can add new properties to the event details to be injected into the next tasks
+* Tasks can be run in parallel or sequentially (COMING SOON)
+
+**Models**
+
+* Can be watched (e.g. to update the view)
+* Watching is customizable by event to improve specificity and therefore performance
+* Watch notifications are batched and sent at once so your watchers do not get spammed for every change in the model
+
+**Ringa Events**
+
+* Ringa events function like promises with `then` and `catch` support so you get notified when a full asynchronous task tree has completed
+
+**Debugging (Dev mode only)**
+
+* Ringa Events contain debugging information of the entire task tree they triggered
+* Ringa events contain the stack trace of where they were dispatched
+* Highly specific errors are logged or thrown when you forget to use Ringa objects properly
+* Ringa lets you know when you forget to pass a property to your task tree
+
+**Extensible**
+
+* Classes in Ringa are easily extended and designed to be customized
+
+# demo
+
+A full demo with API is under development at [ringa-example-react](https://github.com/jung-digital/ringa-example-react).
+
+# example
+
+    import {Controller, Model, dispatch} from 'ringa';
+
+    class CountModel extends Model {
+      set count(value) {
+        this._count = value;
+        
+        this.notify('countChanged');
+      }
+      
+      get count() {
+        return this._count;
+      }
+    }
     
-    class MyController extends Ringa.Controller {
-      constructor(domNode) {
-        super('MyController', domNode);
+    class BlastoffController extends Controller {
+      constructor() {
+        super('Blastoff Controller', document); // Attach to document (DOM node)
 
-        this.addListener(MyController.MY_EVENT, [
-          (ringaEvent) => {ringaEvent.detail.count++}
+        this.addModel(new CountModel('countModel')); // Add a model, accessible and injectable by its id
+
+        // 1) inject 'countModel'
+        // 2) inject 'millis' by name from the dispatched events detail object
+        // 3) provide a 'done' and 'fail' callback (function could also return a Promise)
+        let decrement = (countModel, millis, done, fail) => {
+                            setTimeout(() => {
+                              countModel.count--;
+
+                              if (countModel.count < 0) {
+                                fail('Uh oh, countdown failed!');
+                              }
+
+                              done();
+                            }, millis);
+                          };
+
+        // Automatically creates BlastoffController.RUN_COUNTDOWN
+        this.addListener('runCountdown', [
+          (countModel, startMessage) => {
+            console.log(startMessage);
+
+            countModel.count = 5;
+          },
+          decrement,
+          decrement,
+          decrement,
+          decrement,
+          decrement,
+          (finalMessage) => {
+            console.log(finalMessage);
+          },
         ]);
       }
     }
     
-    MyController.MY_EVENT = 'myEvent';
-    
-    export default MyController;
+    let controller = new BlastoffController();
 
-In `MyComponent.js` (in this case ReactJS):
+    // Watch our model by its model id and wait for the notification event 'countChanged'
+    // 'count' is injected by name, but we could inject other model properties too
+    controller.watch('myModel', 'countChanged', (count) => {
+      console.log(count); // 5, 4, 3, 2, 1, 0...
+    });
 
-    this.controller = new MyController(this.getDOMNode());
+    dispatch(BlastoffController.RUN_COUNTDOWN, {
+      startMessage: 'Starting Countdown...',
+      finalMessage: 'Blastoff!',
+      millis: 1000
+    }, document);
 
-    Ringa.dispatch(MyController.MY_EVENT, {count: 0});
+**Output**
 
-# philosophy
+Output counts down every second:
 
-In 2008, Adobe Flash - and Flex - were all the rage for web GUI. But the process of managing asynchronous calls and organizing the lifecycle of
-user interaction to server calls and back to interface updates was a wild west. Adobe introduced Cairngorm, a lightweight event-to-commmand pattern
-built around a central event dispatcher.
+    Starting Countdown...
+    5
+    4
+    3
+    2
+    1
+    0
+    Blastoff!
 
-But as the Flex community grew developers began to share concerns with some of the patterns that Cairngorm introduced. Before long there were
-a plethora of options from Swiz to Parsley to PureMVC.
+# support
 
-For Actionscript, we eventually built our own solution that combined all the best parts of all the available MV* frameworks.
- 
-Javascript is a wild west right now too with Alt, Flux, Redux and all its extensions. Just like Cairngorm, Redux promises a super lightweight and
-simple solution to a host of problems. However, becuse it is so unopinionated this means every implementation feels radically different.
+* Dependency Injection to ReactJS Components (through the [react-ringa](https://github.com/jung-digital/react-ringa) project) (COMING SOON)
+* Promises
+* async/await
 
-Recognizing the same dilemma facing Actionscript developers back in 2008, we have loosely taken the best philosophies of our in-house solution that
-worked for years with Adobe Flex and rebuilt them for Javascript.
- 
-# technology
+# tested
 
-Ringa is ES6 and depends only on the DOM and the internal event system of the browser.
+* 100% Coverage with Jest (COMING SOON)
 
-Because of its independence from any particular GUI framework, it specializes in:
+# development
 
-- Modules
-- Plugins (ReactJS, Angular, React-Native)
-- Scalability
-- Customization
-- Debugging
+This project is under active development, along with the following support projects:
 
-# architecture
+* [react-ringa](https://github.com/jung-digital/react-ringa)
+* [ringa-example-server](https://github.com/jung-digital/ringa-example-server)
+* [ringa-example-react](https://github.com/jung-digital/ringa-example-react)
 
-Ringa works closely with the DOM event system and the DOM tree so that your Model and Control structure are loosely tied to the tree structure of your application.
+# license
 
-# asyncronous nightmares be gone
-
-A Ringa Controller listens for events on a DOM node and responds to each event with a type of
-AST. However, unlike a standard AST, each node is by default asynchronous, analogous
-to promises and functioning in a similar way to the process tree of an operating system.
-
-Ringa is designed from the ground up so that everyone from the team lead to new hires can rapidly browse a few files to
-grasp the scope and functionality of each module in the application without getting lost in business code. The internals
-of the framework are built to be both highly extensible and ensure consistency during scale.
-
-Here is an example of a chat application controller:
-
-    const INITIALIZE = 'initialize';
-    const SHOW_LOGIN_MODAL = 'requestLogin';
-    const LOGIN_WITH_COOKIE = 'loginWithCookie';
-    const FINISH_LOGIN = 'finishLogin';
-    
-    class ChatController extends Ringa.Controller {
-      constructor(id, domNode) {
-        super(id, domNode);
-        
-        const chatModel = new ChatModel();
-        
-        this.options.injections = {chatModel};
-        
-        this.addListener(INITIALIZE, [
-          SetupApplicationModel,
-          LoadApplicationData,
-          bind(ShowLoadingOverlay, 'Setting up application....'),
-          LOGIN_WITH_COOKIE,
-          iif((chatModel) => {return !chatModel.loggedIn},
-              SHOW_LOGIN_MODAL, // chatModel.loggedIn === false
-              FINISH_LOGIN),    // chatModel.loggedIn == true
-          HideLoadingOverlay
-        ]);
-        
-        this.addListener(LOGIN_WITH_COOKIE, [
-          GetCookieLoginInfo,
-          Login
-        ]);
-        
-        this.addListener(SHOW_LOGIN_MODAL, [
-          ShowLoginModal
-        ]);
-        
-        this.addListener(FINISH_LOGIN, [
-          bind(ShowLoadingOverlay, 'Loading user information...'),
-          [ 
-            LoadUser,         // Run in parallel!
-            LoadUserContacts, // ^
-            LoadUserSettings  // ^
-          ],
-          HideLoadingOverlay
-        ]);
-      }
-    }
-    
-    ...
-    
-    Ringa.dispatch(INITIALIZE);
-    
-Each item in the event listener is assumed to be asynchronous but by chaining them all
-together you get the sensation of easy-to-read synchronous code without the hassle of trying
-to track down promises.
-
-# debuggable
-
-While Ringa works with standard DOM events like `'click'`, every dispatched `RingaEvent` instance
-includes within it all the information necessary to debug the entire lifecycle of the entire tree
-that it triggered.
-
-Every single Class in the Ringa framework is handcrafted to ensure that you never get lost in your own code. 
-For example, you can see on the event itself the stack trace of where it was dispatched. In addition, every
-error message dispatched by Ringa tells you exactly what was happening and includes the context of what went
-wrong, making logging of errors in your application easy to do.
-
-# modular
-
-Because Ringa is not bound to any particular GUI-related framework like React or Angular and because 
-Ringa can respond to any events dispatched on the DOM, it lends itself to enterprise applications where
-different sections of the DOM tree might be using different versions of Ringa or may be using different
-versions of another GUI framework.
-
-This approach lends itself to large applications where each section of the application might be loaded from
-a different library or repository but a team may struggle to make sure every single dependency is on the same
-version.
-
-Each Ringa Controller is attached to a single node on the DOM tree and listens for events on that node. As a result
-each Ringa Controller can listen for any bubbling events for that section of the tree only. There is no concept of a
-global godlike event emitter. Beacuse of this, you can cordone off portions of the DOM tree to function differently
-and can intercept events at deep nodes from reaching the root during the bubbling phase *or* intercept events from
-reaching descendents during *capture* phase - just like you bubbling and capture events like 'click' and 'mouseover'!
-
-# decoupled
-
-Because the chains of commands built in Ringa are centralized and 100% decoupled from the view, it is super easy to swap
-out an entire chain of functionality - or a portion of functionality - in one location to test out new business logic.
-
-In addition, because Ringa is view agnostic it can be used with any view and so hotswapping your views while not touching
-your business logic is a breeze.
-
-# reuse
-
-Commands, commands chains, and controllers in Ringa are designed from the ground up to be both extensible and overridable.
-
-Do you have standard functionality for displaying loading indicators, notifications, or error handling in your application?
-Write the commands for this once and reuse them in all of your controllers by easily stringing them together in your
-command chains.
-
-Want to reuse the majority of the command chains in another controller but add a few new items? Extend your other controller
-and add a few new command chains!
-
-# organized
-
-Ringa takes an out-of-the-box opinionated approach to where things go in your application. This makes moving between Ringa
-modules and applications a breeze for team leads or new developers. Jumping into a Ringa application feels familiar, without
-limiting what you can do.
-
-# promise support
-
-Do you already use promises for a lot of your current codebase? Ringa has built-in support for JS promises at every level
-of its event handling system.
-
+MIT License (c) 2017 by Joshua Jung
