@@ -152,7 +152,6 @@ class Controller extends RingaObject {
 
     ringaEvent.thread = thread;
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
-
     // TODO PREHOOK should allow the handler to cancel running of the thread.
     thread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
