@@ -60,12 +60,6 @@ describe('Command', () => {
     expect(command.thread).toEqual(thread);
   });
 
-  it('should start and store the cached argNames', () => {
-    let argNames = ['testObject'];
-    command = new CommandSimple(thread, argNames);
-    expect(command.argNames).toEqual(argNames);
-  });
-
   it('should proxy the ringaEvent property from the thread', () => {
     expect(command.ringaEvent).toEqual(thread.ringaEvent);
   });

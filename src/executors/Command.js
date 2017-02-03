@@ -1,5 +1,6 @@
 import ExecutorAbstract from '../ExecutorAbstract';
 import {buildArgumentsFromRingaEvent} from '../util/executors';
+import {getArgNames} from '../util/function';
 
 /**
  * Command is the base class for all command objects that are run in a Ringa application or module.
@@ -12,12 +13,23 @@ class Command extends ExecutorAbstract {
    * Constructor for a new Command. This *must* be called via super() from a subclass constructor.
    *
    * @param thread The parent thread that owns this command.
-   * @param argNames For efficiency, the ExecutorFactory instrospects this Command's execute(...) arguments.
    */
-  constructor(thread, argNames) {
+  constructor(thread) {
     super(thread);
 
-    this.argNames = argNames;
+    this.cacheable = true;
+  }
+
+  //-----------------------------------
+  // Properties
+  //-----------------------------------
+  get cache() {
+    return this._cache || getArgNames(this.execute);
+  }
+
+  set cache(value) {
+    this._cache = value;
+    this.argNames = value;
   }
 
   //-----------------------------------

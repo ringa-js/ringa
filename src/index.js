@@ -8,16 +8,22 @@ import RingaEventFactory from './RingaEventFactory';
 import AssignFactory from './factories/AssignFactory';
 import Model from './Model';
 import ModelWatcher from './ModelWatcher';
+import IifExecutor from './executors/IifExecutor';
+import {isNode} from './util/type';
 
 import {ids} from './RingaObject';
 import {executorCounts} from './ExecutorAbstract';
 
 export function dispatch (eventType, details, domNode = document) {
+  if (isNode(details)) {
+    domNode = details;
+    details = undefined;
+  }
   return new RingaEvent(eventType, details).dispatch(domNode);
 }
 
-export function iif (condition, executor) {
-
+export function iif (condition, trueExecutor, falseExecutor) {
+  return new ExecutorFactory(IifExecutor, { condition, trueExecutor, falseExecutor });
 }
 
 export function spawn (executor) {

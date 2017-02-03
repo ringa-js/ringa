@@ -16,16 +16,14 @@ class ExecutorFactory {
    * @param executee This can be a Class, a instance, a function... we determine what type of
    *   ExecutorAbstract to build based on what is passed in. This makes things extensible.
    */
-  constructor(executee) {
+  constructor(executee, executeeOptions) {
     this.executee = executee;
+    this.executeeOptions = executeeOptions;
   }
 
   //-----------------------------------
   // Methods
   //-----------------------------------
-  cacheArguments(instance) {
-    this.argNames = getArgNames(instance.execute);
-  }
 
   build(thread) {
     if (typeof this.executee === 'string') {
@@ -35,12 +33,13 @@ class ExecutorFactory {
       return new PromiseExecutor(thread, this.executee);
     } else if (typeof this.executee === 'function') {
       if (this.executee.prototype instanceof ExecutorAbstract) {
-        let instance = new this.executee(thread, this.argNames);
+        let instance = new this.executee(thread, this.executeeOptions);
 
-        if (!this.argNames) {
-          this.cacheArguments(instance);
-          instance.argNames = this.argNames;
+        if (!this.cache && instance.cacheable) {
+          this.cache = instance.cache;
         }
+        
+        instance.cache = this.cache;
 
         return instance;
       } else {
