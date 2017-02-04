@@ -14,12 +14,12 @@ import {isNode} from './util/type';
 import {ids} from './RingaObject';
 import {executorCounts} from './ExecutorAbstract';
 
-export function dispatch (eventType, details, domNode = document) {
-  if (isNode(details)) {
-    domNode = details;
-    details = undefined;
+export function dispatch (eventType, detail, domNode = document) {
+  if (isNode(detail)) {
+    domNode = detail;
+    detail = undefined;
   }
-  return new RingaEvent(eventType, details).dispatch(domNode);
+  return new RingaEvent(eventType, detail).dispatch(domNode);
 }
 
 export function iif (condition, trueExecutor, falseExecutor) {
