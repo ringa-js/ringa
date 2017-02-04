@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa, {iif, __hardReset} from '../src/index';
+import Ringa, {iif, event, __hardReset} from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -107,6 +107,39 @@ describe('iifExecutor', () => {
       ]);
 
     Ringa.dispatch('myEvent', domNode);
+  }, 50);
+
+  //-------------------------------------------
+  // Executes an event dispatch from true path
+  //-------------------------------------------
+  it('Executes an event dispatch from true path', (done) => {
+    controller.addListener('myFirstEvent', [
+      iif(() => true,
+        event('mySecondEvent', {}, domNode))
+      ]);
+
+    controller.addListener('mySecondEvent', [
+      () => done()
+      ])
+
+    Ringa.dispatch('myFirstEvent', domNode);
+  }, 50);
+
+  //--------------------------------------------
+  // Executes an event dispatch from false path
+  //--------------------------------------------
+  it('Executes an event dispatch from false path', (done) => {
+    controller.addListener('myFirstEvent', [
+      iif(() => false,
+        undefined,
+        event('mySecondEvent', {}, domNode))
+      ]);
+
+    controller.addListener('mySecondEvent', [
+      () => done()
+      ])
+
+    Ringa.dispatch('myFirstEvent', domNode);
   }, 50);
 
 });
