@@ -49,4 +49,64 @@ describe('iifExecutor', () => {
     Ringa.dispatch('myEvent', domNode);
   }, 50);
 
+  //-------------------------------------------------
+  // Executes nested iif truthy -> thruthy
+  //-------------------------------------------------
+  it('Executes nested iif truthy -> thruthy', (done) => {
+    controller.addListener('myEvent', [
+      iif(() => true,
+        iif(() => true,
+          () => done(),
+          undefined),
+        undefined)
+      ]);
+
+    Ringa.dispatch('myEvent', domNode);
+  }, 50);
+
+  //-----------------------------------------------
+  // Executes nested iif truthy -> falsy
+  //-----------------------------------------------
+  it('Executes nested iif truthy -> falsy', (done) => {
+    controller.addListener('myEvent', [
+      iif(() => true,
+        iif(() => false,
+          undefined,
+          () => done()),
+        undefined)
+      ]);
+
+    Ringa.dispatch('myEvent', domNode);
+  }, 50);
+
+  //-------------------------------------------------
+  // Executes nested iif falsy -> thruthy
+  //-------------------------------------------------
+  it('Executes nested iif falsy -> thruthy', (done) => {
+    controller.addListener('myEvent', [
+      iif(() => false,
+        undefined,
+        iif(() => true,
+          () => done(),
+          undefined))
+      ]);
+
+    Ringa.dispatch('myEvent', domNode);
+  }, 50);
+
+  //-----------------------------------------------
+  // Executes nested iif falsy -> falsy
+  //-----------------------------------------------
+  it('Executes nested iif falsy -> falsy', (done) => {
+    controller.addListener('myEvent', [
+      iif(() => false,
+        undefined,
+        iif(() => false,
+          undefined,
+          () => done()))
+      ]);
+
+    Ringa.dispatch('myEvent', domNode);
+  }, 50);
+
 });
