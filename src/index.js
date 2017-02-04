@@ -15,12 +15,12 @@ import {isDOMNode} from './util/type';
 import {ids} from './RingaObject';
 import {executorCounts} from './ExecutorAbstract';
 
-export function dispatch (eventType, details, bus = document) {
-  if (isDOMNode(details)) {
-    bus = details;
-    details = undefined;
+export function dispatch (eventType, detail, bus = document) {
+  if (isDOMNode(detail)) {
+    bus = detail;
+    detail = undefined;
   }
-  return new RingaEvent(eventType, details).dispatch(bus);
+  return new RingaEvent(eventType, detail).dispatch(bus);
 }
 
 export function iif (condition, trueExecutor, falseExecutor) {
