@@ -7,7 +7,7 @@ import {buildArgumentsFromRingaEvent} from './util/executors';
 import {getArgNames} from './util/function';
 
 /**
- * Controller is the hub for events dispatched on the DOM invoking threads of executors.
+ * Controller is the hub that links event types through a bus (e.g. a DOM node) to an async executor tree.
  */
 class Controller extends RingaObject {
   //-----------------------------------
@@ -17,17 +17,21 @@ class Controller extends RingaObject {
    * Constructs a new controller.
    *
    * @param id The id of this controller, primarily used for internal hashes and debugging. Must be unique.
-   * @param domNode The native browser DOMNode element (not a React Node) to attach event listeners to.
+   * @param domNodeOrBus The native browser DOMNode element (not a React Node) to attach event listeners to OR a custom event bus.
    * @param options See documentation on Controller options. Defaults are provided, so this is optional.
    */
-  constructor(id, domNode, options) {
+  constructor(id, domNodeOrBus, options) {
     super(id);
 
-    if (__DEV__ && !domNode) {
-      throw Error('Controller:constructor(): no DOMNode provided to constructor!');
+    if (!(typeof domNodeOrBus.addEventListener === 'function')) {
+      if (__DEV__ && options) {
+        throw Error('Controller(): invalid bus or DOM node passed into constructor!');
+      }
+
+      options = domNodeOrBus;
     }
 
-    this.domNode = domNode;
+    this.domNodeOrBus = domNodeOrBus;
 
     this.options = options || {};
     this.options.timeout = this.options.timeout || 5000;
@@ -52,10 +56,45 @@ class Controller extends RingaObject {
     return this.options.injections;
   }
 
+  set domNodeOrBus(value) {
+    if (this._domNodeOrBus === value) {
+      return;
+    }
+
+    this._domNodeOrBus = value;
+
+    this.initialize();
+  }
+
+  get domNodeOrBus() {
+    return this._domNodeOrBus;
+  }
+
   //-----------------------------------
   // Methods
   //-----------------------------------
-  addEventTypes(types) {
+  /**
+   * Called when there is safely an event bus to attach events to.
+   */
+  initialize() {
+    // To be overridden
+  }
+
+  /**
+   * Takes in a series of event types and converts them to static properties on the parent class.
+   *
+   * For example:
+   *
+   *   controler = new MyController();
+   *   controller.addEventTypeStatics(['my event', 'otherEvent', 'YAY']);
+   *
+   *   MyController.MY_EVENT === 'my event';
+   *   MyController.OTHER_EVENT = 'otherEvent'
+   *   MyController.YAY = 'YAY;
+   *
+   * @param types An array of event types.
+   */
+  addEventTypeStatics(types) {
     types.forEach(type => {
       let TYPE_SNAKE_CASE = snakeCase(type).toUpperCase();
 
@@ -67,14 +106,31 @@ class Controller extends RingaObject {
     });
   }
 
+  /**
+   * Returns true if there is a listener for the provided eventType.
+   *
+   * @param eventType The event type - a String.
+   * @returns {*} True if the event type has a listener.
+   */
   getListener(eventType) {
     return this.eventTypeToThreadFactory[eventType];
   }
 
+  /**
+   * Listens for the event type on the attached event bus (or DOM node) and runs the provided executor or async tree.
+   *
+   * See online documentation for more details.
+   *
+   * @param eventType The event type, expected to be a String.
+   * @param executor A single executor (function, event type, Promise, Ringa Command) or an array of these.
+   * @returns {*} The ThreadFactory instance that will be run when the event is received.
+   */
   addListener(eventType, executor) {
     let threadFactory;
 
-    //console.log(executor.prototype);
+    if (!this.domNodeOrBus) {
+      throw new Error('Controller::addListener(): make sure you only call addListener after initialize() has been called.');
+    }
 
     if (executor && !(executor instanceof ThreadFactory) && !(executor instanceof Array)) {
       executor = [executor];
@@ -100,14 +156,14 @@ class Controller extends RingaObject {
       throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getListener() to make modifications.');
     }
 
-    this.addEventTypes([eventType]);
+    this.addEventTypeStatics([eventType]);
 
     threadFactory.controller = this;
 
     this.eventTypeToThreadFactory[eventType] = threadFactory;
 
     if (typeof eventType === 'string') {
-      this.domNode.addEventListener(eventType, this._eventHandler);
+      this.domNodeOrBus.addEventListener(eventType, this._eventHandler);
     } else {
       let _eventType = undefined;
 
@@ -116,7 +172,7 @@ class Controller extends RingaObject {
       }
 
       if (_eventType) {
-        this.domNode.addEventListener(_eventType, this._eventHandler.bind(this));
+        this.domNodeOrBus.addEventListener(_eventType, this._eventHandler.bind(this));
       } else {
         throw Error('Controller::addListener(): provided eventType is invalid.', eventType);
       }
@@ -125,13 +181,19 @@ class Controller extends RingaObject {
     return threadFactory;
   }
 
+  /**
+   * Safely removes an event listener for a particular event type.
+   *
+   * @param eventType The event type to remove.
+   * @returns {*} The ThreadFactory that the event type used to trigger.
+   */
   removeListener(eventType) {
     let threadFactory = this.eventTypeToThreadFactory[eventType];
 
     if (threadFactory) {
       delete this.eventTypeToThreadFactory[eventType];
 
-      this.domNode.removeEventListener(eventType, this._eventHandler);
+      this.domNodeOrBus.removeEventListener(eventType, this._eventHandler);
 
       return threadFactory;
     }
@@ -141,10 +203,24 @@ class Controller extends RingaObject {
     }
   }
 
+  /**
+   * Returns true if the event bus (or DOM node) that this controller is attached to has a listener for the provided
+   * event type.
+   *
+   * @param eventType The event type
+   * @returns {boolean} True if the event listener exists
+   */
   hasListener(eventType) {
     return this.getListener(eventType) !== undefined;
   }
 
+  /**
+   * Attaches a RingaEvent to a ThreadFactory and runs the ThreadFactory.
+   *
+   * @param ringaEvent A RingaEvent instance, properly initialized.
+   * @param threadFactory A ThreadFactory instance, properly initialized.
+   * @returns {*}
+   */
   invoke(ringaEvent, threadFactory) {
     let thread = threadFactory.build(ringaEvent);
 
@@ -244,7 +320,7 @@ class Controller extends RingaObject {
   }
 
   dispatch(eventType, details) {
-    return new RingaEvent(eventType, details).dispatch(this.domNode);
+    return new RingaEvent(eventType, details).dispatch(this.domNodeOrBus);
   }
 
   toString() {

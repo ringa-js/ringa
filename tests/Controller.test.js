@@ -57,8 +57,8 @@ describe('Controller', () => {
     expect(c.options.throwKillsThread).toEqual(false);
   });
 
-  it('should have an attached domNode', () => {
-    expect(controller.domNode).toEqual(domNode);
+  it('should have an attached domNode (or bus)', () => {
+    expect(controller.domNodeOrBus).toEqual(domNode);
   });
 
   it('should error if no domNode is provided', () => {
@@ -177,8 +177,8 @@ describe('Controller', () => {
     controller.dispatch('test1', undefined);
   });
 
-  it('should have a working addEventTypes', () => {
-    controller.addEventTypes(['whatever', 'hello world', 'to-snake-case', 'anotherTest']);
+  it('should have a working addEventTypeStatics', () => {
+    controller.addEventTypeStatics(['whatever', 'hello world', 'to-snake-case', 'anotherTest']);
 
     expect(TestController.WHATEVER).toEqual('whatever');
     expect(TestController.HELLO_WORLD).toEqual('hello world');
@@ -191,8 +191,8 @@ describe('Controller', () => {
     expect(controller.ANOTHER_TEST).toEqual('anotherTest');
   });
 
-  it('events created with addEventTypes should work', (done) => {
-    controller.addEventTypes(['test event types']);
+  it('events created with addEventTypeStatics should work', (done) => {
+    controller.addEventTypeStatics(['test event types']);
 
     controller.addListener(TestController.TEST_EVENT_TYPES, [() => {}]);
 
