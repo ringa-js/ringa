@@ -106,6 +106,20 @@ describe('Controller', () => {
     expect(controller.mounted).toEqual(true);
   });
 
+  it('should automatically remove listeners when the bus is unset', () => {
+    controller = new TestController('busLater');
+
+    controller.addListener('someEvent', () => {});
+
+    controller.bus = bus;
+    controller.bus = undefined;
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    expect(controller.mounted).toEqual(true);
+  });
+
   it('should automatically convert an array to a ThreadFactory and return it during addListener', () => {
     let ctf = controller.addListener('test', [() => {}]);
     expect(ctf).toBeDefined();

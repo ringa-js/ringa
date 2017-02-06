@@ -8,6 +8,7 @@ import RingaEventFactory from './RingaEventFactory';
 import AssignFactory from './factories/AssignFactory';
 import Model from './Model';
 import ModelWatcher from './ModelWatcher';
+import Bus, {busses} from './Bus';
 import IifExecutor from './executors/IifExecutor';
 import {isNode} from './util/type';
 
@@ -47,9 +48,10 @@ export function notify(eventType) {
 export function __hardReset() {
   ids.map = {};
   executorCounts.map = new Map();
+  busses.count = 0;
 }
 
-export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject };
+export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus };
 
 export default {
   Controller,
@@ -59,6 +61,7 @@ export default {
   Event: RingaEvent,
   Model,
   ModelWatcher,
+  Bus,
   RingaObject,
   dispatch,
   iif,

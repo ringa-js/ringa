@@ -65,7 +65,7 @@ class Controller extends RingaObject {
 
     // If we are switching busses, we need to remove the listeners from the old bus
     if (this._bus) {
-      this.removeAllListeners();
+      this.detachAllListeners();
     }
 
     this._bus = value;
@@ -74,9 +74,8 @@ class Controller extends RingaObject {
     // get attached now to our new bus.
     if (this._bus) {
       this.attachAllListeners();
+      this.busMounted(this.bus);
     }
-
-    this.busMounted(this.bus);
   }
 
   get bus() {
@@ -202,6 +201,14 @@ class Controller extends RingaObject {
   removeAllListeners() {
     for (let eventType in this.eventTypeToThreadFactory) {
       this.removeListener(eventType);
+    }
+  }
+
+  detachAllListeners() {
+    if (this.bus) {
+      for (let eventType in this.eventTypeToThreadFactory) {
+        this.bus.removeEventListener(eventType, this._eventHandler);
+      }
     }
   }
 
