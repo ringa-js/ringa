@@ -418,7 +418,7 @@ var _ParallelExecutor = __webpack_require__(34);
 
 var _ParallelExecutor2 = _interopRequireDefault(_ParallelExecutor);
 
-var _RingaEventFactory = __webpack_require__(6);
+var _RingaEventFactory = __webpack_require__(7);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -517,13 +517,15 @@ Object.defineProperty(exports, "__esModule", {
  *
  * Note that there are other properties that can be requested in the arguments list of execute:
  *
- * controller: the Controller object that is handling this thread
- * commandThread: the CommandThread object that built this Command
- * ringaEvent: the ringaEvent itself (instead of one of its detail properties)
- * customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
- * target: the target DOMNode that triggered the customEvent was dispatched on.
+ * $controller: the Controller object that is handling this thread
+ * $thread: the Thread object that built this Command
+ * $ringaEvent: the ringaEvent itself (instead of one of its detail properties)
+ * $customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
+ * $target: the target DOMNode that triggered the customEvent was dispatched on.
  * done: the parent Executor::done(). CommandFunction is an example of where this is needed.
  * fail: the parent Executor::fail(). CommandFunction is an example of where this is needed.
+ * $lastPromiseResult: the last Promise result from a previous executor.
+ * $lastPromiseError: the last Promise error from a previous executor.
  *
  * @param executor The Executor subclass instance.
  * @param expectedArguments An array of argument names that the target function expects.
@@ -594,6 +596,8 @@ var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
 var _debug = __webpack_require__(11);
 
+var _type = __webpack_require__(6);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -605,7 +609,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var eventIx = 0;
 
 /**
- * RingaEvent wraps a CustomEvent that is dispatched on the DOM:
+ * RingaEvent is a generic event type for Ringa that, when dispatched on the DOM, wraps a CustomEvent:
  *
  *   let event = new RingaEvent('change', {
  *     property: 'index',
@@ -614,10 +618,13 @@ var eventIx = 0;
  *
  *   event.dispatch();
  *
- * By default, the event will be dispatched on the document object, but you can provide a custom DOMNode to dispatch
- * from:
+ * If no bus is provided and document is defined, the event will be dispatched on the document object, but you can provide
+ * a custom DOMNode or bus to dispatch from:
  *
  *   event.dispatch(myDiv);
+ *
+ *   let b = new Ringa.Bus();
+ *   event.dispatch(b);
  *
  * All RingaEvents bubble and are cancelable by default.
  */
@@ -648,11 +655,9 @@ var RingaEvent = function (_RingaObject) {
     _this.detail = detail;
     detail.ringaEvent = _this;
 
-    _this.customEvent = new CustomEvent(type, {
-      detail: detail,
-      bubbles: bubbles,
-      cancelable: cancelable
-    });
+    _this._type = type;
+    _this._bubbles = bubbles;
+    _this._cancelable = cancelable;
 
     _this.dispatched = false;
     _this.controller = undefined;
@@ -678,27 +683,35 @@ var RingaEvent = function (_RingaObject) {
     // Methods
     //-----------------------------------
     /**
-     * Dispatch the event on the provided domNode.
+     * Dispatch the event on the provided bus.
      *
      * Note: this method is always delayed so you must not access its properties
      * until a frame later.
      *
-     * @param domNode
+     * @param bus
      */
     value: function dispatch() {
-      var domNode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+      var bus = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
-      setTimeout(this._dispatch.bind(this, domNode), 0);
+      setTimeout(this._dispatch.bind(this, bus), 0);
 
       return this;
     }
   }, {
     key: '_dispatch',
-    value: function _dispatch(domNode) {
+    value: function _dispatch(bus) {
       var _this2 = this;
 
       if (true && this.dispatched) {
         throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
+      }
+
+      if ((0, _type.isDOMNode)(bus)) {
+        this.customEvent = new CustomEvent(this.type, {
+          detail: this.detail,
+          bubbles: this.bubbles,
+          cancelable: this.cancelable
+        });
       }
 
       this.dispatched = true;
@@ -721,7 +734,7 @@ var RingaEvent = function (_RingaObject) {
         this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
       }
 
-      domNode.dispatchEvent(this.customEvent);
+      bus.dispatchEvent(this.customEvent ? this.customEvent : this);
     }
 
     /**
@@ -831,27 +844,27 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'type',
     get: function get() {
-      return this.customEvent.type;
+      return this._type;
     }
   }, {
     key: 'bubbles',
     get: function get() {
-      return this.customEvent.bubbles;
+      return this._bubbles;
     }
   }, {
     key: 'cancelable',
     get: function get() {
-      return this.customEvent.cancelable;
+      return this._cancelable;
     }
   }, {
     key: 'target',
     get: function get() {
-      return this.customEvent.target;
+      return this.customEvent ? this.customEvent.target : undefined;
     }
   }, {
     key: 'currentTarget',
     get: function get() {
-      return this.customEvent.currentTarget;
+      return this.customEvent ? this.customEvent.currentTarget : undefined;
     }
   }, {
     key: 'errors',
@@ -871,6 +884,31 @@ exports.default = RingaEvent;
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+exports.isPromise = isPromise;
+exports.isDOMNode = isDOMNode;
+function isPromise(obj) {
+  return !!obj && ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
+}
+
+// Returns true if it is a DOM node
+// http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
+function isDOMNode(o) {
+  return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === "object" ? o instanceof Node : o && (typeof o === 'undefined' ? 'undefined' : _typeof(o)) === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string";
+}
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -939,7 +977,7 @@ var RingaEventFactory = function () {
 exports.default = RingaEventFactory;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1026,31 +1064,6 @@ var ThreadFactory = function (_RingaHashArray) {
 }(_RingaHashArray3.default);
 
 exports.default = ThreadFactory;
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-exports.isPromise = isPromise;
-exports.isNode = isNode;
-function isPromise(obj) {
-  return !!obj && ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
-}
-
-// Returns true if it is a DOM node
-// http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
-function isNode(o) {
-  return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === "object" ? o instanceof Node : o && (typeof o === 'undefined' ? 'undefined' : _typeof(o)) === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string";
-}
 
 /***/ }),
 /* 9 */
@@ -1520,8 +1533,8 @@ var Bus = function (_RingaObject) {
      */
 
   }, {
-    key: 'dispatch',
-    value: function dispatch(event) {
+    key: 'dispatchEvent',
+    value: function dispatchEvent(event) {
       // Capture Phase
       if (this.parent) {
         var pStack = [this.parent];
@@ -1584,7 +1597,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ThreadFactory = __webpack_require__(7);
+var _ThreadFactory = __webpack_require__(8);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
@@ -1915,36 +1928,45 @@ var Controller = function (_RingaObject) {
 
   }, {
     key: '_eventHandler',
-    value: function _eventHandler(customEvent) {
-      // This event might be a something like 'click' which does not have
-      // an attached ringaEvent yet!
-      customEvent.detail.ringaEvent = customEvent.detail.ringaEvent || new _RingaEvent2.default(customEvent.type, customEvent.detail, customEvent.bubbles, customEvent.cancellable);
-
-      // TODO, how do we handle two controllers handling the same event?
-      if (customEvent.detail.ringaEvent.controller) {
-        throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + customEvent);
+    value: function _eventHandler(event) {
+      if (event instanceof _RingaEvent2.default) {
+        return this.__eventHandler(event);
       }
 
-      customEvent.detail.ringaEvent.controller = this;
+      // This event might be a something like 'click' which does not have
+      // an attached ringaEvent yet!
+      event.detail.ringaEvent = event.detail.ringaEvent || new _RingaEvent2.default(event.type, event.detail, event.bubbles, event.cancellable);
 
-      var threadFactory = this.eventTypeToThreadFactory[customEvent.type];
+      // TODO, how do we handle two controllers handling the same event?
+      if (event.detail.ringaEvent.controller) {
+        throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + event);
+      }
+
+      this.__eventHandler(event.detail.ringaEvent);
+    }
+  }, {
+    key: '__eventHandler',
+    value: function __eventHandler(ringaEvent) {
+      ringaEvent.controller = this;
+
+      var threadFactory = this.eventTypeToThreadFactory[ringaEvent.type];
 
       if (true && !threadFactory) {
         throw Error('Controller::_eventHandler(): caught an event but there is no associated ThreadFactory! Fatal error.');
       }
 
-      customEvent.detail.ringaEvent.caught = true;
+      ringaEvent.caught = true;
 
       var abort = void 0;
       try {
-        abort = this.preInvokeHandler(customEvent.detail.ringaEvent);
+        abort = this.preInvokeHandler(ringaEvent);
       } catch (error) {
         // At this point we don't have a thread yet, so this is all kinds of whack.
         if (this.options.consoleLogFails) {
           console.error(error);
         }
 
-        customEvent.detail.ringaEvent._fail(error);
+        ringaEvent._fail(error);
       }
 
       if (abort === true) {
@@ -1952,9 +1974,9 @@ var Controller = function (_RingaObject) {
       }
 
       try {
-        var _thread = this.invoke(customEvent.detail.ringaEvent, threadFactory);
+        var _thread = this.invoke(ringaEvent, threadFactory);
 
-        this.postInvokeHandler(customEvent.detail.ringaEvent, _thread);
+        this.postInvokeHandler(ringaEvent, _thread);
       } catch (error) {
         this.threadFailHandler(thread, error);
       }
@@ -4204,7 +4226,7 @@ var _RingaHashArray2 = __webpack_require__(10);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
-var _type = __webpack_require__(8);
+var _type = __webpack_require__(6);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4679,7 +4701,7 @@ var _ExecutorFactory = __webpack_require__(3);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _ThreadFactory = __webpack_require__(7);
+var _ThreadFactory = __webpack_require__(8);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
@@ -4695,7 +4717,7 @@ var _RingaObject = __webpack_require__(1);
 
 var _RingaObject2 = _interopRequireDefault(_RingaObject);
 
-var _RingaEventFactory = __webpack_require__(6);
+var _RingaEventFactory = __webpack_require__(7);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -4719,20 +4741,20 @@ var _IifExecutor = __webpack_require__(18);
 
 var _IifExecutor2 = _interopRequireDefault(_IifExecutor);
 
-var _type = __webpack_require__(8);
+var _type = __webpack_require__(6);
 
 var _ExecutorAbstract = __webpack_require__(0);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function dispatch(eventType, details) {
-  var domNode = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document;
+  var bus = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document;
 
-  if ((0, _type.isNode)(details)) {
-    domNode = details;
+  if ((0, _type.isDOMNode)(details)) {
+    bus = details;
     details = undefined;
   }
-  return new _RingaEvent2.default(eventType, details).dispatch(domNode);
+  return new _RingaEvent2.default(eventType, details).dispatch(bus);
 }
 
 function iif(condition, trueExecutor, falseExecutor) {
@@ -4745,12 +4767,12 @@ function assign(executor, detail) {
   return new _AssignFactory2.default(executor, detail);
 }
 
-function event(eventType, detail, domNode) {
+function event(eventType, detail, bus) {
   var requireCatch = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
   var bubbles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   var cancellable = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
 
-  return new _RingaEventFactory2.default(eventType, detail, domNode, requireCatch, bubbles, cancellable);
+  return new _RingaEventFactory2.default(eventType, detail, bus, requireCatch, bubbles, cancellable);
 }
 
 function notify(eventType) {
