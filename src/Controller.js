@@ -17,21 +17,21 @@ class Controller extends RingaObject {
    * Constructs a new controller.
    *
    * @param id The id of this controller, primarily used for internal hashes and debugging. Must be unique.
-   * @param domNodeOrBus The native browser DOMNode element (not a React Node) to attach event listeners to OR a custom event bus.
+   * @param bus The native browser DOMNode element (not a React Node) to attach event listeners to OR a custom event bus.
    * @param options See documentation on Controller options. Defaults are provided, so this is optional.
    */
-  constructor(id, domNodeOrBus, options) {
+  constructor(id, bus, options) {
     super(id);
 
-    if (!(typeof domNodeOrBus.addEventListener === 'function')) {
+    if (bus && !(typeof bus.addEventListener === 'function')) {
       if (__DEV__ && options) {
         throw Error('Controller(): invalid bus or DOM node passed into constructor!');
       }
 
-      options = domNodeOrBus;
+      options = bus;
     }
 
-    this.domNodeOrBus = domNodeOrBus;
+    this.bus = bus;
 
     this.options = options || {};
     this.options.timeout = this.options.timeout || 5000;
@@ -56,27 +56,41 @@ class Controller extends RingaObject {
     return this.options.injections;
   }
 
-  set domNodeOrBus(value) {
-    if (this._domNodeOrBus === value) {
+  set bus(value) {
+    // If someone tries to reset the same bus, just ignore it because it would be dumb to detach all the listeners
+    // and reattach them.
+    if (this._bus === value) {
       return;
     }
 
-    this._domNodeOrBus = value;
+    // If we are switching busses, we need to remove the listeners from the old bus
+    if (this._bus) {
+      this.removeAllListeners();
+    }
 
-    this.initialize();
+    this._bus = value;
+
+    // If the developer has called to attach previous listeners we need to make sure all of those
+    // get attached now to our new bus.
+    if (this._bus) {
+      this.attachAllListeners();
+    }
+
+    this.busMounted(this.bus);
   }
 
-  get domNodeOrBus() {
-    return this._domNodeOrBus;
+  get bus() {
+    return this._bus;
   }
 
   //-----------------------------------
   // Methods
   //-----------------------------------
   /**
-   * Called when there is safely an event bus to attach events to.
+   * Called when there is safely an event bus to attach events to. This is where you could redispatch certain initialization
+   * events.
    */
-  initialize() {
+  busMounted(bus) {
     // To be overridden
   }
 
@@ -112,7 +126,7 @@ class Controller extends RingaObject {
    * @param eventType The event type - a String.
    * @returns {*} True if the event type has a listener.
    */
-  getListener(eventType) {
+  getThreadFactoryFor(eventType) {
     return this.eventTypeToThreadFactory[eventType];
   }
 
@@ -127,10 +141,6 @@ class Controller extends RingaObject {
    */
   addListener(eventType, executor) {
     let threadFactory;
-
-    if (!this.domNodeOrBus) {
-      throw new Error('Controller::addListener(): make sure you only call addListener after initialize() has been called.');
-    }
 
     if (executor && !(executor instanceof ThreadFactory) && !(executor instanceof Array)) {
       executor = [executor];
@@ -153,7 +163,7 @@ class Controller extends RingaObject {
     }
 
     if (__DEV__ && this.eventTypeToThreadFactory[eventType]) {
-      throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getListener() to make modifications.');
+      throw Error('Controller.addListener(): the event \'' + eventType + '\' has already been added! Use getThreadFactoryFor() to make modifications.');
     }
 
     this.addEventTypeStatics([eventType]);
@@ -162,8 +172,18 @@ class Controller extends RingaObject {
 
     this.eventTypeToThreadFactory[eventType] = threadFactory;
 
+    this._attachListenerToBus(eventType);
+
+    return threadFactory;
+  }
+
+  _attachListenerToBus(eventType) {
+    if (!this.bus) {
+      return; // We will be attached once the bus comes in to the station.
+    }
+
     if (typeof eventType === 'string') {
-      this.domNodeOrBus.addEventListener(eventType, this._eventHandler);
+      this.bus.addEventListener(eventType, this._eventHandler);
     } else {
       let _eventType = undefined;
 
@@ -172,13 +192,23 @@ class Controller extends RingaObject {
       }
 
       if (_eventType) {
-        this.domNodeOrBus.addEventListener(_eventType, this._eventHandler.bind(this));
+        this.bus.addEventListener(_eventType, this._eventHandler.bind(this));
       } else {
         throw Error('Controller::addListener(): provided eventType is invalid.', eventType);
       }
     }
+  }
 
-    return threadFactory;
+  removeAllListeners() {
+    for (let eventType in this.eventTypeToThreadFactory) {
+      this.removeListener(eventType);
+    }
+  }
+
+  attachAllListeners() {
+    for (let eventType in this.eventTypeToThreadFactory) {
+      this._attachListenerToBus(eventType);
+    }
   }
 
   /**
@@ -193,7 +223,7 @@ class Controller extends RingaObject {
     if (threadFactory) {
       delete this.eventTypeToThreadFactory[eventType];
 
-      this.domNodeOrBus.removeEventListener(eventType, this._eventHandler);
+      this.bus.removeEventListener(eventType, this._eventHandler);
 
       return threadFactory;
     }
@@ -208,10 +238,30 @@ class Controller extends RingaObject {
    * event type.
    *
    * @param eventType The event type
-   * @returns {boolean} True if the event listener exists
+   * @returns {boolean} True if the bus says it has a listener for the provided event type.
+   */
+  isListening(eventType) {
+    if (this.bus && this.bus.hasListener) {
+      return this.bus.hasListener(eventType);
+    } else if (this.bus) {
+      // Kinda risky, but there is no built-in way on DOM node to see if an event has been attached
+      // without working some magic by overriding addEventListener or using jQuery, which we shall
+      // not do because we are not barbarians.
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns true if addListener has been called for the provided eventType. Note this will return true even if the bus
+   * is not set.
+   *
+   * @param eventType The event type
+   * @returns {boolean} True if addListener has been called with the provided event.
    */
   hasListener(eventType) {
-    return this.getListener(eventType) !== undefined;
+    return this.getThreadFactoryFor(eventType) !== undefined;
   }
 
   /**
@@ -320,7 +370,7 @@ class Controller extends RingaObject {
   }
 
   dispatch(eventType, details) {
-    return new RingaEvent(eventType, details).dispatch(this.domNodeOrBus);
+    return new RingaEvent(eventType, details).dispatch(this.bus);
   }
 
   toString() {
