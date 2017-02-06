@@ -1,11 +1,12 @@
 import RingaObject from './RingaObject';
 import ErrorStackParser from 'error-stack-parser';
 import {ringaEventToDebugString} from './util/debug';
+import {isDOMNode} from './util/type';
 
 let eventIx = 0;
 
 /**
- * RingaEvent wraps a CustomEvent that is dispatched on the DOM:
+ * RingaEvent is a generic event type for Ringa that, when dispatched on the DOM, wraps a CustomEvent:
  *
  *   let event = new RingaEvent('change', {
  *     property: 'index',
@@ -14,10 +15,13 @@ let eventIx = 0;
  *
  *   event.dispatch();
  *
- * By default, the event will be dispatched on the document object, but you can provide a custom DOMNode to dispatch
- * from:
+ * If no bus is provided and document is defined, the event will be dispatched on the document object, but you can provide
+ * a custom DOMNode or bus to dispatch from:
  *
  *   event.dispatch(myDiv);
+ *
+ *   let b = new Ringa.Bus();
+ *   event.dispatch(b);
  *
  * All RingaEvents bubble and are cancelable by default.
  */
@@ -39,11 +43,9 @@ class RingaEvent extends RingaObject {
     this.detail = detail;
     detail.ringaEvent = this;
 
-    this.customEvent = new CustomEvent(type, {
-      detail,
-      bubbles,
-      cancelable
-    });
+    this._type = type;
+    this._bubbles = bubbles;
+    this._cancelable = cancelable;
 
     this.dispatched = false;
     this.controller = undefined;
@@ -59,23 +61,23 @@ class RingaEvent extends RingaObject {
   // Properties
   //-----------------------------------
   get type() {
-    return this.customEvent.type;
+    return this._type;
   }
 
   get bubbles() {
-    return this.customEvent.bubbles;
+    return this._bubbles;
   }
 
   get cancelable() {
-    return this.customEvent.cancelable;
+    return this._cancelable;
   }
 
   get target() {
-    return this.customEvent.target;
+    return this.customEvent ? this.customEvent.target : undefined;
   }
 
   get currentTarget() {
-    return this.customEvent.currentTarget;
+    return this.customEvent ? this.customEvent.currentTarget : undefined;
   }
 
   get errors() {
@@ -86,22 +88,30 @@ class RingaEvent extends RingaObject {
   // Methods
   //-----------------------------------
   /**
-   * Dispatch the event on the provided domNode.
+   * Dispatch the event on the provided bus.
    *
    * Note: this method is always delayed so you must not access its properties
    * until a frame later.
    *
-   * @param domNode
+   * @param bus
    */
-  dispatch(domNode = document) {
-    setTimeout(this._dispatch.bind(this, domNode), 0);
+  dispatch(bus = document) {
+    setTimeout(this._dispatch.bind(this, bus), 0);
 
     return this;
   }
 
-  _dispatch(domNode) {
+  _dispatch(bus) {
     if (__DEV__ && this.dispatched) {
       throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
+    }
+
+    if (isDOMNode(bus)) {
+      this.customEvent = new CustomEvent(this.type, {
+        detail: this.detail,
+        bubbles: this.bubbles,
+        cancelable: this.cancelable
+      });
     }
 
     this.dispatched = true;
@@ -124,7 +134,7 @@ class RingaEvent extends RingaObject {
       this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
     }
 
-    domNode.dispatchEvent(this.customEvent);
+    bus.dispatchEvent(this.customEvent ? this.customEvent : this);
   }
 
   /**

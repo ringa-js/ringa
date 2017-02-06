@@ -10,17 +10,17 @@ import Model from './Model';
 import ModelWatcher from './ModelWatcher';
 import Bus, {busses} from './Bus';
 import IifExecutor from './executors/IifExecutor';
-import {isNode} from './util/type';
+import {isDOMNode} from './util/type';
 
 import {ids} from './RingaObject';
 import {executorCounts} from './ExecutorAbstract';
 
-export function dispatch (eventType, details, domNode = document) {
-  if (isNode(details)) {
-    domNode = details;
+export function dispatch (eventType, details, bus = document) {
+  if (isDOMNode(details)) {
+    bus = details;
     details = undefined;
   }
-  return new RingaEvent(eventType, details).dispatch(domNode);
+  return new RingaEvent(eventType, details).dispatch(bus);
 }
 
 export function iif (condition, trueExecutor, falseExecutor) {
@@ -35,8 +35,8 @@ export function assign (executor, detail) {
   return new AssignFactory(executor, detail);
 }
 
-export function event (eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true) {
-  return new RingaEventFactory(eventType, detail, domNode, requireCatch, bubbles, cancellable);
+export function event (eventType, detail, bus, requireCatch = false, bubbles = true, cancellable = true) {
+  return new RingaEventFactory(eventType, detail, bus, requireCatch, bubbles, cancellable);
 }
 
 export function notify(eventType) {

@@ -87,7 +87,7 @@ class Bus extends RingaObject {
    *
    * @param event A RingaEvent or similar.
    */
-  dispatch(event) {
+  dispatchEvent(event) {
     // Capture Phase
     if (this.parent) {
       let pStack = [this.parent];

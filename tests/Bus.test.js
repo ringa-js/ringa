@@ -56,7 +56,7 @@ describe('Bus', () => {
       done();
     });
 
-    bus.dispatch({
+    bus.dispatchEvent({
       type: 'test'
     });
   }, 5);
@@ -69,7 +69,7 @@ describe('Bus', () => {
     bus.addEventListener('test', f);
     bus.removeEventListener('test', f);
 
-    bus.dispatch({
+    bus.dispatchEvent({
       type: 'test'
     });
   });
@@ -98,7 +98,7 @@ describe('Bus', () => {
       prevB = curB;
     }
 
-    curB.dispatch({
+    curB.dispatchEvent({
       type: 'test'
     });
 
@@ -126,7 +126,7 @@ describe('Bus', () => {
       prevB = curB;
     }
 
-    curB.dispatch({
+    curB.dispatchEvent({
       type: 'test'
     });
 

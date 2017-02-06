@@ -5,23 +5,25 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa, {__hardReset} from '../src/index';
+import Ringa, {__hardReset, Bus} from '../src/index';
 import TestController from './shared/TestController';
 
 const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
 describe('Controller', () => {
-  let command, bus, reactNode, threadFactory, threadFactory2, controller;
+  let command, domNode, bus, reactNode, threadFactory, threadFactory2, controller;
 
   beforeEach(() => {
     let ran = Math.random();
 
-    bus = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
+    domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
       <div key={ran.toString()}>Controller Attach Point</div>
     ));
 
-    controller = new TestController('testController', bus);
+    bus = new Bus();
+
+    controller = new TestController('testController', domNode);
 
     threadFactory = controller.addListener(TEST_EVENT);
     threadFactory2 = controller.addListener(TEST_EVENT2);
@@ -47,7 +49,7 @@ describe('Controller', () => {
   });
 
   it('should allow you to override the default options', () => {
-    let c = new Ringa.Controller('c', bus, {
+    let c = new Ringa.Controller('c', domNode, {
       timeout: 1,
       throwKillsThread: false
     });
@@ -57,17 +59,25 @@ describe('Controller', () => {
     expect(c.options.throwKillsThread).toEqual(false);
   });
 
-  it('should have an attached bus (or bus)', () => {
-    expect(controller.bus).toEqual(bus);
+  it('should have an attached domNode (or domNode)', () => {
+    expect(controller.bus).toEqual(domNode);
   });
 
   it('should not error if no bus is provided', () => {
-    controller = new TestController('noDomNode');
+    controller = new TestController('nobus');
 
     expect(controller.bus).toEqual(undefined);
   });
 
-  it('should allow attaching of bus after constructor', () => {
+  it('should allow attaching of domNode after constructor (DOM Node)', () => {
+    controller = new TestController('busLater');
+
+    controller.bus = domNode;
+
+    expect(controller.bus).toEqual(domNode);
+  });
+
+  it('should allow attaching of domNode after constructor (Bus)', () => {
     controller = new TestController('busLater');
 
     controller.bus = bus;
@@ -75,7 +85,17 @@ describe('Controller', () => {
     expect(controller.bus).toEqual(bus);
   });
 
-  it('should call busMounted when the bus is set', () => {
+  it('should call domNodeMounted when the domNode is set (DOM Node)', () => {
+    controller = new TestController('busLater');
+
+    expect(controller.mounted).toEqual(false);
+
+    controller.bus = domNode;
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should call domNodeMounted when the domNode is set (Bus)', () => {
     controller = new TestController('busLater');
 
     expect(controller.mounted).toEqual(false);
@@ -85,7 +105,28 @@ describe('Controller', () => {
     expect(controller.mounted).toEqual(true);
   });
 
-  it('should automatically attach listeners when the bus is set', () => {
+  it('should automatically attach listeners when the DOM Node is set', () => {
+    controller = new TestController('busLater');
+
+    expect(controller.hasListener('someEvent')).toEqual(false);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    controller.addListener('someEvent', () => {});
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    expect(controller.mounted).toEqual(false);
+
+    controller.bus = domNode;
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(true);
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should automatically attach listeners when the Bus is set', () => {
     controller = new TestController('busLater');
 
     expect(controller.hasListener('someEvent')).toEqual(false);
@@ -102,6 +143,20 @@ describe('Controller', () => {
 
     expect(controller.hasListener('someEvent')).toEqual(true);
     expect(controller.isListening('someEvent')).toEqual(true);
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should automatically remove listeners when the domNode is unset', () => {
+    controller = new TestController('busLater');
+
+    controller.addListener('someEvent', () => {});
+
+    controller.bus = domNode;
+    controller.bus = undefined;
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(false);
 
     expect(controller.mounted).toEqual(true);
   });
@@ -125,7 +180,7 @@ describe('Controller', () => {
     expect(ctf).toBeDefined();
   });
 
-  it('should block adding the same event listener twice', () => {
+  it('should block adding the same event listener twice (DOM Node)', () => {
     controller.addListener('test');
 
     expect(() => {
@@ -133,18 +188,54 @@ describe('Controller', () => {
     }).toThrow();
   });
 
-  it('should let you retrieve an already saved command thread factory by eventType', () => {
+  it('should block adding the same event listener twice (Bus)', () => {
+    controller.bus = bus;
+
+    controller.addListener('test');
+
+    expect(() => {
+      controller.addListener('test');
+    }).toThrow();
+  });
+
+  it('should let you retrieve an already saved command thread factory by eventType (DOM Node)', () => {
     let ctf = controller.addListener('test', [() => {}]);
     expect(ctf).toEqual(controller.getThreadFactoryFor('test'));
   });
 
-  it('should let you see if an eventType has already been added', () => {
+  it('should let you retrieve an already saved command thread factory by eventType (Bus)', () => {
+    controller.bus = bus;
+
+    let ctf = controller.addListener('test', [() => {}]);
+    expect(ctf).toEqual(controller.getThreadFactoryFor('test'));
+  });
+
+  it('should let you see if an eventType has already been added (DOM Node)', () => {
     let ctf = controller.addListener('test', [() => {}]);
     expect(controller.hasListener('test')).toEqual(true);
     expect(controller.hasListener('test2')).toEqual(false);
   });
 
-  it('should allow you to remove a listener', () => {
+  it('should let you see if an eventType has already been added (Bus)', () => {
+    controller.bus = bus;
+
+    let ctf = controller.addListener('test', [() => {}]);
+    expect(controller.hasListener('test')).toEqual(true);
+    expect(controller.hasListener('test2')).toEqual(false);
+  });
+
+  it('should allow you to remove a listener (DOM Node)', () => {
+    let ctf1 = controller.addListener('test', []);
+    expect(controller.hasListener('test')).toEqual(true);
+    let ctf2 = controller.removeListener('test');
+    expect(controller.hasListener('test')).toEqual(false);
+
+    expect(ctf1).toEqual(ctf2);
+  });
+
+  it('should allow you to remove a listener (Bus)', () => {
+    controller.bus = bus;
+
     let ctf1 = controller.addListener('test', []);
     expect(controller.hasListener('test')).toEqual(true);
     let ctf2 = controller.removeListener('test');
@@ -163,14 +254,14 @@ describe('Controller', () => {
       }
     };
 
-    let tc = new TC('TC', bus);
+    let tc = new TC('TC', domNode);
     let ran = false;
 
     tc.addListener('test', [() => {
       ran = true;
     }]);
 
-    _ringaEvent = Ringa.dispatch('test', undefined, bus).addDoneListener(() => {
+    _ringaEvent = Ringa.dispatch('test', undefined, domNode).addDoneListener(() => {
       expect(ran).toEqual(true);
       expect(tc.preinvokeRan).toEqual(true);
       done();
@@ -186,7 +277,7 @@ describe('Controller', () => {
       }
     };
 
-    let tc = new TC('TC', bus);
+    let tc = new TC('TC', domNode);
     tc.options.consoleLogFails = false;
     let ran = false;
 
@@ -194,7 +285,7 @@ describe('Controller', () => {
       ran = true;
     }]);
 
-    _ringaEvent = Ringa.dispatch('test', undefined, bus).addFailListener((event) => {
+    _ringaEvent = Ringa.dispatch('test', undefined, domNode).addFailListener((event) => {
       expect(event.error.message).toEqual('whatever');
       expect(ran).toEqual(false);
       done();
@@ -213,16 +304,26 @@ describe('Controller', () => {
       }
     };
 
-    let tc = new TC('TC', bus);
+    let tc = new TC('TC', domNode);
 
     tc.addListener('test', [() => {
       ran = true;
     }]);
 
-    _ringaEvent = Ringa.dispatch('test', undefined, bus);
+    _ringaEvent = Ringa.dispatch('test', undefined, domNode);
   });
 
-  it('should have a dispatch method that dispatches directly on the bus for the controller', (done) => {
+  it('should have a dispatch method that dispatches directly on the domNode for the controller', (done) => {
+    controller.addListener('test1', [() => {
+      done();
+    }]);
+
+    controller.dispatch('test1', undefined);
+  });
+
+  it('should have a dispatch method that dispatches directly on the Bus for the controller', (done) => {
+    controller.bus = bus;
+
     controller.addListener('test1', [() => {
       done();
     }]);
@@ -249,7 +350,7 @@ describe('Controller', () => {
 
     controller.addListener(TestController.TEST_EVENT_TYPES, [() => {}]);
 
-    Ringa.dispatch(TestController.TEST_EVENT_TYPES, undefined, bus).then(_ => done());
+    Ringa.dispatch(TestController.TEST_EVENT_TYPES, undefined, domNode).then(_ => done());
   });
 
   it('should auto-add event types as snake case properties', () => {
@@ -262,7 +363,7 @@ describe('Controller', () => {
   it('should take a passed in ExecutorFactory and wrap in an array (function)', (done) => {
     controller.addListener('fin', () => {done();});
 
-    Ringa.dispatch('fin', undefined, bus);
+    Ringa.dispatch('fin', undefined, domNode);
   });
 
   it('should take a passed in ExecutorFactory and wrap in an array (event)', (done) => {
@@ -270,7 +371,7 @@ describe('Controller', () => {
     controller.addListener('fin', () => {done();});
     controller.addListener('start', 'fin');
 
-    Ringa.dispatch('start', undefined, bus);
+    Ringa.dispatch('start', undefined, domNode);
   });
 
   it('should have a watch() that works properly (1/2)', (done) => {
@@ -284,7 +385,7 @@ describe('Controller', () => {
       done();
     });
 
-    Ringa.dispatch('start', undefined, bus);
+    Ringa.dispatch('start', undefined, domNode);
   }, 50);
 
   it('should have a watch() that works properly (2/2)', (done) => {
@@ -304,7 +405,7 @@ describe('Controller', () => {
       }
     });
 
-    Ringa.dispatch('start', undefined, bus);
+    Ringa.dispatch('start', undefined, domNode);
   }, 50);
 
   it('should have a watch() that works properly with injections', (done) => {
@@ -319,6 +420,6 @@ describe('Controller', () => {
       done();
     });
 
-    Ringa.dispatch('start', undefined, bus);
+    Ringa.dispatch('start', undefined, domNode);
   }, 50);
 });

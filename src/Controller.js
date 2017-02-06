@@ -294,36 +294,44 @@ class Controller extends RingaObject {
   //-----------------------------------
   // Events
   //-----------------------------------
-  _eventHandler(customEvent) {
-    // This event might be a something like 'click' which does not have
-    // an attached ringaEvent yet!
-    customEvent.detail.ringaEvent = customEvent.detail.ringaEvent || new RingaEvent(customEvent.type, customEvent.detail, customEvent.bubbles, customEvent.cancellable);
-
-    // TODO, how do we handle two controllers handling the same event?
-    if (customEvent.detail.ringaEvent.controller) {
-      throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + customEvent);
+  _eventHandler(event) {
+    if (event instanceof RingaEvent) {
+      return this.__eventHandler(event);
     }
 
-    customEvent.detail.ringaEvent.controller = this;
+    // This event might be a something like 'click' which does not have
+    // an attached ringaEvent yet!
+    event.detail.ringaEvent = event.detail.ringaEvent || new RingaEvent(event.type, event.detail, event.bubbles, event.cancellable);
 
-    let threadFactory = this.eventTypeToThreadFactory[customEvent.type];
+    // TODO, how do we handle two controllers handling the same event?
+    if (event.detail.ringaEvent.controller) {
+      throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + event);
+    }
+
+    this.__eventHandler(event.detail.ringaEvent);
+  }
+
+  __eventHandler(ringaEvent) {
+    ringaEvent.controller = this;
+
+    let threadFactory = this.eventTypeToThreadFactory[ringaEvent.type];
 
     if (__DEV__ && !threadFactory) {
       throw Error('Controller::_eventHandler(): caught an event but there is no associated ThreadFactory! Fatal error.');
     }
 
-    customEvent.detail.ringaEvent.caught = true;
+    ringaEvent.caught = true;
 
     let abort;
     try {
-      abort = this.preInvokeHandler(customEvent.detail.ringaEvent);
+      abort = this.preInvokeHandler(ringaEvent);
     } catch (error) {
       // At this point we don't have a thread yet, so this is all kinds of whack.
       if (this.options.consoleLogFails) {
         console.error(error);
       }
 
-      customEvent.detail.ringaEvent._fail(error);
+      ringaEvent._fail(error);
     }
 
     if (abort === true) {
@@ -331,9 +339,9 @@ class Controller extends RingaObject {
     }
 
     try {
-      let thread = this.invoke(customEvent.detail.ringaEvent, threadFactory);
+      let thread = this.invoke(ringaEvent, threadFactory);
 
-      this.postInvokeHandler(customEvent.detail.ringaEvent, thread);
+      this.postInvokeHandler(ringaEvent, thread);
     } catch (error) {
       this.threadFailHandler(thread, error);
     }
