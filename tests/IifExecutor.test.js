@@ -213,4 +213,38 @@ describe('iifExecutor', () => {
       done();
     })
   }, 50);
+
+  //----------------------------------------------
+  // Condition can access details passed to event
+  //----------------------------------------------
+  it('Condition can access details passed to event', (done) => {
+    let value = 'value';
+
+    controller.addListener('myEvent', [
+      iif((testDetail) => {
+        expect(testDetail).toBe(value);
+        return true;
+      },
+        () => done())
+      ]);
+
+    Ringa.dispatch('myEvent', {testDetail: value}, domNode);
+  }, 50);
+
+  //---------------------------------
+  // Condition can access injections
+  //---------------------------------
+  it('Condition can access injections', (done) => {
+    controller.addListener('myEvent', [
+      iif(($controller, $thread, $detail) => {
+        expect($controller).toBeDefined();
+        expect($thread).toBeDefined();
+        expect($detail).toBeDefined();
+        return true;
+      },
+        () => done())
+      ]);
+
+    Ringa.dispatch('myEvent', domNode);
+  }, 50);
 });
