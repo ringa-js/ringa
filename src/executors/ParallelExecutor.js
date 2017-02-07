@@ -1,6 +1,6 @@
-import CommandAbstract from '../ExecutorAbstract';
+import ExecutorAbstract from '../ExecutorAbstract';
 
-class ParallelExecutor extends CommandAbstract {
+class ParallelExecutor extends ExecutorAbstract {
 
 }
 

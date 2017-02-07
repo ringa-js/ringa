@@ -43,6 +43,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
       $controller: executor.controller,
       $thread: executor.thread,
       $ringaEvent: ringaEvent,
+      $lastEvent: ringaEvent.detail.$lastEvent,
       $customEvent: ringaEvent.customEvent,
       $target: ringaEvent.target,
       $detail: ringaEvent.detail,

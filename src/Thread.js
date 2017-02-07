@@ -1,5 +1,4 @@
 import RingaHashArray from './RingaHashArray';
-import {isPromise} from './util/type';
 
 class Thread extends RingaHashArray {
   //-----------------------------------
@@ -13,7 +12,7 @@ class Thread extends RingaHashArray {
 
     this.running = false;
 
-    // TODO: a command thread can potentially spawn child command threads
+    // TODO: a executor thread can potentially spawn child executor threads
     this.children = [];
   }
 
@@ -51,37 +50,17 @@ class Thread extends RingaHashArray {
 
     this.buildExecutors();
 
-    // The current command we are running
+    // The current executor we are running
     this.index = 0;
 
     this.executeNext();
   }
 
   executeNext() {
-    let command = this.all[this.index];
-    let promise;
+    let executor = this.all[this.index];
 
     try {
-      promise = command._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
-
-      if (promise) {
-        if (isPromise(promise)) {
-          this.ringaEvent.detail._promise = promise;
-
-          promise.then((result) => {
-            this.ringaEvent.lastPromiseResult = result;
-
-            this._executorDoneHandler();
-          });
-          promise.catch((error) => {
-            this.ringaEvent.lastPromiseError = error;
-
-            this._executorFailHandler(error);
-          });
-        } else if (__DEV__) {
-          throw Error(`Thread::executeNext(): command ${command.toString()} returned something that is not a promise, ${promise}`);
-        }
-      }
+      executor._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
     } catch (error) {
       this._executorFailHandler(error);
     }
@@ -95,7 +74,11 @@ class Thread extends RingaHashArray {
   // Events
   //-----------------------------------
   _executorDoneHandler() {
-    this.all[this.index].destroy();
+    if (!this.all[this.index]) {
+      console.error('Thread::_executorDoneHandler(): could not find executor to destroy it!');
+    } else {
+      this.all[this.index].destroy();
+    }
 
     this.index++;
 
@@ -111,7 +94,11 @@ class Thread extends RingaHashArray {
   }
 
   _executorFailHandler(error, kill) {
-    this.all[this.index].destroy();
+    if (!this.all[this.index]) {
+      console.error('Thread::_executorFailHandler(): could not find executor to destroy it!');
+    } else {
+      this.all[this.index].destroy();
+    }
 
     this.error = error;
 

@@ -1,6 +1,6 @@
-import CommandAbstract from '../ExecutorAbstract';
+import ExecutorAbstract from '../ExecutorAbstract';
 
-class SleepExecutor extends CommandAbstract {
+class SleepExecutor extends ExecutorAbstract {
 
 }
 

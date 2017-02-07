@@ -96,6 +96,8 @@ var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
 var _debug = __webpack_require__(11);
 
+var _type = __webpack_require__(6);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -189,6 +191,34 @@ var ExecutorAbstract = function (_RingaObject) {
       this.startTime = (0, _debug.now)();
 
       this.startTimeoutCheck();
+    }
+
+    /**
+     * Tells this executor to suspend its normal timeout operation and done/fail handler and wait for a promise instead.
+     * @param promise
+     */
+
+  }, {
+    key: 'waitForPromise',
+    value: function waitForPromise(promise) {
+      var _this2 = this;
+
+      if ((0, _type.isPromise)(promise)) {
+        this.ringaEvent.detail._promise = promise;
+
+        promise.then(function (result) {
+          _this2.ringaEvent.lastPromiseResult = result;
+
+          _this2.done();
+        });
+        promise.catch(function (error) {
+          _this2.ringaEvent.lastPromiseError = error;
+
+          _this2.fail(error);
+        });
+      } else if (true) {
+        throw Error('ExecutorAbstract::waitForPromise(): command ' + this.toString() + ' returned something that is not a promise, ' + promise);
+      }
     }
 
     /**
@@ -339,7 +369,7 @@ var RingaObject = function () {
     key: 'id',
     set: function set(value) {
       if (ids.map[value]) {
-        console.warn('Duplicate Ringa id discovered: \'' + value + '\'. Call RingaObject::destroy() to clear up the id.');
+        console.warn('Duplicate Ringa id discovered: \'' + value + '\' for \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
       }
 
       ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.
@@ -544,6 +574,7 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
     $controller: executor.controller,
     $thread: executor.thread,
     $ringaEvent: ringaEvent,
+    $lastEvent: ringaEvent.detail.$lastEvent,
     $customEvent: ringaEvent.customEvent,
     $target: ringaEvent.target,
     $detail: ringaEvent.detail,
@@ -2590,7 +2621,7 @@ var Command = function (_ExecutorAbstract) {
      * @private
      */
     value: function _execute(doneHandler, failHandler) {
-      var ret = void 0;
+      var promise = void 0;
 
       _get(Command.prototype.__proto__ || Object.getPrototypeOf(Command.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
@@ -2598,7 +2629,7 @@ var Command = function (_ExecutorAbstract) {
 
       var donePassedAsArg = this.argNames.indexOf('done') !== -1;
 
-      ret = this.execute.apply(this, args);
+      promise = this.execute.apply(this, args);
 
       if (this.error) {
         return undefined;
@@ -2607,11 +2638,15 @@ var Command = function (_ExecutorAbstract) {
       // If the function returns true, we continue on the next immediate cycle assuming it didn't return a promise.
       // If, however the function requested that 'done' be passed, we assume it is an asynchronous
       // function and let the function determine when it will call done.
-      if (!ret && !donePassedAsArg) {
+      if (!promise && !donePassedAsArg) {
         this.done();
       }
 
-      return ret;
+      if (promise) {
+        this.waitForPromise(promise);
+      }
+
+      return promise;
     }
 
     /**
@@ -4248,8 +4283,6 @@ var _RingaHashArray2 = __webpack_require__(10);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
-var _type = __webpack_require__(6);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -4274,7 +4307,7 @@ var Thread = function (_RingaHashArray) {
 
     _this.running = false;
 
-    // TODO: a command thread can potentially spawn child command threads
+    // TODO: a executor thread can potentially spawn child executor threads
     _this.children = [];
     return _this;
   }
@@ -4316,7 +4349,7 @@ var Thread = function (_RingaHashArray) {
 
       this.buildExecutors();
 
-      // The current command we are running
+      // The current executor we are running
       this.index = 0;
 
       this.executeNext();
@@ -4324,32 +4357,10 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: 'executeNext',
     value: function executeNext() {
-      var _this3 = this;
-
-      var command = this.all[this.index];
-      var promise = void 0;
+      var executor = this.all[this.index];
 
       try {
-        promise = command._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
-
-        if (promise) {
-          if ((0, _type.isPromise)(promise)) {
-            this.ringaEvent.detail._promise = promise;
-
-            promise.then(function (result) {
-              _this3.ringaEvent.lastPromiseResult = result;
-
-              _this3._executorDoneHandler();
-            });
-            promise.catch(function (error) {
-              _this3.ringaEvent.lastPromiseError = error;
-
-              _this3._executorFailHandler(error);
-            });
-          } else if (true) {
-            throw Error('Thread::executeNext(): command ' + command.toString() + ' returned something that is not a promise, ' + promise);
-          }
-        }
+        executor._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
       } catch (error) {
         this._executorFailHandler(error);
       }
@@ -4367,7 +4378,11 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: '_executorDoneHandler',
     value: function _executorDoneHandler() {
-      this.all[this.index].destroy();
+      if (!this.all[this.index]) {
+        console.error('Thread::_executorDoneHandler(): could not find executor to destroy it!');
+      } else {
+        this.all[this.index].destroy();
+      }
 
       this.index++;
 
@@ -4384,7 +4399,11 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: '_executorFailHandler',
     value: function _executorFailHandler(error, kill) {
-      this.all[this.index].destroy();
+      if (!this.all[this.index]) {
+        console.error('Thread::_executorFailHandler(): could not find executor to destroy it!');
+      } else {
+        this.all[this.index].destroy();
+      }
 
       this.error = error;
 
@@ -4608,6 +4627,10 @@ var FunctionExecutor = function (_ExecutorAbstract) {
         this.done();
       }
 
+      if (promise) {
+        this.waitForPromise(promise);
+      }
+
       return promise;
     }
   }, {
@@ -4633,9 +4656,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _ExecutorAbstract = __webpack_require__(0);
+var _ExecutorAbstract2 = __webpack_require__(0);
 
-var _ExecutorAbstract2 = _interopRequireDefault(_ExecutorAbstract);
+var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4645,8 +4668,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var ParallelExecutor = function (_CommandAbstract) {
-  _inherits(ParallelExecutor, _CommandAbstract);
+var ParallelExecutor = function (_ExecutorAbstract) {
+  _inherits(ParallelExecutor, _ExecutorAbstract);
 
   function ParallelExecutor() {
     _classCallCheck(this, ParallelExecutor);
@@ -4655,7 +4678,7 @@ var ParallelExecutor = function (_CommandAbstract) {
   }
 
   return ParallelExecutor;
-}(_ExecutorAbstract2.default);
+}(_ExecutorAbstract3.default);
 
 exports.default = ParallelExecutor;
 
@@ -4670,9 +4693,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _ExecutorAbstract = __webpack_require__(0);
+var _ExecutorAbstract2 = __webpack_require__(0);
 
-var _ExecutorAbstract2 = _interopRequireDefault(_ExecutorAbstract);
+var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4682,8 +4705,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var PromiseExecutor = function (_CommandAbstract) {
-  _inherits(PromiseExecutor, _CommandAbstract);
+var PromiseExecutor = function (_ExecutorAbstract) {
+  _inherits(PromiseExecutor, _ExecutorAbstract);
 
   function PromiseExecutor() {
     _classCallCheck(this, PromiseExecutor);
@@ -4692,7 +4715,7 @@ var PromiseExecutor = function (_CommandAbstract) {
   }
 
   return PromiseExecutor;
-}(_ExecutorAbstract2.default);
+}(_ExecutorAbstract3.default);
 
 exports.default = PromiseExecutor;
 
