@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 window.__DEV__ = true;
+window.__TEST__ = true;
 
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
@@ -141,5 +142,62 @@ describe('iifExecutor', () => {
 
     Ringa.dispatch('myFirstEvent', domNode);
   }, 50);
+
+  //----------------------------------------------------
+  // Executes an event dispatch by name from false path
+  //----------------------------------------------------
+  it('Executes an event dispatch from false path', (done) => {
+    controller.addListener('myFirstEvent', [
+      iif(() => false,
+        undefined,
+        'mySecondEvent')
+      ]);
+
+    controller.addListener('mySecondEvent', [
+      () => done()
+      ])
+
+    Ringa.dispatch('myFirstEvent', domNode);
+  }, 50);
+
+  //---------------------------------------------------
+  // Executes an event dispatch by name from true path
+  //---------------------------------------------------
+  it('Executes an event dispatch from false path', (done) => {
+    controller.addListener('myFirstEvent', [
+      iif(() => true,
+        'mySecondEvent')
+      ]);
+
+    controller.addListener('mySecondEvent', [
+      () => done()
+      ])
+
+    Ringa.dispatch('myFirstEvent', domNode);
+  }, 50);
+
+  //-----------------------------------------------
+  // Does not execute falsy if condition is true
+  // //-----------------------------------------------
+  // it('Does not execute falsy if condition is true', (done) => {
+  //   controller.addListener('myEvent', [
+  //     iif(() => true, 
+  //       () => done(),
+  //       () => { throw Error() })
+  //     ]);
+
+  //   let ringaEvent = Ringa.dispatch('myEvent', domNode);
+
+  //   ringaEvent.addDoneListener(() => {
+  //     console.log('This is in the done listener');
+  //     // try {
+  //       expect().not.toThrow();
+  //     // }
+  //     // catch(e) {
+  //     //   console.log(`Error: ${e}`);
+  //     // }
+  //     done();
+  //   });
+  // }, 50);
 
 });
