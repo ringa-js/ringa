@@ -2,6 +2,7 @@ import ThreadFactory from './ThreadFactory';
 import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
 import RingaEvent from './RingaEvent';
+import ModelWatcher from './ModelWatcher';
 import snakeCase from 'snake-case';
 import {buildArgumentsFromRingaEvent} from './util/executors';
 import {getArgNames} from './util/function';
@@ -37,6 +38,7 @@ class Controller extends RingaObject {
     }
 
     this.bus = bus;
+    this.modelWatcher = undefined;
 
     this.options = options || {};
     this.options.timeout = this.options.timeout || 5000;
@@ -79,7 +81,13 @@ class Controller extends RingaObject {
     // get attached now to our new bus.
     if (this._bus) {
       this.attachAllListeners();
-      this.busMounted(this.bus);
+
+      // We want to wait here. The reason is that if someone dispatches an event in the busMounted section
+      // we want to make sure that all other Controllers within the same context in the dom have also
+      // had time to mount before secondary events might be dispatched.
+      setTimeout(() => {
+        this.busMounted(this.bus);
+      }, 0);
     }
   }
 
@@ -90,6 +98,29 @@ class Controller extends RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  /**
+   * Special method that attaches a model to this Controller through a ModelWatcher.
+   *
+   * At the time this was built, it was only functional to support injection for the react-ringa project and dependency
+   * injection.
+   *
+   * If no internal ModelWatcher exists, the Controller builds one and then adds the model to that watcher.
+   *
+   * This method also adds the model as an injection by the models id to be available to all executors.
+   *
+   * @param model An instance that must be an extension of the Ringa.Model class.
+   * @parma injectionId A custom name to use for the injection id if you don't want to use the default one on the Model.
+   */
+  addModel(model, injectionId = undefined) {
+    if (!this.modelWatcher) {
+      this.modelWatcher = new ModelWatcher(this.id + '_ModelWatcher');
+    }
+
+    this.modelWatcher.addModel(model, injectionId);
+
+    this.injections[injectionId || model.id] = model;
+  }
+
   /**
    * Called when there is safely an event bus to attach events to. This is where you could redispatch certain initialization
    * events.
@@ -343,8 +374,10 @@ class Controller extends RingaObject {
       return;
     }
 
+    let thread;
+
     try {
-      let thread = this.invoke(ringaEvent, threadFactory);
+      thread = this.invoke(ringaEvent, threadFactory);
 
       this.postInvokeHandler(ringaEvent, thread);
     } catch (error) {
@@ -375,7 +408,7 @@ class Controller extends RingaObject {
 
   threadFailHandler(thread, error, kill) {
     if (this.options.consoleLogFails) {
-      console.error(error, thread.toString());
+      console.error(error, thread ? thread.toString() : '');
     }
 
     if (kill) {
@@ -390,6 +423,10 @@ class Controller extends RingaObject {
   }
 
   dispatch(eventType, details) {
+    if (!this.bus) {
+      throw new Error(`Controller::dispatch(): bus has not yet been set so you cannot dispatch ('${eventType}')! Wait for Controller::busMounted().`);
+    }
+
     return new RingaEvent(eventType, details).dispatch(this.bus);
   }
 

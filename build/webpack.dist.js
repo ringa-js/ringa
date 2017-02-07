@@ -33,14 +33,33 @@ module.exports = Object.assign({
           '$thread',
           '$ringaEvent',
           '$customEvent',
+          '$lastEvent',
           '$target',
           '$detail',
           'done',
           'fail',
           '$lastPromiseResult',
-          '$lastPromiseError']
+          '$lastPromiseError',
+          'Command',
+          'EventExecutor',
+          'FunctionExecutor',
+          'IifExecutor',
+          'ParallelExecutor',
+          'PromiseExecutor',
+          'SleepExecutor',
+          'SpawnExecutor',
+          'Bus',
+          'Controller',
+          'ExecutorAbstract',
+          'Model',
+          'ModelWatcher',
+          'RingaEvent',
+          'RingaEventFactory',
+          'RingaHashArray',
+          'RingaObject',
+          'Thread',
+          'ThreadFactory']
       }
-    }),
-    new webpack.optimize.DedupePlugin()
+    })
   ]
 }, baseConfig);

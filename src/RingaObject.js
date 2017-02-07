@@ -19,7 +19,7 @@ export default class RingaObject {
   //-----------------------------------
   set id(value) {
     if (ids.map[value]) {
-      console.warn(`Duplicate Ringa id discovered: '${value}'. Call RingaObject::destroy() to clear up the id.`);
+      console.warn(`Duplicate Ringa id discovered: '${value}' for '${this.constructor.name}'. Call RingaObject::destroy() to clear up the id.`);
     }
 
     ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.

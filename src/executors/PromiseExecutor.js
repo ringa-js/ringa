@@ -1,6 +1,6 @@
-import CommandAbstract from '../ExecutorAbstract';
+import ExecutorAbstract from '../ExecutorAbstract';
 
-class PromiseExecutor extends CommandAbstract {
+class PromiseExecutor extends ExecutorAbstract {
 
 }
 

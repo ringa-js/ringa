@@ -53,6 +53,10 @@ class FunctionExecutor extends ExecutorAbstract {
       this.done();
     }
 
+    if (promise) {
+      this.waitForPromise(promise);
+    }
+
     return promise;
   }
 

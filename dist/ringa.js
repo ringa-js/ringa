@@ -94,7 +94,9 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _debug = __webpack_require__(11);
+var _debug = __webpack_require__(13);
+
+var _type = __webpack_require__(6);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -189,6 +191,34 @@ var ExecutorAbstract = function (_RingaObject) {
       this.startTime = (0, _debug.now)();
 
       this.startTimeoutCheck();
+    }
+
+    /**
+     * Tells this executor to suspend its normal timeout operation and done/fail handler and wait for a promise instead.
+     * @param promise
+     */
+
+  }, {
+    key: 'waitForPromise',
+    value: function waitForPromise(promise) {
+      var _this2 = this;
+
+      if ((0, _type.isPromise)(promise)) {
+        this.ringaEvent.detail._promise = promise;
+
+        promise.then(function (result) {
+          _this2.ringaEvent.lastPromiseResult = result;
+
+          _this2.done();
+        });
+        promise.catch(function (error) {
+          _this2.ringaEvent.lastPromiseError = error;
+
+          _this2.fail(error);
+        });
+      } else if (true) {
+        throw Error('ExecutorAbstract::waitForPromise(): command ' + this.toString() + ' returned something that is not a promise, ' + promise);
+      }
     }
 
     /**
@@ -339,7 +369,7 @@ var RingaObject = function () {
     key: 'id',
     set: function set(value) {
       if (ids.map[value]) {
-        console.warn('Duplicate Ringa id discovered: \'' + value + '\'. Call RingaObject::destroy() to clear up the id.');
+        console.warn('Duplicate Ringa id discovered: \'' + value + '\' for \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
       }
 
       ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.
@@ -418,7 +448,7 @@ var _ParallelExecutor = __webpack_require__(34);
 
 var _ParallelExecutor2 = _interopRequireDefault(_ParallelExecutor);
 
-var _RingaEventFactory = __webpack_require__(7);
+var _RingaEventFactory = __webpack_require__(9);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -440,6 +470,10 @@ var ExecutorFactory = function () {
    */
   function ExecutorFactory(executee, executeeOptions) {
     _classCallCheck(this, ExecutorFactory);
+
+    if (!executee) {
+      throw new Error('ExecutorFactory::build(): an internal error occurred and an executee was undefined!');
+    }
 
     this.executee = executee;
     this.executeeOptions = executeeOptions;
@@ -544,6 +578,7 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
     $controller: executor.controller,
     $thread: executor.thread,
     $ringaEvent: ringaEvent,
+    $lastEvent: ringaEvent.detail.$lastEvent,
     $customEvent: ringaEvent.customEvent,
     $target: ringaEvent.target,
     $detail: ringaEvent.detail,
@@ -594,7 +629,7 @@ var _errorStackParser = __webpack_require__(21);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
-var _debug = __webpack_require__(11);
+var _debug = __webpack_require__(13);
 
 var _type = __webpack_require__(6);
 
@@ -920,11 +955,432 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _RingaObject2 = __webpack_require__(1);
+
+var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Model = function (_RingaObject) {
+  _inherits(Model, _RingaObject);
+
+  function Model(id) {
+    _classCallCheck(this, Model);
+
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, id));
+
+    if (!id) {
+      throw new Error('Model():: id must be provided! Make sure it is unique. See ' + _this.constructor.name + '.');
+    }
+
+    _this._modelInjectors = [];
+    return _this;
+  }
+
+  _createClass(Model, [{
+    key: 'addInjector',
+    value: function addInjector(modelInjector) {
+      if (true && this._modelInjectors.indexOf(modelInjector) !== -1) {
+        throw new Error('Model::addInjector(): tried to add the same injector to a model twice! ' + this.id);
+      }
+
+      this._modelInjectors.push(modelInjector);
+    }
+  }, {
+    key: 'notify',
+    value: function notify(propertyPath) {
+      var _this2 = this;
+
+      // Notify all view objects through all injectors
+      this._modelInjectors.forEach(function (mi) {
+        mi.notify(_this2, propertyPath);
+      });
+    }
+  }]);
+
+  return Model;
+}(_RingaObject3.default);
+
+exports.default = Model;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _RingaObject2 = __webpack_require__(1);
+
+var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+var _Model = __webpack_require__(7);
+
+var _Model2 = _interopRequireDefault(_Model);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function objPath(obj, path) {
+  if (!path) {
+    return obj;
+  }
+  path = path.split('.');
+  var i = 0;
+  while (obj && i < path.length) {
+    obj = obj[path[i++]];
+  }
+  return obj;
+}
+
+function pathAll(propertyPath) {
+  // if propertyPath === 'when.harry.met.sally'
+  // then paths = ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
+  return propertyPath.split('.').reduce(function (a, v, i) {
+    a[i] = i === 0 ? v : a[i - 1] + '.' + v;
+    return a;
+  }, []);
+}
+
+var Watchees = function () {
+  function Watchees() {
+    _classCallCheck(this, Watchees);
+
+    this.watchees = [];
+    this.watcheesMap = new Map();
+  }
+
+  _createClass(Watchees, [{
+    key: 'add',
+    value: function add(model, propertyPath, watchee) {
+      var watcheeObj = void 0;
+
+      var arg = {
+        model: model,
+        path: propertyPath,
+        value: objPath(model, propertyPath),
+        watchedPath: watchee.propertyPath,
+        watchedValue: objPath(model, watchee.propertyPath)
+      };
+
+      if (watcheeObj = this.watcheesMap[watchee.handler]) {
+        watcheeObj.arg.push(arg);
+
+        return;
+      }
+
+      watcheeObj = {
+        arg: [arg],
+        handler: watchee.handler
+      };
+
+      this.watchees.push(watcheeObj);
+      this.watcheesMap[watchee.handler] = watcheeObj;
+    }
+  }, {
+    key: 'notify',
+    value: function notify() {
+      this.watchees.forEach(function (watcheeObj) {
+        watcheeObj.handler.call(undefined, watcheeObj.arg);
+      });
+
+      this.clear();
+    }
+  }, {
+    key: 'clear',
+    value: function clear() {
+      this.watchees = [];
+      this.watcheesMap = new Map();
+    }
+  }]);
+
+  return Watchees;
+}();
+
+var ModelWatcher = function (_RingaObject) {
+  _inherits(ModelWatcher, _RingaObject);
+
+  function ModelWatcher(id) {
+    _classCallCheck(this, ModelWatcher);
+
+    var _this = _possibleConstructorReturn(this, (ModelWatcher.__proto__ || Object.getPrototypeOf(ModelWatcher)).call(this, id));
+
+    _this.idToWatchees = {};
+    _this.classToWatchees = new Map();
+
+    _this.models = [];
+    _this.idToModel = new Map();
+    _this.classToModel = new Map();
+
+    // We always notify everyone at once and ensure that nobody gets notified more than once.
+    _this.nextWatchees = new Watchees();
+    return _this;
+  }
+
+  _createClass(ModelWatcher, [{
+    key: 'addModel',
+    value: function addModel(model) {
+      var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+      if (!(model instanceof _Model2.default)) {
+        throw new Error('ModelWatcher::addModel(): the provided model ' + model.constructor.name + ' was not a valid Ringa Model!');
+      }
+
+      this.models.push(model);
+
+      id = id || model.id;
+
+      if (id) {
+        this.idToModel[id] = model;
+      }
+
+      var p = model.constructor;
+
+      while (p) {
+        // First come first serve for looking up by type!
+        if (!this.classToModel[p]) {
+          this.classToModel[p] = model;
+        }
+
+        p = p.__proto__;
+      }
+
+      if (typeof model.addInjector == 'function') {
+        model.addInjector(this);
+      }
+    }
+  }, {
+    key: 'find',
+    value: function find(classOrId) {
+      var propertyPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+      var model = void 0;
+
+      // By ID (e.g. 'myModel' or 'constructor_whatever')
+      if (typeof classOrId === 'string' && this.idToModel[classOrId]) {
+        model = this.idToModel[classOrId];
+      } else {
+        // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
+        var p = classOrId;
+
+        while (p) {
+          if (this.classToModel[p]) {
+            model = this.classToModel[p];
+            break;
+          }
+
+          p = p.prototype;
+        }
+      }
+
+      if (model) {
+        return propertyPath ? objPath(model, propertyPath) : model;
+      }
+
+      return null;
+    }
+  }, {
+    key: 'watch',
+    value: function watch(classOrId, propertyPath) {
+      var handler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+
+      if (typeof propertyPath === 'function') {
+        handler = propertyPath;
+        propertyPath = undefined;
+      }
+
+      var group = void 0;
+      var defaultGroup = {
+        all: [],
+        byPath: {}
+      };
+
+      if (typeof classOrId === 'function') {
+        group = this.classToWatchees[classOrId] = this.classToWatchees[classOrId] || defaultGroup;
+      } else if (typeof classOrId === 'string') {
+        group = this.idToWatchees[classOrId] = this.idToWatchees[classOrId] || defaultGroup;
+      } else if (true) {
+        throw new Error('ModelWatcher::watch(): can only watch by Class or id');
+      }
+
+      var watchee = {
+        handler: handler,
+        propertyPath: propertyPath
+      };
+
+      if (!propertyPath) {
+        group.all.push(watchee);
+      } else {
+        var paths = pathAll(propertyPath);
+
+        paths.forEach(function (path) {
+          group.byPath[path] = group.byPath[path] || [];
+          group.byPath[path].push(watchee);
+        });
+      }
+    }
+
+    /**
+     * The notify method is rather complex. We need to intelligently create a Set of watchees (functions to notify)
+     * about changes on each model based upon what they wanted to be notified about and also ordered by the priority
+     * in which they asked to be notified.
+     *
+     * Another reason this algorithm is complicated is because handlers can request to be notified based on specific
+     * paths, so that the handlers do not get hammered with lots of notifications for every change in the model.
+     *
+     * Path scoping into the model plays a large part in determining which watchers get notified of changes to the model.
+     *
+     * For example:
+     *
+     *    // 1) Notify MyComponent of *any* changes to MyModel
+     *    watcher.watch(MyModel, myHandlerFunction);
+     *    watcher.watch('myModel', myHandlerFunction);
+     *
+     *    // 2) Notify MyComponent only if 'prop' changes or any of its children
+     *    watcher.watch(MyModel, 'prop', myHandlerFunction);
+     *    watcher.watch('myModel', 'prop', myHandlerFunction);
+     *
+     *    // 3) Notify MyComponent only if 'prop.value' changes or any of its children
+     *    watcher.watch(MyModel, 'prop.value', myHandlerFunction);
+     *    watcher.watch('myModel', 'prop.value', myHandlerFunction);
+     *
+     *    // 4) Notify MyComponent only if 'otherProp' changes or any of its children
+     *    watcher.watch(MyModel, 'otherProp', myHandlerFunction);
+     *    watcher.watch('myModel', 'otherProp', myHandlerFunction);
+     *
+     * For `watcher.notify(myModel, 'prop.value')` then (1), (2), and (3) are called.
+     * For `watcher.notify(myModel, 'prop')` then (1), (2), and (3) are called.
+     * For `watcher.notify(myModel)` then all are called.
+     * For `watcher.notify(myModel, 'otherProp')` only (1) and (4) are called.
+     *
+     * To increase the performance of your application, decrease the number of things being watched but be as precise as
+     * possible as to both what you are watching and on what you call notify().
+     *
+     * @param model The model that has changed
+     * @param propertyPath The property path (dot-delimited) into a property on the model that has changed.
+     * @param timeout A timeout to clear the stack frame and unify all the notifications at once. This makes make sure
+     * that if multiple properties get set on a model back to back and notify() is called over and over that the
+     * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
+     */
+
+  }, {
+    key: 'notify',
+    value: function notify(model, propertyPath) {
+      var _this2 = this;
+
+      var timeout = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+      var n = this.nextWatchees;
+      var paths = void 0,
+          byPathFor = function byPathFor() {};
+
+      var addWatchee = function addWatchee(watchee) {
+        n.add(model, propertyPath, watchee);
+      };
+
+      var watcheeGroup = function watcheeGroup(watchees) {
+        watchees.all.forEach(addWatchee);
+        byPathFor(watchees.byPath);
+      };
+
+      if (propertyPath) {
+        paths = pathAll(propertyPath);
+
+        byPathFor = function byPathFor(watcheesByPath) {
+          // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
+          // or 'when'. So we go backwards through the array. I would do paths.reverse() but, well, performance and all.
+          for (var i = paths.length - 1; i >= 0; i--) {
+            var path = paths[i];
+            if (watcheesByPath[path]) {
+              watcheesByPath[path].forEach(addWatchee);
+              break;
+            }
+          }
+        };
+      } else {
+        // Well, its a little insane, but if a propertyPath isn't specified, we just notify everyone.
+        // TODO: This is where we should do some performance metrics so developers don't write code that has massive
+        // performance hits because every handler gets notified at once.
+        byPathFor = function byPathFor(watcheesByPath) {
+          for (var key in watcheesByPath) {
+            watcheesByPath[key].forEach(addWatchee);
+          }
+        };
+      }
+
+      // By ID (e.g. 'myModel' or 'constructor_whatever')
+      if (this.idToWatchees[model.id]) {
+        watcheeGroup(this.idToWatchees[model.id]);
+      }
+
+      // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
+      // Note: we have to account for everything the model has extended in the prototype chain because a watcher
+      // may have requested to watch a base class and someone might have extended that... kindof a PITA but gotta
+      // cover all bases (no pun intended).
+      var p = model.constructor;
+
+      while (p) {
+        if (this.classToWatchees[p]) {
+          watcheeGroup(this.classToWatchees[p]);
+        }
+
+        p = p.__proto__;
+      }
+
+      if (timeout !== -1) {
+        if (this.timeoutToken) {
+          return;
+        }
+        this.timeoutToken = setTimeout(function () {
+          _this2.nextWatchees.notify();
+          _this2.timeoutToken = undefined;
+        }, timeout);
+      } else {
+        this.nextWatchees.notify();
+      }
+    }
+  }]);
+
+  return ModelWatcher;
+}(_RingaObject3.default);
+
+exports.default = ModelWatcher;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _RingaEvent = __webpack_require__(5);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _ringaEvent = __webpack_require__(12);
+var _ringaEvent = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -977,7 +1433,7 @@ var RingaEventFactory = function () {
 exports.default = RingaEventFactory;
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -989,7 +1445,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(10);
+var _RingaHashArray2 = __webpack_require__(12);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -1025,6 +1481,10 @@ var ThreadFactory = function (_RingaHashArray) {
 
     var addOne = _this._hashArray.addOne;
     _this._hashArray.addOne = function (obj) {
+      if (!obj) {
+        console.error('ThreadFactory():: Attempting to add an empty executee! This probably happened because you attempt to add an event (e.g. SomeController.MY_EVENT) before SomeController::addListener(\'myEvent\') was called.', executorFactories);
+      }
+
       if (!(obj instanceof _ExecutorFactory2.default)) {
         obj = new _ExecutorFactory2.default(obj);
       }
@@ -1066,7 +1526,7 @@ var ThreadFactory = function (_RingaHashArray) {
 exports.default = ThreadFactory;
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1075,7 +1535,7 @@ exports.default = ThreadFactory;
 module.exports = __webpack_require__(22);
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1087,7 +1547,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(11);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -1297,7 +1757,7 @@ var RingaHashArray = function (_RingaObject) {
 exports.default = RingaHashArray;
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1365,7 +1825,7 @@ function ringaEventToDebugString(ringaEvent) {
 }
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1396,7 +1856,7 @@ function mergeRingaEventDetails(ringaEvent, detail) {
 };
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1602,7 +2062,7 @@ var Bus = function (_RingaObject) {
 exports.default = Bus;
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1614,7 +2074,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ThreadFactory = __webpack_require__(8);
+var _ThreadFactory = __webpack_require__(10);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
@@ -1622,13 +2082,17 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(11);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
 var _RingaEvent = __webpack_require__(5);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
+
+var _ModelWatcher = __webpack_require__(8);
+
+var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
 var _snakeCase = __webpack_require__(29);
 
@@ -1681,6 +2145,7 @@ var Controller = function (_RingaObject) {
     }
 
     _this.bus = bus;
+    _this.modelWatcher = undefined;
 
     _this.options = options || {};
     _this.options.timeout = _this.options.timeout || 5000;
@@ -1705,16 +2170,44 @@ var Controller = function (_RingaObject) {
 
 
   _createClass(Controller, [{
-    key: 'busMounted',
+    key: 'addModel',
 
 
     //-----------------------------------
     // Methods
     //-----------------------------------
     /**
+     * Special method that attaches a model to this Controller through a ModelWatcher.
+     *
+     * At the time this was built, it was only functional to support injection for the react-ringa project and dependency
+     * injection.
+     *
+     * If no internal ModelWatcher exists, the Controller builds one and then adds the model to that watcher.
+     *
+     * This method also adds the model as an injection by the models id to be available to all executors.
+     *
+     * @param model An instance that must be an extension of the Ringa.Model class.
+     * @parma injectionId A custom name to use for the injection id if you don't want to use the default one on the Model.
+     */
+    value: function addModel(model) {
+      var injectionId = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+      if (!this.modelWatcher) {
+        this.modelWatcher = new _ModelWatcher2.default(this.id + '_ModelWatcher');
+      }
+
+      this.modelWatcher.addModel(model, injectionId);
+
+      this.injections[injectionId || model.id] = model;
+    }
+
+    /**
      * Called when there is safely an event bus to attach events to. This is where you could redispatch certain initialization
      * events.
      */
+
+  }, {
+    key: 'busMounted',
     value: function busMounted(bus) {}
     // To be overridden
 
@@ -1995,10 +2488,12 @@ var Controller = function (_RingaObject) {
         return;
       }
 
-      try {
-        var _thread = this.invoke(ringaEvent, threadFactory);
+      var thread = void 0;
 
-        this.postInvokeHandler(ringaEvent, _thread);
+      try {
+        thread = this.invoke(ringaEvent, threadFactory);
+
+        this.postInvokeHandler(ringaEvent, thread);
       } catch (error) {
         this.threadFailHandler(thread, error);
       }
@@ -2031,7 +2526,7 @@ var Controller = function (_RingaObject) {
     key: 'threadFailHandler',
     value: function threadFailHandler(thread, error, kill) {
       if (this.options.consoleLogFails) {
-        console.error(error, thread.toString());
+        console.error(error, thread ? thread.toString() : '');
       }
 
       if (kill) {
@@ -2047,6 +2542,10 @@ var Controller = function (_RingaObject) {
   }, {
     key: 'dispatch',
     value: function dispatch(eventType, details) {
+      if (!this.bus) {
+        throw new Error('Controller::dispatch(): bus has not yet been set so you cannot dispatch (\'' + eventType + '\')! Wait for Controller::busMounted().');
+      }
+
       return new _RingaEvent2.default(eventType, details).dispatch(this.bus);
     }
   }, {
@@ -2120,6 +2619,8 @@ var Controller = function (_RingaObject) {
   }, {
     key: 'bus',
     set: function set(value) {
+      var _this6 = this;
+
       // If someone tries to reset the same bus, just ignore it because it would be dumb to detach all the listeners
       // and reattach them.
       if (this._bus === value) {
@@ -2137,7 +2638,13 @@ var Controller = function (_RingaObject) {
       // get attached now to our new bus.
       if (this._bus) {
         this.attachAllListeners();
-        this.busMounted(this.bus);
+
+        // We want to wait here. The reason is that if someone dispatches an event in the busMounted section
+        // we want to make sure that all other Controllers within the same context in the dom have also
+        // had time to mount before secondary events might be dispatched.
+        setTimeout(function () {
+          _this6.busMounted(_this6.bus);
+        }, 0);
       }
     },
     get: function get() {
@@ -2149,371 +2656,6 @@ var Controller = function (_RingaObject) {
 }(_RingaObject3.default);
 
 exports.default = Controller;
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _RingaObject2 = __webpack_require__(1);
-
-var _RingaObject3 = _interopRequireDefault(_RingaObject2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Model = function (_RingaObject) {
-  _inherits(Model, _RingaObject);
-
-  function Model(id) {
-    _classCallCheck(this, Model);
-
-    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, id));
-
-    _this._modelInjectors = [];
-    return _this;
-  }
-
-  _createClass(Model, [{
-    key: 'addInjector',
-    value: function addInjector(modelInjector) {
-      if (true && this._modelInjectors.indexOf(modelInjector) !== -1) {
-        throw new Error('Model::addInjector(): tried to add the same injector to a model twice! ' + this.id);
-      }
-
-      this._modelInjectors.push(modelInjector);
-    }
-  }, {
-    key: 'notify',
-    value: function notify(propertyPath) {
-      var _this2 = this;
-
-      // Notify all view objects through all injectors
-      this._modelInjectors.forEach(function (mi) {
-        mi.notify(_this2, propertyPath);
-      });
-    }
-  }]);
-
-  return Model;
-}(_RingaObject3.default);
-
-exports.default = Model;
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _RingaObject2 = __webpack_require__(1);
-
-var _RingaObject3 = _interopRequireDefault(_RingaObject2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function objPath(obj, path) {
-  if (!path) {
-    return obj;
-  }
-  path = path.split('.');
-  var i = 0;
-  while (obj && i < path.length) {
-    obj = obj[path[i++]];
-  }
-  return obj;
-}
-
-function pathAll(propertyPath) {
-  // if propertyPath === 'when.harry.met.sally'
-  // then paths = ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
-  return propertyPath.split('.').reduce(function (a, v, i) {
-    a[i] = i === 0 ? v : a[i - 1] + '.' + v;
-    return a;
-  }, []);
-}
-
-var Watchees = function () {
-  function Watchees() {
-    _classCallCheck(this, Watchees);
-
-    this.watchees = [];
-    this.watcheesMap = new Map();
-  }
-
-  _createClass(Watchees, [{
-    key: 'add',
-    value: function add(model, propertyPath, watchee) {
-      var watcheeObj = void 0;
-
-      var arg = {
-        model: model,
-        path: propertyPath,
-        value: objPath(model, propertyPath),
-        watchedPath: watchee.propertyPath,
-        watchedValue: objPath(model, watchee.propertyPath)
-      };
-
-      if (watcheeObj = this.watcheesMap[watchee.handler]) {
-        watcheeObj.arg.push(arg);
-
-        return;
-      }
-
-      watcheeObj = {
-        arg: [arg],
-        handler: watchee.handler
-      };
-
-      this.watchees.push(watcheeObj);
-      this.watcheesMap[watchee.handler] = watcheeObj;
-    }
-  }, {
-    key: 'notify',
-    value: function notify() {
-      this.watchees.forEach(function (watcheeObj) {
-        watcheeObj.handler.call(undefined, watcheeObj.arg);
-      });
-
-      this.clear();
-    }
-  }, {
-    key: 'clear',
-    value: function clear() {
-      this.watchees = [];
-      this.watcheesMap = new Map();
-    }
-  }]);
-
-  return Watchees;
-}();
-
-var ModelInjector = function (_RingaObject) {
-  _inherits(ModelInjector, _RingaObject);
-
-  function ModelInjector(id) {
-    _classCallCheck(this, ModelInjector);
-
-    var _this = _possibleConstructorReturn(this, (ModelInjector.__proto__ || Object.getPrototypeOf(ModelInjector)).call(this, id));
-
-    _this.idToWatchees = {};
-    _this.classToWatchees = new Map();
-
-    _this.models = [];
-    _this.idToModel = new Map();
-
-    // We always notify everyone at once and ensure that nobody gets notified more than once.
-    _this.nextWatchees = new Watchees();
-    return _this;
-  }
-
-  _createClass(ModelInjector, [{
-    key: 'addModel',
-    value: function addModel(model, id) {
-      this.models.push(model);
-
-      id = id || model.id;
-
-      if (id) {
-        this.idToModel[id] = model;
-      }
-
-      if (typeof model.addInjector == 'function') {
-        model.addInjector(this);
-      }
-    }
-  }, {
-    key: 'watch',
-    value: function watch(classOrId, propertyPath) {
-      var handler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
-
-      if (typeof propertyPath === 'function') {
-        handler = propertyPath;
-        propertyPath = undefined;
-      }
-
-      var group = void 0;
-      var defaultGroup = {
-        all: [],
-        byPath: {}
-      };
-
-      if (typeof classOrId === 'function') {
-        group = this.classToWatchees[classOrId] = this.classToWatchees[classOrId] || defaultGroup;
-      } else if (typeof classOrId === 'string') {
-        group = this.idToWatchees[classOrId] = this.idToWatchees[classOrId] || defaultGroup;
-      } else if (true) {
-        throw new Error('ModelWatcher::watch(): can only watch by Class or id');
-      }
-
-      var watchee = {
-        handler: handler,
-        propertyPath: propertyPath
-      };
-
-      if (!propertyPath) {
-        group.all.push(watchee);
-      } else {
-        var paths = pathAll(propertyPath);
-
-        paths.forEach(function (path) {
-          group.byPath[path] = group.byPath[path] || [];
-          group.byPath[path].push(watchee);
-        });
-      }
-    }
-
-    /**
-     * The notify method is rather complex. We need to intelligently create a Set of watchees (functions to notify)
-     * about changes on each model based upon what they wanted to be notified about and also ordered by the priority
-     * in which they asked to be notified.
-     *
-     * Another reason this algorithm is complicated is because handlers can request to be notified based on specific
-     * paths, so that the handlers do not get hammered with lots of notifications for every change in the model.
-     *
-     * Path scoping into the model plays a large part in determining which watchers get notified of changes to the model.
-     *
-     * For example:
-     *
-     *    // 1) Notify MyComponent of *any* changes to MyModel
-     *    watcher.watch(MyModel, myHandlerFunction);
-     *    watcher.watch('myModel', myHandlerFunction);
-     *
-     *    // 2) Notify MyComponent only if 'prop' changes or any of its children
-     *    watcher.watch(MyModel, 'prop', myHandlerFunction);
-     *    watcher.watch('myModel', 'prop', myHandlerFunction);
-     *
-     *    // 3) Notify MyComponent only if 'prop.value' changes or any of its children
-     *    watcher.watch(MyModel, 'prop.value', myHandlerFunction);
-     *    watcher.watch('myModel', 'prop.value', myHandlerFunction);
-     *
-     *    // 4) Notify MyComponent only if 'otherProp' changes or any of its children
-     *    watcher.watch(MyModel, 'otherProp', myHandlerFunction);
-     *    watcher.watch('myModel', 'otherProp', myHandlerFunction);
-     *
-     * For `watcher.notify(myModel, 'prop.value')` then (1), (2), and (3) are called.
-     * For `watcher.notify(myModel, 'prop')` then (1), (2), and (3) are called.
-     * For `watcher.notify(myModel)` then all are called.
-     * For `watcher.notify(myModel, 'otherProp')` only (1) and (4) are called.
-     *
-     * To increase the performance of your application, decrease the number of things being watched but be as precise as
-     * possible as to both what you are watching and on what you call notify().
-     *
-     * @param model The model that has changed
-     * @param propertyPath The property path (dot-delimited) into a property on the model that has changed.
-     * @param timeout A timeout to clear the stack frame and unify all the notifications at once. This makes make sure
-     * that if multiple properties get set on a model back to back and notify() is called over and over that the
-     * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
-     */
-
-  }, {
-    key: 'notify',
-    value: function notify(model, propertyPath) {
-      var _this2 = this;
-
-      var timeout = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-
-      var n = this.nextWatchees;
-      var paths = void 0,
-          byPathFor = function byPathFor() {};
-
-      var addWatchee = function addWatchee(watchee) {
-        n.add(model, propertyPath, watchee);
-      };
-
-      var watcheeGroup = function watcheeGroup(watchees) {
-        watchees.all.forEach(addWatchee);
-        byPathFor(watchees.byPath);
-      };
-
-      if (propertyPath) {
-        paths = pathAll(propertyPath);
-
-        byPathFor = function byPathFor(watcheesByPath) {
-          // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
-          // or 'when'. So we go backwards through the array. I would do paths.reverse() but, well, performance and all.
-          for (var i = paths.length - 1; i >= 0; i--) {
-            var path = paths[i];
-            if (watcheesByPath[path]) {
-              watcheesByPath[path].forEach(addWatchee);
-              break;
-            }
-          }
-        };
-      } else {
-        // Well, its a little insane, but if a propertyPath isn't specified, we just notify everyone.
-        // TODO: This is where we should do some performance metrics so developers don't write code that has massive
-        // performance hits because every handler gets notified at once.
-        byPathFor = function byPathFor(watcheesByPath) {
-          for (var key in watcheesByPath) {
-            watcheesByPath[key].forEach(addWatchee);
-          }
-        };
-      }
-
-      // By ID (e.g. 'myModel' or 'constructor_whatever')
-      if (this.idToWatchees[model.id]) {
-        watcheeGroup(this.idToWatchees[model.id]);
-      }
-
-      // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
-      // Note: we have to account for everything the model has extended in the prototype chain because a watcher
-      // may have requested to watch a base class and someone might have extended that... kindof a PITA but gotta
-      // cover all bases (no pun intended).
-      var p = model.constructor;
-
-      while (p) {
-        if (this.classToWatchees[p]) {
-          watcheeGroup(this.classToWatchees[p]);
-        }
-
-        p = p.__proto__;
-      }
-
-      if (timeout !== -1) {
-        if (this.timeoutToken) {
-          return;
-        }
-        this.timeoutToken = setTimeout(function () {
-          _this2.nextWatchees.notify();
-          _this2.timeoutToken = undefined;
-        }, timeout);
-      } else {
-        this.nextWatchees.notify();
-      }
-    }
-  }]);
-
-  return ModelInjector;
-}(_RingaObject3.default);
-
-exports.default = ModelInjector;
 
 /***/ }),
 /* 17 */
@@ -2590,7 +2732,7 @@ var Command = function (_ExecutorAbstract) {
      * @private
      */
     value: function _execute(doneHandler, failHandler) {
-      var ret = void 0;
+      var promise = void 0;
 
       _get(Command.prototype.__proto__ || Object.getPrototypeOf(Command.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
@@ -2598,7 +2740,7 @@ var Command = function (_ExecutorAbstract) {
 
       var donePassedAsArg = this.argNames.indexOf('done') !== -1;
 
-      ret = this.execute.apply(this, args);
+      promise = this.execute.apply(this, args);
 
       if (this.error) {
         return undefined;
@@ -2607,11 +2749,15 @@ var Command = function (_ExecutorAbstract) {
       // If the function returns true, we continue on the next immediate cycle assuming it didn't return a promise.
       // If, however the function requested that 'done' be passed, we assume it is an asynchronous
       // function and let the function determine when it will call done.
-      if (!ret && !donePassedAsArg) {
+      if (!promise && !donePassedAsArg) {
         this.done();
       }
 
-      return ret;
+      if (promise) {
+        this.waitForPromise(promise);
+      }
+
+      return promise;
     }
 
     /**
@@ -2762,7 +2908,7 @@ var _ExecutorFactory2 = __webpack_require__(3);
 
 var _ExecutorFactory3 = _interopRequireDefault(_ExecutorFactory2);
 
-var _ringaEvent = __webpack_require__(12);
+var _ringaEvent = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4244,11 +4390,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(10);
+var _RingaHashArray2 = __webpack_require__(12);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
-
-var _type = __webpack_require__(6);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4274,7 +4418,7 @@ var Thread = function (_RingaHashArray) {
 
     _this.running = false;
 
-    // TODO: a command thread can potentially spawn child command threads
+    // TODO: a executor thread can potentially spawn child executor threads
     _this.children = [];
     return _this;
   }
@@ -4316,7 +4460,7 @@ var Thread = function (_RingaHashArray) {
 
       this.buildExecutors();
 
-      // The current command we are running
+      // The current executor we are running
       this.index = 0;
 
       this.executeNext();
@@ -4324,32 +4468,10 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: 'executeNext',
     value: function executeNext() {
-      var _this3 = this;
-
-      var command = this.all[this.index];
-      var promise = void 0;
+      var executor = this.all[this.index];
 
       try {
-        promise = command._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
-
-        if (promise) {
-          if ((0, _type.isPromise)(promise)) {
-            this.ringaEvent.detail._promise = promise;
-
-            promise.then(function (result) {
-              _this3.ringaEvent.lastPromiseResult = result;
-
-              _this3._executorDoneHandler();
-            });
-            promise.catch(function (error) {
-              _this3.ringaEvent.lastPromiseError = error;
-
-              _this3._executorFailHandler(error);
-            });
-          } else if (true) {
-            throw Error('Thread::executeNext(): command ' + command.toString() + ' returned something that is not a promise, ' + promise);
-          }
-        }
+        executor._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
       } catch (error) {
         this._executorFailHandler(error);
       }
@@ -4367,7 +4489,11 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: '_executorDoneHandler',
     value: function _executorDoneHandler() {
-      this.all[this.index].destroy();
+      if (!this.all[this.index]) {
+        console.error('Thread::_executorDoneHandler(): could not find executor to destroy it!');
+      } else {
+        this.all[this.index].destroy();
+      }
 
       this.index++;
 
@@ -4384,7 +4510,11 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: '_executorFailHandler',
     value: function _executorFailHandler(error, kill) {
-      this.all[this.index].destroy();
+      if (!this.all[this.index]) {
+        console.error('Thread::_executorFailHandler(): could not find executor to destroy it!');
+      } else {
+        this.all[this.index].destroy();
+      }
 
       this.error = error;
 
@@ -4608,6 +4738,10 @@ var FunctionExecutor = function (_ExecutorAbstract) {
         this.done();
       }
 
+      if (promise) {
+        this.waitForPromise(promise);
+      }
+
       return promise;
     }
   }, {
@@ -4633,9 +4767,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _ExecutorAbstract = __webpack_require__(0);
+var _ExecutorAbstract2 = __webpack_require__(0);
 
-var _ExecutorAbstract2 = _interopRequireDefault(_ExecutorAbstract);
+var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4645,8 +4779,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var ParallelExecutor = function (_CommandAbstract) {
-  _inherits(ParallelExecutor, _CommandAbstract);
+var ParallelExecutor = function (_ExecutorAbstract) {
+  _inherits(ParallelExecutor, _ExecutorAbstract);
 
   function ParallelExecutor() {
     _classCallCheck(this, ParallelExecutor);
@@ -4655,7 +4789,7 @@ var ParallelExecutor = function (_CommandAbstract) {
   }
 
   return ParallelExecutor;
-}(_ExecutorAbstract2.default);
+}(_ExecutorAbstract3.default);
 
 exports.default = ParallelExecutor;
 
@@ -4670,9 +4804,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _ExecutorAbstract = __webpack_require__(0);
+var _ExecutorAbstract2 = __webpack_require__(0);
 
-var _ExecutorAbstract2 = _interopRequireDefault(_ExecutorAbstract);
+var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4682,8 +4816,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var PromiseExecutor = function (_CommandAbstract) {
-  _inherits(PromiseExecutor, _CommandAbstract);
+var PromiseExecutor = function (_ExecutorAbstract) {
+  _inherits(PromiseExecutor, _ExecutorAbstract);
 
   function PromiseExecutor() {
     _classCallCheck(this, PromiseExecutor);
@@ -4692,7 +4826,7 @@ var PromiseExecutor = function (_CommandAbstract) {
   }
 
   return PromiseExecutor;
-}(_ExecutorAbstract2.default);
+}(_ExecutorAbstract3.default);
 
 exports.default = PromiseExecutor;
 
@@ -4706,7 +4840,7 @@ exports.default = PromiseExecutor;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Bus = exports.RingaObject = exports.RingaEvent = exports.Controller = exports.ThreadFactory = exports.ExecutorFactory = exports.Command = undefined;
+exports.ModelWatcher = exports.Model = exports.Bus = exports.RingaObject = exports.RingaEvent = exports.Controller = exports.ThreadFactory = exports.ExecutorFactory = exports.Command = undefined;
 exports.dispatch = dispatch;
 exports.iif = iif;
 exports.spawn = spawn;
@@ -4723,11 +4857,11 @@ var _ExecutorFactory = __webpack_require__(3);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _ThreadFactory = __webpack_require__(8);
+var _ThreadFactory = __webpack_require__(10);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
-var _Controller = __webpack_require__(14);
+var _Controller = __webpack_require__(16);
 
 var _Controller2 = _interopRequireDefault(_Controller);
 
@@ -4739,7 +4873,7 @@ var _RingaObject = __webpack_require__(1);
 
 var _RingaObject2 = _interopRequireDefault(_RingaObject);
 
-var _RingaEventFactory = __webpack_require__(7);
+var _RingaEventFactory = __webpack_require__(9);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -4747,15 +4881,15 @@ var _AssignFactory = __webpack_require__(19);
 
 var _AssignFactory2 = _interopRequireDefault(_AssignFactory);
 
-var _Model = __webpack_require__(15);
+var _Model = __webpack_require__(7);
 
 var _Model2 = _interopRequireDefault(_Model);
 
-var _ModelWatcher = __webpack_require__(16);
+var _ModelWatcher = __webpack_require__(8);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
-var _Bus = __webpack_require__(13);
+var _Bus = __webpack_require__(15);
 
 var _Bus2 = _interopRequireDefault(_Bus);
 
@@ -4816,6 +4950,8 @@ exports.Controller = _Controller2.default;
 exports.RingaEvent = _RingaEvent2.default;
 exports.RingaObject = _RingaObject2.default;
 exports.Bus = _Bus2.default;
+exports.Model = _Model2.default;
+exports.ModelWatcher = _ModelWatcher2.default;
 exports.default = {
   Controller: _Controller2.default,
   Command: _Command2.default,

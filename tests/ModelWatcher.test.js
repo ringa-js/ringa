@@ -340,4 +340,36 @@ describe('ModelWatcher', () => {
       value: 'whatever'
     };
   }, 50);
+
+  //-----------------------------------
+  // Has a working find() method (1)
+  //-----------------------------------
+  it('Has a working find() method (1)', () => {
+    expect(watcher.find('model1')).toEqual(model1);
+    expect(watcher.find('model2')).toEqual(model2);
+    expect(watcher.find('modelExt3')).toEqual(modelExt3);
+  });
+
+  //-----------------------------------
+  // Has a working find() method (2)
+  //-----------------------------------
+  it('Has a working find() method (2)', () => {
+    expect(watcher.find(ModelSimple)).toEqual(model1);
+  });
+
+  //-----------------------------------
+  // Has a working find() method (3)
+  //-----------------------------------
+  it('Has a working find() method (3)', () => {
+    expect(watcher.find(ModelSimpleExt)).toEqual(modelExt3);
+  });
+
+  //-----------------------------------
+  // Should throw with an invalid Ringa model
+  //-----------------------------------
+  it('Should throw with an invalid Ringa model', () => {
+    expect(() => {
+      watcher.addModel({});
+    }).toThrow();
+  });
 });

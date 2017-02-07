@@ -1,5 +1,6 @@
 import RingaObject from './RingaObject';
 import {now} from './util/debug';
+import {isPromise} from './util/type';
 
 export const executorCounts = {
   map: new Map()
@@ -86,6 +87,29 @@ class ExecutorAbstract extends RingaObject {
     this.startTime = now();
 
     this.startTimeoutCheck();
+  }
+
+  /**
+   * Tells this executor to suspend its normal timeout operation and done/fail handler and wait for a promise instead.
+   * @param promise
+   */
+  waitForPromise(promise) {
+    if (isPromise(promise)) {
+      this.ringaEvent.detail._promise = promise;
+
+      promise.then((result) => {
+        this.ringaEvent.lastPromiseResult = result;
+
+        this.done();
+      });
+      promise.catch((error) => {
+        this.ringaEvent.lastPromiseError = error;
+
+        this.fail(error);
+      });
+    } else if (__DEV__) {
+      throw Error(`ExecutorAbstract::waitForPromise(): command ${this.toString()} returned something that is not a promise, ${promise}`);
+    }
   }
 
   /**
