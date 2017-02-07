@@ -1421,14 +1421,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+/**
+ * Used to auto-generate non-conflicting Bus ids as the application runs.
+ *
+ * @type {{count: number}}
+ */
 var busses = exports.busses = {
   count: 0
 };
 
 /**
- * Basic bus implementation that works with Ringa and can handle bubbling and capture phases.
+ * Basic event bus implementation that works with Ringa.
  *
- * Note this is designed to match the spec for EventTarget in the DOM.
+ * Due to the ability to structure Busses in a tree, this can handle bubbling and capture phases.
+ *
+ * Note: the methods of this Class are designed to match the spec for EventTarget in the DOM.
  */
 
 var Bus = function (_RingaObject) {
@@ -1453,11 +1460,20 @@ var Bus = function (_RingaObject) {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  /**
+   * Adds a child to this Bus.
+   *
+   * @param bus The bus to add as a child.
+   */
 
 
   _createClass(Bus, [{
     key: 'addChild',
     value: function addChild(bus) {
+      if (bus.parent) {
+        throw new Error('Cannot add a Bus that has a child that already has a parent: \'' + bus.id + '\'');
+      }
+
       bus.parent = this;
       this.children.push(bus);
     }
@@ -1561,8 +1577,9 @@ var Bus = function (_RingaObject) {
     }
 
     /**
-     * Internal dispatch tha
-     * @param event
+     * Internal dispatch that handles propagating an event to this Bus's immediate listeners.
+     *
+     * @param event The event to dispatch
      * @private
      */
 
@@ -1648,6 +1665,11 @@ var Controller = function (_RingaObject) {
   function Controller(id, bus, options) {
     _classCallCheck(this, Controller);
 
+    // We want to error if bus is defined but is not actually a bus.
+    // If Bus is an object, though, and options is undefined, this means
+    // the user is probably doing this:
+    // new Controller('id', {options: true});
+    // And skipping providing a bus, and that is okay.
     var _this = _possibleConstructorReturn(this, (Controller.__proto__ || Object.getPrototypeOf(Controller)).call(this, id));
 
     if (bus && !(typeof bus.addEventListener === 'function')) {
@@ -1702,7 +1724,7 @@ var Controller = function (_RingaObject) {
      *
      * For example:
      *
-     *   controler = new MyController();
+     *   controller = new MyController();
      *   controller.addEventTypeStatics(['my event', 'otherEvent', 'YAY']);
      *
      *   MyController.MY_EVENT === 'my event';
@@ -1729,10 +1751,10 @@ var Controller = function (_RingaObject) {
     }
 
     /**
-     * Returns true if there is a listener for the provided eventType.
+     * Returns the ThreadFactory associated with the provided eventType.
      *
      * @param eventType The event type - a String.
-     * @returns {*} True if the event type has a listener.
+     * @returns {ThreadFactory} The ThreadFactory associated with the eventType.
      */
 
   }, {
