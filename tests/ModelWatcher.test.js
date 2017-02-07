@@ -363,4 +363,13 @@ describe('ModelWatcher', () => {
   it('Has a working find() method (3)', () => {
     expect(watcher.find(ModelSimpleExt)).toEqual(modelExt3);
   });
+
+  //-----------------------------------
+  // Should throw with an invalid Ringa model
+  //-----------------------------------
+  it('Should throw with an invalid Ringa model', () => {
+    expect(() => {
+      watcher.addModel({});
+    }).toThrow();
+  });
 });

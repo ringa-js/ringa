@@ -17,6 +17,10 @@ class ExecutorFactory {
    *   ExecutorAbstract to build based on what is passed in. This makes things extensible.
    */
   constructor(executee, executeeOptions) {
+    if (!executee) {
+      throw new Error('ExecutorFactory::build(): an internal error occurred and an executee was undefined!');
+    }
+
     this.executee = executee;
     this.executeeOptions = executeeOptions;
   }

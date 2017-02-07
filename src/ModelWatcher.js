@@ -1,4 +1,5 @@
 import RingaObject from './RingaObject';
+import Model from './Model';
 
 function objPath(obj, path) {
   if (!path) {
@@ -83,6 +84,10 @@ class ModelWatcher extends RingaObject {
   }
 
   addModel(model, id = undefined) {
+    if (!(model instanceof Model)) {
+      throw new Error(`ModelWatcher::addModel(): the provided model ${model.constructor.name} was not a valid Ringa Model!`);
+    }
+
     this.models.push(model);
 
     id = id || model.id;
@@ -131,7 +136,7 @@ class ModelWatcher extends RingaObject {
       return propertyPath ? objPath(model, propertyPath) : model;
     }
 
-    return undefined;
+    return null;
   }
 
   watch(classOrId, propertyPath, handler = undefined) {

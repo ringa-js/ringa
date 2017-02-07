@@ -4,6 +4,10 @@ class Model extends RingaObject {
   constructor(id) {
     super(id);
 
+    if (!id) {
+      throw new Error(`Model():: id must be provided! Make sure it is unique. See ${this.constructor.name}.`);
+    }
+
     this._modelInjectors = [];
   }
 

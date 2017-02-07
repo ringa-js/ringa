@@ -85,27 +85,33 @@ describe('Controller', () => {
     expect(controller.bus).toEqual(bus);
   });
 
-  it('should call domNodeMounted when the domNode is set (DOM Node)', () => {
+  it('should call domNodeMounted when the domNode is set (DOM Node)', (done) => {
     controller = new TestController('busLater');
 
     expect(controller.mounted).toEqual(false);
 
     controller.bus = domNode;
 
-    expect(controller.mounted).toEqual(true);
+    setTimeout(() => {
+      expect(controller.mounted).toEqual(true);
+      done();
+    }, 0);
   });
 
-  it('should call domNodeMounted when the domNode is set (Bus)', () => {
+  it('should call domNodeMounted when the domNode is set (Bus)', (done) => {
     controller = new TestController('busLater');
 
     expect(controller.mounted).toEqual(false);
 
     controller.bus = bus;
 
-    expect(controller.mounted).toEqual(true);
+    setTimeout(() => {
+      expect(controller.mounted).toEqual(true);
+      done();
+    }, 0);
   });
 
-  it('should automatically attach listeners when the DOM Node is set', () => {
+  it('should automatically attach listeners when the DOM Node is set', (done) => {
     controller = new TestController('busLater');
 
     expect(controller.hasListener('someEvent')).toEqual(false);
@@ -120,13 +126,17 @@ describe('Controller', () => {
 
     controller.bus = domNode;
 
-    expect(controller.hasListener('someEvent')).toEqual(true);
-    expect(controller.isListening('someEvent')).toEqual(true);
+    setTimeout(() => {
+      expect(controller.hasListener('someEvent')).toEqual(true);
+      expect(controller.isListening('someEvent')).toEqual(true);
 
-    expect(controller.mounted).toEqual(true);
+      expect(controller.mounted).toEqual(true);
+
+      done();
+    }, 0);
   });
 
-  it('should automatically attach listeners when the Bus is set', () => {
+  it('should automatically attach listeners when the Bus is set', (done) => {
     controller = new TestController('busLater');
 
     expect(controller.hasListener('someEvent')).toEqual(false);
@@ -141,13 +151,17 @@ describe('Controller', () => {
 
     controller.bus = bus;
 
-    expect(controller.hasListener('someEvent')).toEqual(true);
-    expect(controller.isListening('someEvent')).toEqual(true);
+    setTimeout(() => {
+      expect(controller.hasListener('someEvent')).toEqual(true);
+      expect(controller.isListening('someEvent')).toEqual(true);
 
-    expect(controller.mounted).toEqual(true);
+      expect(controller.mounted).toEqual(true);
+
+      done();
+    }, 0);
   });
 
-  it('should automatically remove listeners when the domNode is unset', () => {
+  it('should automatically remove listeners when the domNode is unset', (done) => {
     controller = new TestController('busLater');
 
     controller.addListener('someEvent', () => {});
@@ -155,10 +169,14 @@ describe('Controller', () => {
     controller.bus = domNode;
     controller.bus = undefined;
 
-    expect(controller.hasListener('someEvent')).toEqual(true);
-    expect(controller.isListening('someEvent')).toEqual(false);
+    setTimeout(() => {
+      expect(controller.hasListener('someEvent')).toEqual(true);
+      expect(controller.isListening('someEvent')).toEqual(false);
 
-    expect(controller.mounted).toEqual(true);
+      expect(controller.mounted).toEqual(true);
+
+      done();
+    }, 0);
   });
 
   it('should automatically remove listeners when the bus is unset', () => {
@@ -169,10 +187,14 @@ describe('Controller', () => {
     controller.bus = bus;
     controller.bus = undefined;
 
-    expect(controller.hasListener('someEvent')).toEqual(true);
-    expect(controller.isListening('someEvent')).toEqual(false);
+    setTimeout(() => {
+      expect(controller.hasListener('someEvent')).toEqual(true);
+      expect(controller.isListening('someEvent')).toEqual(false);
 
-    expect(controller.mounted).toEqual(true);
+      expect(controller.mounted).toEqual(true);
+
+      done();
+    }, 0);
   });
 
   it('should automatically convert an array to a ThreadFactory and return it during addListener', () => {

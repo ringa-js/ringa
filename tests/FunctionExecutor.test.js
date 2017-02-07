@@ -10,7 +10,7 @@ import TestController from './shared/TestController';
 
 const TEST_EVENT = 'testEvent';
 
-describe('CommandFunctionWrapper', () => {
+describe('FunctionExecutor', () => {
   let command, domNode, reactNode, controller;
 
   beforeEach(() => {

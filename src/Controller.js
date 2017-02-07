@@ -81,7 +81,13 @@ class Controller extends RingaObject {
     // get attached now to our new bus.
     if (this._bus) {
       this.attachAllListeners();
-      this.busMounted(this.bus);
+
+      // We want to wait here. The reason is that if someone dispatches an event in the busMounted section
+      // we want to make sure that all other Controllers within the same context in the dom have also
+      // had time to mount before secondary events might be dispatched.
+      setTimeout(() => {
+        this.busMounted(this.bus);
+      }, 0);
     }
   }
 
@@ -368,8 +374,10 @@ class Controller extends RingaObject {
       return;
     }
 
+    let thread;
+
     try {
-      let thread = this.invoke(ringaEvent, threadFactory);
+      thread = this.invoke(ringaEvent, threadFactory);
 
       this.postInvokeHandler(ringaEvent, thread);
     } catch (error) {
@@ -400,7 +408,7 @@ class Controller extends RingaObject {
 
   threadFailHandler(thread, error, kill) {
     if (this.options.consoleLogFails) {
-      console.error(error, thread.toString());
+      console.error(error, thread ? thread.toString() : '');
     }
 
     if (kill) {
@@ -415,6 +423,10 @@ class Controller extends RingaObject {
   }
 
   dispatch(eventType, details) {
+    if (!this.bus) {
+      throw new Error(`Controller::dispatch(): bus has not yet been set so you cannot dispatch ('${eventType}')! Wait for Controller::busMounted().`);
+    }
+
     return new RingaEvent(eventType, details).dispatch(this.bus);
   }
 

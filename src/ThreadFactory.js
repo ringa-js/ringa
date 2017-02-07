@@ -14,6 +14,10 @@ class ThreadFactory extends RingaHashArray {
 
     let addOne = this._hashArray.addOne;
     this._hashArray.addOne = function(obj) {
+      if (!obj) {
+        console.error(`ThreadFactory():: Attempting to add an empty executee! This probably happened because you attempt to add an event (e.g. SomeController.MY_EVENT) before SomeController::addListener('myEvent') was called.`, executorFactories);
+      }
+
       if (!(obj instanceof ExecutorFactory)) {
         obj = new ExecutorFactory(obj);
       }
