@@ -23,6 +23,11 @@ class Controller extends RingaObject {
   constructor(id, bus, options) {
     super(id);
 
+    // We want to error if bus is defined but is not actually a bus.
+    // If Bus is an object, though, and options is undefined, this means
+    // the user is probably doing this:
+    // new Controller('id', {options: true});
+    // And skipping providing a bus, and that is okay.
     if (bus && !(typeof bus.addEventListener === 'function')) {
       if (__DEV__ && options) {
         throw Error('Controller(): invalid bus or DOM node passed into constructor!');
@@ -98,7 +103,7 @@ class Controller extends RingaObject {
    *
    * For example:
    *
-   *   controler = new MyController();
+   *   controller = new MyController();
    *   controller.addEventTypeStatics(['my event', 'otherEvent', 'YAY']);
    *
    *   MyController.MY_EVENT === 'my event';
@@ -120,10 +125,10 @@ class Controller extends RingaObject {
   }
 
   /**
-   * Returns true if there is a listener for the provided eventType.
+   * Returns the ThreadFactory associated with the provided eventType.
    *
    * @param eventType The event type - a String.
-   * @returns {*} True if the event type has a listener.
+   * @returns {ThreadFactory} The ThreadFactory associated with the eventType.
    */
   getThreadFactoryFor(eventType) {
     return this.eventTypeToThreadFactory[eventType];

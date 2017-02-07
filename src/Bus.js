@@ -1,13 +1,20 @@
 import RingaObject from './RingaObject';
 
+/**
+ * Used to auto-generate non-conflicting Bus ids as the application runs.
+ *
+ * @type {{count: number}}
+ */
 export const busses = {
   count: 0
 };
 
 /**
- * Basic bus implementation that works with Ringa and can handle bubbling and capture phases.
+ * Basic event bus implementation that works with Ringa.
  *
- * Note this is designed to match the spec for EventTarget in the DOM.
+ * Due to the ability to structure Busses in a tree, this can handle bubbling and capture phases.
+ *
+ * Note: the methods of this Class are designed to match the spec for EventTarget in the DOM.
  */
 class Bus extends RingaObject {
   //-----------------------------------
@@ -26,7 +33,16 @@ class Bus extends RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  /**
+   * Adds a child to this Bus.
+   *
+   * @param bus The bus to add as a child.
+   */
   addChild(bus) {
+    if (bus.parent) {
+      throw new Error(`Cannot add a Bus that has a child that already has a parent: '${bus.id}'`);
+    }
+
     bus.parent = this;
     this.children.push(bus);
   }
@@ -114,8 +130,9 @@ class Bus extends RingaObject {
   }
 
   /**
-   * Internal dispatch tha
-   * @param event
+   * Internal dispatch that handles propagating an event to this Bus's immediate listeners.
+   *
+   * @param event The event to dispatch
    * @private
    */
   _dispatch(event, capturePhase) {

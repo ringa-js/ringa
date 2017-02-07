@@ -132,4 +132,17 @@ describe('Bus', () => {
 
     expect(result).toEqual('0123456789876543210');
   });
+
+  it('should error if we add as a child a Bus that already has a parent', () => {
+    let a, b;
+
+    a = new Bus();
+    b = new Bus();
+
+    bus.addChild(a);
+
+    expect(() => {
+      b.addChild(b);
+    });
+  });
 });
