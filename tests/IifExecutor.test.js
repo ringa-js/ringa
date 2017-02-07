@@ -176,28 +176,4 @@ describe('iifExecutor', () => {
     Ringa.dispatch('myFirstEvent', domNode);
   }, 50);
 
-  //-----------------------------------------------
-  // Does not execute falsy if condition is true
-  // //-----------------------------------------------
-  // it('Does not execute falsy if condition is true', (done) => {
-  //   controller.addListener('myEvent', [
-  //     iif(() => true, 
-  //       () => done(),
-  //       () => { throw Error() })
-  //     ]);
-
-  //   let ringaEvent = Ringa.dispatch('myEvent', domNode);
-
-  //   ringaEvent.addDoneListener(() => {
-  //     console.log('This is in the done listener');
-  //     // try {
-  //       expect().not.toThrow();
-  //     // }
-  //     // catch(e) {
-  //     //   console.log(`Error: ${e}`);
-  //     // }
-  //     done();
-  //   });
-  // }, 50);
-
 });
