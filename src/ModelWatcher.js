@@ -67,7 +67,7 @@ class Watchees {
   }
 }
 
-class ModelInjector extends RingaObject {
+class ModelWatcher extends RingaObject {
   constructor(id) {
     super(id);
 
@@ -76,12 +76,13 @@ class ModelInjector extends RingaObject {
 
     this.models = [];
     this.idToModel = new Map();
+    this.classToModel = new Map();
 
     // We always notify everyone at once and ensure that nobody gets notified more than once.
     this.nextWatchees = new Watchees();
   }
 
-  addModel(model, id) {
+  addModel(model, id = undefined) {
     this.models.push(model);
 
     id = id || model.id;
@@ -90,9 +91,47 @@ class ModelInjector extends RingaObject {
       this.idToModel[id] = model;
     }
 
+    let p = model.constructor;
+
+    while (p) {
+      // First come first serve for looking up by type!
+      if (!this.classToModel[p]) {
+        this.classToModel[p] = model;
+      }
+
+      p = p.__proto__;
+    }
+
     if (typeof model.addInjector == 'function') {
       model.addInjector(this);
     }
+  }
+
+  find(classOrId, propertyPath = undefined) {
+    let model;
+
+    // By ID (e.g. 'myModel' or 'constructor_whatever')
+    if (typeof classOrId === 'string' && this.idToModel[classOrId]) {
+      model = this.idToModel[classOrId];
+    } else {
+      // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
+      let p = classOrId;
+
+      while (p) {
+        if (this.classToModel[p]) {
+          model = this.classToModel[p];
+          break;
+        }
+
+        p = p.prototype;
+      }
+    }
+
+    if (model) {
+      return propertyPath ? objPath(model, propertyPath) : model;
+    }
+
+    return undefined;
   }
 
   watch(classOrId, propertyPath, handler = undefined) {
@@ -245,4 +284,4 @@ class ModelInjector extends RingaObject {
   }
 }
 
-export default ModelInjector;
+export default ModelWatcher;

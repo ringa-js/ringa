@@ -60,7 +60,6 @@ module.exports = Object.assign({
           'Thread',
           'ThreadFactory']
       }
-    }),
-    new webpack.optimize.DedupePlugin()
+    })
   ]
 }, baseConfig);

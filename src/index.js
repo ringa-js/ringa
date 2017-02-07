@@ -51,7 +51,7 @@ export function __hardReset() {
   busses.count = 0;
 }
 
-export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus };
+export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus, Model, ModelWatcher };
 
 export default {
   Controller,
