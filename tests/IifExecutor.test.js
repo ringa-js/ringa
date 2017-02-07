@@ -163,7 +163,7 @@ describe('iifExecutor', () => {
   //---------------------------------------------------
   // Executes an event dispatch by name from true path
   //---------------------------------------------------
-  it('Executes an event dispatch from false path', (done) => {
+  it('Executes an event dispatch by name from true path', (done) => {
     controller.addListener('myFirstEvent', [
       iif(() => true,
         'mySecondEvent')
@@ -176,4 +176,41 @@ describe('iifExecutor', () => {
     Ringa.dispatch('myFirstEvent', domNode);
   }, 50);
 
+  //-----------------------------------------------------
+  // Does not execute falsy executor with true condition
+  //-----------------------------------------------------
+  it('Does not execute falsy executor with true condition', (done) => {
+    let a = false;
+    controller.addListener('myEvent', [
+      iif(() => true,
+        () => {},
+        () => { a = true })
+      ]);
+
+    let event = Ringa.dispatch('myEvent', domNode);
+
+    event.addDoneListener(() => {
+      expect(a).toBe(false);
+      done();
+    })
+  }, 50);
+
+  //-------------------------------------------------------
+  // Does not execute truthy executor with false condition
+  //-------------------------------------------------------
+  it('Does not execute truthy executor with false condition', (done) => {
+    let a = false;
+    controller.addListener('myEvent', [
+      iif(() => false,
+        () => { a = true },
+        () => {})
+      ]);
+
+    let event = Ringa.dispatch('myEvent', domNode);
+
+    event.addDoneListener(() => {
+      expect(a).toBe(false);
+      done();
+    })
+  }, 50);
 });
