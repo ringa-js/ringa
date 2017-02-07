@@ -16,13 +16,15 @@
  *
  * Note that there are other properties that can be requested in the arguments list of execute:
  *
- * controller: the Controller object that is handling this thread
- * commandThread: the CommandThread object that built this Command
- * ringaEvent: the ringaEvent itself (instead of one of its detail properties)
- * customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
- * target: the target DOMNode that triggered the customEvent was dispatched on.
+ * $controller: the Controller object that is handling this thread
+ * $thread: the Thread object that built this Command
+ * $ringaEvent: the ringaEvent itself (instead of one of its detail properties)
+ * $customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
+ * $target: the target DOMNode that triggered the customEvent was dispatched on.
  * done: the parent Executor::done(). CommandFunction is an example of where this is needed.
  * fail: the parent Executor::fail(). CommandFunction is an example of where this is needed.
+ * $lastPromiseResult: the last Promise result from a previous executor.
+ * $lastPromiseError: the last Promise error from a previous executor.
  *
  * @param executor The Executor subclass instance.
  * @param expectedArguments An array of argument names that the target function expects.

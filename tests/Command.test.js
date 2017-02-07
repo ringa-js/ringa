@@ -80,7 +80,7 @@ describe('Command', () => {
 
     // ringaEvent, target, controller, thread, testObject, a, b, c
     expect(args[0]).toEqual(ringaEvent);
-    expect(args[1]).toEqual(null);
+    expect(args[1]).toEqual(undefined);
     expect(args[2]).toEqual(controller);
     expect(args[3]).toEqual(thread);
     expect(args[4]).toEqual('test');

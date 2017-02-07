@@ -5,14 +5,14 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa, {__hardReset} from '../src/index';
+import Ringa, {__hardReset, Bus} from '../src/index';
 import TestController from './shared/TestController';
 
 const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
 describe('Controller', () => {
-  let command, domNode, reactNode, threadFactory, threadFactory2, controller;
+  let command, domNode, bus, reactNode, threadFactory, threadFactory2, controller;
 
   beforeEach(() => {
     let ran = Math.random();
@@ -20,6 +20,8 @@ describe('Controller', () => {
     domNode = ReactDOM.findDOMNode(TestUtils.renderIntoDocument(
       <div key={ran.toString()}>Controller Attach Point</div>
     ));
+
+    bus = new Bus();
 
     controller = new TestController('testController', domNode);
 
@@ -57,14 +59,120 @@ describe('Controller', () => {
     expect(c.options.throwKillsThread).toEqual(false);
   });
 
-  it('should have an attached domNode', () => {
-    expect(controller.domNode).toEqual(domNode);
+  it('should have an attached domNode (or domNode)', () => {
+    expect(controller.bus).toEqual(domNode);
   });
 
-  it('should error if no domNode is provided', () => {
-    expect(() => {
-      new TestController('noDomNode');
-    }).toThrow();
+  it('should not error if no bus is provided', () => {
+    controller = new TestController('nobus');
+
+    expect(controller.bus).toEqual(undefined);
+  });
+
+  it('should allow attaching of domNode after constructor (DOM Node)', () => {
+    controller = new TestController('busLater');
+
+    controller.bus = domNode;
+
+    expect(controller.bus).toEqual(domNode);
+  });
+
+  it('should allow attaching of domNode after constructor (Bus)', () => {
+    controller = new TestController('busLater');
+
+    controller.bus = bus;
+
+    expect(controller.bus).toEqual(bus);
+  });
+
+  it('should call domNodeMounted when the domNode is set (DOM Node)', () => {
+    controller = new TestController('busLater');
+
+    expect(controller.mounted).toEqual(false);
+
+    controller.bus = domNode;
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should call domNodeMounted when the domNode is set (Bus)', () => {
+    controller = new TestController('busLater');
+
+    expect(controller.mounted).toEqual(false);
+
+    controller.bus = bus;
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should automatically attach listeners when the DOM Node is set', () => {
+    controller = new TestController('busLater');
+
+    expect(controller.hasListener('someEvent')).toEqual(false);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    controller.addListener('someEvent', () => {});
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    expect(controller.mounted).toEqual(false);
+
+    controller.bus = domNode;
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(true);
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should automatically attach listeners when the Bus is set', () => {
+    controller = new TestController('busLater');
+
+    expect(controller.hasListener('someEvent')).toEqual(false);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    controller.addListener('someEvent', () => {});
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    expect(controller.mounted).toEqual(false);
+
+    controller.bus = bus;
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(true);
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should automatically remove listeners when the domNode is unset', () => {
+    controller = new TestController('busLater');
+
+    controller.addListener('someEvent', () => {});
+
+    controller.bus = domNode;
+    controller.bus = undefined;
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    expect(controller.mounted).toEqual(true);
+  });
+
+  it('should automatically remove listeners when the bus is unset', () => {
+    controller = new TestController('busLater');
+
+    controller.addListener('someEvent', () => {});
+
+    controller.bus = bus;
+    controller.bus = undefined;
+
+    expect(controller.hasListener('someEvent')).toEqual(true);
+    expect(controller.isListening('someEvent')).toEqual(false);
+
+    expect(controller.mounted).toEqual(true);
   });
 
   it('should automatically convert an array to a ThreadFactory and return it during addListener', () => {
@@ -72,7 +180,7 @@ describe('Controller', () => {
     expect(ctf).toBeDefined();
   });
 
-  it('should block adding the same event listener twice', () => {
+  it('should block adding the same event listener twice (DOM Node)', () => {
     controller.addListener('test');
 
     expect(() => {
@@ -80,18 +188,54 @@ describe('Controller', () => {
     }).toThrow();
   });
 
-  it('should let you retrieve an already saved command thread factory by eventType', () => {
-    let ctf = controller.addListener('test', [() => {}]);
-    expect(ctf).toEqual(controller.getListener('test'));
+  it('should block adding the same event listener twice (Bus)', () => {
+    controller.bus = bus;
+
+    controller.addListener('test');
+
+    expect(() => {
+      controller.addListener('test');
+    }).toThrow();
   });
 
-  it('should let you see if an eventType has already been added', () => {
+  it('should let you retrieve an already saved command thread factory by eventType (DOM Node)', () => {
+    let ctf = controller.addListener('test', [() => {}]);
+    expect(ctf).toEqual(controller.getThreadFactoryFor('test'));
+  });
+
+  it('should let you retrieve an already saved command thread factory by eventType (Bus)', () => {
+    controller.bus = bus;
+
+    let ctf = controller.addListener('test', [() => {}]);
+    expect(ctf).toEqual(controller.getThreadFactoryFor('test'));
+  });
+
+  it('should let you see if an eventType has already been added (DOM Node)', () => {
     let ctf = controller.addListener('test', [() => {}]);
     expect(controller.hasListener('test')).toEqual(true);
     expect(controller.hasListener('test2')).toEqual(false);
   });
 
-  it('should allow you to remove a listener', () => {
+  it('should let you see if an eventType has already been added (Bus)', () => {
+    controller.bus = bus;
+
+    let ctf = controller.addListener('test', [() => {}]);
+    expect(controller.hasListener('test')).toEqual(true);
+    expect(controller.hasListener('test2')).toEqual(false);
+  });
+
+  it('should allow you to remove a listener (DOM Node)', () => {
+    let ctf1 = controller.addListener('test', []);
+    expect(controller.hasListener('test')).toEqual(true);
+    let ctf2 = controller.removeListener('test');
+    expect(controller.hasListener('test')).toEqual(false);
+
+    expect(ctf1).toEqual(ctf2);
+  });
+
+  it('should allow you to remove a listener (Bus)', () => {
+    controller.bus = bus;
+
     let ctf1 = controller.addListener('test', []);
     expect(controller.hasListener('test')).toEqual(true);
     let ctf2 = controller.removeListener('test');
@@ -177,8 +321,18 @@ describe('Controller', () => {
     controller.dispatch('test1', undefined);
   });
 
-  it('should have a working addEventTypes', () => {
-    controller.addEventTypes(['whatever', 'hello world', 'to-snake-case', 'anotherTest']);
+  it('should have a dispatch method that dispatches directly on the Bus for the controller', (done) => {
+    controller.bus = bus;
+
+    controller.addListener('test1', [() => {
+      done();
+    }]);
+
+    controller.dispatch('test1', undefined);
+  });
+
+  it('should have a working addEventTypeStatics', () => {
+    controller.addEventTypeStatics(['whatever', 'hello world', 'to-snake-case', 'anotherTest']);
 
     expect(TestController.WHATEVER).toEqual('whatever');
     expect(TestController.HELLO_WORLD).toEqual('hello world');
@@ -191,8 +345,8 @@ describe('Controller', () => {
     expect(controller.ANOTHER_TEST).toEqual('anotherTest');
   });
 
-  it('events created with addEventTypes should work', (done) => {
-    controller.addEventTypes(['test event types']);
+  it('events created with addEventTypeStatics should work', (done) => {
+    controller.addEventTypeStatics(['test event types']);
 
     controller.addListener(TestController.TEST_EVENT_TYPES, [() => {}]);
 
