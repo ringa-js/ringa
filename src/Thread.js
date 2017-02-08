@@ -4,8 +4,8 @@ class Thread extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id, threadFactory, options) {
-    super(id);
+  constructor(name, threadFactory, options) {
+    super(name);
 
     this.options = options;
     this.threadFactory = threadFactory;

@@ -6,8 +6,6 @@ import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import Ringa, {__hardReset, Bus} from '../src/index';
 
-const TEST_EVENT = 'testEvent';
-
 describe('Bus', () => {
   let bus;
 
@@ -20,13 +18,13 @@ describe('Bus', () => {
   });
 
   it('should create without error and have proper id', () => {
-    bus = new Bus();
-    expect(bus.id).toEqual('bus1');
+    expect(bus.id).toEqual('Bus1');
   });
 
-  it('should create without error and have proper id', () => {
-    bus = new Bus('test');
-    expect(bus.id).toEqual('test');
+  it('should create without error and have proper id and name', () => {
+    bus = new Bus('name', 'id');
+
+    expect(bus.id).toEqual('Bus2');
   });
 
   it('should have proper starting properties', () => {

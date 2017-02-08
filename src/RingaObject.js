@@ -1,17 +1,24 @@
 export const ids = {
-  map: {}
+  map: {},
+  counts: new WeakMap()
 };
 
 export default class RingaObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id) {
+  constructor(name, id) {
+    ids.counts[this.constructor] = ids.counts[this.constructor] || 1;
+
     if (id) {
       this.id = id;
     } else {
-      this._id = '[UNSET]';
+      this._id = this.constructor.name + ids.counts[this.constructor];
     }
+
+    ids.counts[this.constructor]++;
+
+    this._name = name;
   }
 
   //-----------------------------------
@@ -31,6 +38,10 @@ export default class RingaObject {
     return this._id;
   }
 
+  get name() {
+    return this._name;
+  }
+
   //-----------------------------------
   // Methods
   //-----------------------------------
@@ -39,6 +50,6 @@ export default class RingaObject {
   }
 
   toString(value) {
-    return this.id + ' ' + (value || '' );
+    return this.name + '_' + (value || '');
   }
 };

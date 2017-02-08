@@ -328,21 +328,28 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var ids = exports.ids = {
-  map: {}
+  map: {},
+  counts: new WeakMap()
 };
 
 var RingaObject = function () {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  function RingaObject(id) {
+  function RingaObject(name, id) {
     _classCallCheck(this, RingaObject);
+
+    ids.counts[this.constructor] = ids.counts[this.constructor] || 1;
 
     if (id) {
       this.id = id;
     } else {
-      this._id = '[UNSET]';
+      this._id = this.constructor.name + ids.counts[this.constructor];
     }
+
+    ids.counts[this.constructor]++;
+
+    this._name = name;
   }
 
   //-----------------------------------
@@ -363,7 +370,7 @@ var RingaObject = function () {
   }, {
     key: 'toString',
     value: function toString(value) {
-      return this.id + ' ' + (value || '');
+      return this.name + '_' + (value || '');
     }
   }, {
     key: 'id',
@@ -378,6 +385,11 @@ var RingaObject = function () {
     },
     get: function get() {
       return this._id;
+    }
+  }, {
+    key: 'name',
+    get: function get() {
+      return this._name;
     }
   }]);
 
@@ -1038,6 +1050,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * Retrieves a property by a dot-delimited path on a provided object.
+ *
+ * @param obj The object to search.
+ * @param path A dot-delimited path like 'prop1.prop2.prop3'
+ * @returns {*}
+ */
 function objPath(obj, path) {
   if (!path) {
     return obj;
@@ -1050,22 +1069,40 @@ function objPath(obj, path) {
   return obj;
 }
 
+/**
+ * For a single dot-delimited path like 'when.harry.met.sally', returns:
+ *
+ * ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
+ *
+ * @param propertyPath A full dot-delimited path.
+ * @returns {*}
+ */
 function pathAll(propertyPath) {
-  // if propertyPath === 'when.harry.met.sally'
-  // then paths = ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
   return propertyPath.split('.').reduce(function (a, v, i) {
     a[i] = i === 0 ? v : a[i - 1] + '.' + v;
     return a;
   }, []);
 }
 
+/**
+ * A collection of watches that will be updated in one shot.
+ */
+
 var Watchees = function () {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
   function Watchees() {
     _classCallCheck(this, Watchees);
 
     this.watchees = [];
     this.watcheesMap = new Map();
   }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
 
   _createClass(Watchees, [{
     key: 'add',
@@ -1114,42 +1151,61 @@ var Watchees = function () {
   return Watchees;
 }();
 
+/**
+ * This ModelWatcher watches for a model by id, Class/prototype in heirarchy, or name.
+ */
+
+
 var ModelWatcher = function (_RingaObject) {
   _inherits(ModelWatcher, _RingaObject);
 
-  function ModelWatcher(id) {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function ModelWatcher(name, id) {
     _classCallCheck(this, ModelWatcher);
 
-    var _this = _possibleConstructorReturn(this, (ModelWatcher.__proto__ || Object.getPrototypeOf(ModelWatcher)).call(this, id));
+    var _this = _possibleConstructorReturn(this, (ModelWatcher.__proto__ || Object.getPrototypeOf(ModelWatcher)).call(this, name, id));
 
-    _this.idToWatchees = {};
-    _this.classToWatchees = new Map();
+    _this.idNameToWatchees = {};
+    _this.classToWatchees = new WeakMap();
 
     _this.models = [];
-    _this.idToModel = new Map();
-    _this.classToModel = new Map();
+    _this.idToModel = new WeakMap();
+    _this.nameToModel = new WeakMap();
+    _this.classToModel = new WeakMap();
 
     // We always notify everyone at once and ensure that nobody gets notified more than once.
     _this.nextWatchees = new Watchees();
     return _this;
   }
 
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * A model to be watched.
+   *
+   * @param model Assumed to be an extension of Ringa.Model.
+   * @param id A custom id to assign if you so desire.
+   */
+
+
   _createClass(ModelWatcher, [{
     key: 'addModel',
     value: function addModel(model) {
-      var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-
       if (!(model instanceof _Model2.default)) {
         throw new Error('ModelWatcher::addModel(): the provided model ' + model.constructor.name + ' was not a valid Ringa Model!');
       }
 
+      if (this.nameToModel[model.name]) {
+        throw new Error('ModelWatcher::addModel(): a Model with the name ' + model.name + ' has already been watched!');
+      }
+
       this.models.push(model);
 
-      id = id || model.id;
-
-      if (id) {
-        this.idToModel[id] = model;
-      }
+      this.idToModel[model.id] = model;
+      this.nameToModel[model.name] = model;
 
       var p = model.constructor;
 
@@ -1166,19 +1222,30 @@ var ModelWatcher = function (_RingaObject) {
         model.addInjector(this);
       }
     }
+
+    /**
+     * See if a Model exists in this ModelWatcher and find a property on it (optional).
+     *
+     * @param classOrIdOrName A Class that extends Ringa.Model or an id or a name to lookup.
+     * @param propertyPath A dot-delimited path deep into a property.
+     * @returns {*} The model (if not propertyPath provided) or the property on the model.
+     */
+
   }, {
     key: 'find',
-    value: function find(classOrId) {
+    value: function find(classOrIdOrName) {
       var propertyPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
       var model = void 0;
 
       // By ID (e.g. 'myModel' or 'constructor_whatever')
-      if (typeof classOrId === 'string' && this.idToModel[classOrId]) {
-        model = this.idToModel[classOrId];
+      if (typeof classOrIdOrName === 'string' && this.idToModel[classOrIdOrName]) {
+        model = this.idToModel[classOrIdOrName];
+      }if (typeof classOrIdOrName === 'string' && this.nameToModel[classOrIdOrName]) {
+        model = this.nameToModel[classOrIdOrName];
       } else {
         // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
-        var p = classOrId;
+        var p = classOrIdOrName;
 
         while (p) {
           if (this.classToModel[p]) {
@@ -1196,11 +1263,21 @@ var ModelWatcher = function (_RingaObject) {
 
       return null;
     }
+
+    /**
+     * Watch a model or specific property on a model for changes.
+     *
+     * @param classOrIdOrName A Ringa.Model extension, id, or name of a model to watch.
+     * @param propertyPath A dot-delimiated path into a property.
+     * @param handler Optional function to callback with the initial values.
+     */
+
   }, {
     key: 'watch',
-    value: function watch(classOrId, propertyPath) {
+    value: function watch(classOrIdOrName, propertyPath) {
       var handler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
+      // If handler is second property...
       if (typeof propertyPath === 'function') {
         handler = propertyPath;
         propertyPath = undefined;
@@ -1212,10 +1289,10 @@ var ModelWatcher = function (_RingaObject) {
         byPath: {}
       };
 
-      if (typeof classOrId === 'function') {
-        group = this.classToWatchees[classOrId] = this.classToWatchees[classOrId] || defaultGroup;
-      } else if (typeof classOrId === 'string') {
-        group = this.idToWatchees[classOrId] = this.idToWatchees[classOrId] || defaultGroup;
+      if (typeof classOrIdOrName === 'function') {
+        group = this.classToWatchees[classOrIdOrName] = this.classToWatchees[classOrIdOrName] || defaultGroup;
+      } else if (typeof classOrIdOrName === 'string') {
+        group = this.idNameToWatchees[classOrIdOrName] = this.idNameToWatchees[classOrIdOrName] || defaultGroup;
       } else if (true) {
         throw new Error('ModelWatcher::watch(): can only watch by Class or id');
       }
@@ -1325,9 +1402,14 @@ var ModelWatcher = function (_RingaObject) {
         };
       }
 
-      // By ID (e.g. 'myModel' or 'constructor_whatever')
-      if (this.idToWatchees[model.id]) {
-        watcheeGroup(this.idToWatchees[model.id]);
+      // By ID (e.g. 'MyModel1' or 'MyController10')
+      if (this.idNameToWatchees[model.id]) {
+        watcheeGroup(this.idNameToWatchees[model.id]);
+      }
+
+      // By ID (e.g. 'MyModel1' or 'MyController10')
+      if (this.idNameToWatchees[model.name]) {
+        watcheeGroup(this.idNameToWatchees[model.name]);
       }
 
       // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
@@ -1471,10 +1553,10 @@ var ThreadFactory = function (_RingaHashArray) {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  function ThreadFactory(id, executorFactories, options) {
+  function ThreadFactory(name, executorFactories, options) {
     _classCallCheck(this, ThreadFactory);
 
-    var _this = _possibleConstructorReturn(this, (ThreadFactory.__proto__ || Object.getPrototypeOf(ThreadFactory)).call(this, id || 'commandFactory'));
+    var _this = _possibleConstructorReturn(this, (ThreadFactory.__proto__ || Object.getPrototypeOf(ThreadFactory)).call(this, name || 'commandFactory'));
 
     options = options || {};
     options.synchronous = options.synchronous === undefined ? false : options.synchronous;
@@ -1570,14 +1652,14 @@ var RingaHashArray = function (_RingaObject) {
   _inherits(RingaHashArray, _RingaObject);
 
   function RingaHashArray() {
-    var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '[ID]';
+    var name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '[name]';
     var key = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'id';
     var changeHandler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
     var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
 
     _classCallCheck(this, RingaHashArray);
 
-    var _this = _possibleConstructorReturn(this, (RingaHashArray.__proto__ || Object.getPrototypeOf(RingaHashArray)).call(this, id));
+    var _this = _possibleConstructorReturn(this, (RingaHashArray.__proto__ || Object.getPrototypeOf(RingaHashArray)).call(this, name));
 
     _this._hashArray = new _hasharray2.default(key, changeHandler, options);
     return _this;
@@ -4408,10 +4490,10 @@ var Thread = function (_RingaHashArray) {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  function Thread(id, threadFactory, options) {
+  function Thread(name, threadFactory, options) {
     _classCallCheck(this, Thread);
 
-    var _this = _possibleConstructorReturn(this, (Thread.__proto__ || Object.getPrototypeOf(Thread)).call(this, id));
+    var _this = _possibleConstructorReturn(this, (Thread.__proto__ || Object.getPrototypeOf(Thread)).call(this, name));
 
     _this.options = options;
     _this.threadFactory = threadFactory;
@@ -4939,6 +5021,7 @@ function notify(eventType) {
 
 function __hardReset() {
   _RingaObject.ids.map = {};
+  _RingaObject.ids.counts = new WeakMap();
   _ExecutorAbstract.executorCounts.map = new Map();
   _Bus.busses.count = 0;
 }

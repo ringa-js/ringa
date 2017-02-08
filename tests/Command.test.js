@@ -47,13 +47,15 @@ describe('Command', () => {
 
   it('should have properly setup the beforeEach objects', () => {
     expect(domNode.nodeType).toEqual(1);
-    expect(controller.id).toEqual('testController');
-    expect(threadFactory.id).toEqual('testCommandThreadFactory');
-    expect(thread.id).toEqual('testCommandThreadFactory_Thread0');
+    expect(controller.id).toEqual('Controller1');
+    expect(threadFactory.name).toEqual('testCommandThreadFactory');
+    expect(thread.name).toEqual('ThreadFactory1_Thread0');
+    expect(threadFactory.id).toEqual('ThreadFactory1');
+    expect(thread.id).toEqual('Thread1');
   });
 
   it('should have a properly defined id', () => {
-    expect(command.id).toEqual('testController_CommandSimple_1');
+    expect(command.id).toEqual('Controller1_CommandSimple_1');
   });
 
   it('should start and properly store the thread', () => {

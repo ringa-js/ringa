@@ -1,6 +1,13 @@
 import RingaObject from './RingaObject';
 import Model from './Model';
 
+/**
+ * Retrieves a property by a dot-delimited path on a provided object.
+ *
+ * @param obj The object to search.
+ * @param path A dot-delimited path like 'prop1.prop2.prop3'
+ * @returns {*}
+ */
 function objPath(obj, path) {
   if (!path) {
     return obj;
@@ -13,21 +20,36 @@ function objPath(obj, path) {
   return obj;
 }
 
+/**
+ * For a single dot-delimited path like 'when.harry.met.sally', returns:
+ *
+ * ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
+ *
+ * @param propertyPath A full dot-delimited path.
+ * @returns {*}
+ */
 function pathAll(propertyPath) {
-  // if propertyPath === 'when.harry.met.sally'
-  // then paths = ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
   return propertyPath.split('.').reduce((a, v, i) => {
     a[i] = i === 0 ? v : a[i-1] + '.' + v;
     return a;
   }, []);
 }
 
+/**
+ * A collection of watches that will be updated in one shot.
+ */
 class Watchees {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
   constructor() {
     this.watchees = [];
     this.watcheesMap = new Map();
   }
 
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
   add(model, propertyPath, watchee) {
     let watcheeObj;
 
@@ -68,33 +90,50 @@ class Watchees {
   }
 }
 
+/**
+ * This ModelWatcher watches for a model by id, Class/prototype in heirarchy, or name.
+ */
 class ModelWatcher extends RingaObject {
-  constructor(id) {
-    super(id);
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  constructor(name, id) {
+    super(name, id);
 
-    this.idToWatchees = {};
-    this.classToWatchees = new Map();
+    this.idNameToWatchees = {};
+    this.classToWatchees = new WeakMap();
 
     this.models = [];
-    this.idToModel = new Map();
-    this.classToModel = new Map();
+    this.idToModel = new WeakMap();
+    this.nameToModel = new WeakMap();
+    this.classToModel = new WeakMap();
 
     // We always notify everyone at once and ensure that nobody gets notified more than once.
     this.nextWatchees = new Watchees();
   }
 
-  addModel(model, id = undefined) {
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * A model to be watched.
+   *
+   * @param model Assumed to be an extension of Ringa.Model.
+   * @param id A custom id to assign if you so desire.
+   */
+  addModel(model) {
     if (!(model instanceof Model)) {
       throw new Error(`ModelWatcher::addModel(): the provided model ${model.constructor.name} was not a valid Ringa Model!`);
     }
 
+    if (this.nameToModel[model.name]) {
+      throw new Error(`ModelWatcher::addModel(): a Model with the name ${model.name} has already been watched!`);
+    }
+
     this.models.push(model);
 
-    id = id || model.id;
-
-    if (id) {
-      this.idToModel[id] = model;
-    }
+    this.idToModel[model.id] = model;
+    this.nameToModel[model.name] = model;
 
     let p = model.constructor;
 
@@ -112,15 +151,24 @@ class ModelWatcher extends RingaObject {
     }
   }
 
-  find(classOrId, propertyPath = undefined) {
+  /**
+   * See if a Model exists in this ModelWatcher and find a property on it (optional).
+   *
+   * @param classOrIdOrName A Class that extends Ringa.Model or an id or a name to lookup.
+   * @param propertyPath A dot-delimited path deep into a property.
+   * @returns {*} The model (if not propertyPath provided) or the property on the model.
+   */
+  find(classOrIdOrName, propertyPath = undefined) {
     let model;
 
     // By ID (e.g. 'myModel' or 'constructor_whatever')
-    if (typeof classOrId === 'string' && this.idToModel[classOrId]) {
-      model = this.idToModel[classOrId];
+    if (typeof classOrIdOrName === 'string' && this.idToModel[classOrIdOrName]) {
+      model = this.idToModel[classOrIdOrName];
+    } if (typeof classOrIdOrName === 'string' && this.nameToModel[classOrIdOrName]) {
+      model = this.nameToModel[classOrIdOrName];
     } else {
       // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
-      let p = classOrId;
+      let p = classOrIdOrName;
 
       while (p) {
         if (this.classToModel[p]) {
@@ -139,7 +187,15 @@ class ModelWatcher extends RingaObject {
     return null;
   }
 
-  watch(classOrId, propertyPath, handler = undefined) {
+  /**
+   * Watch a model or specific property on a model for changes.
+   *
+   * @param classOrIdOrName A Ringa.Model extension, id, or name of a model to watch.
+   * @param propertyPath A dot-delimiated path into a property.
+   * @param handler Optional function to callback with the initial values.
+   */
+  watch(classOrIdOrName, propertyPath, handler = undefined) {
+    // If handler is second property...
     if (typeof propertyPath === 'function') {
       handler = propertyPath;
       propertyPath = undefined;
@@ -151,10 +207,10 @@ class ModelWatcher extends RingaObject {
       byPath: {}
     };
 
-    if (typeof classOrId === 'function') {
-      group = this.classToWatchees[classOrId] = this.classToWatchees[classOrId] || defaultGroup;
-    } else if (typeof classOrId === 'string') {
-      group = this.idToWatchees[classOrId] = this.idToWatchees[classOrId] || defaultGroup;
+    if (typeof classOrIdOrName === 'function') {
+      group = this.classToWatchees[classOrIdOrName] = this.classToWatchees[classOrIdOrName] || defaultGroup;
+    } else if (typeof classOrIdOrName === 'string') {
+      group = this.idNameToWatchees[classOrIdOrName] = this.idNameToWatchees[classOrIdOrName] || defaultGroup;
     } else if (__DEV__) {
       throw new Error(`ModelWatcher::watch(): can only watch by Class or id`);
     }
@@ -256,9 +312,14 @@ class ModelWatcher extends RingaObject {
       }
     }
 
-    // By ID (e.g. 'myModel' or 'constructor_whatever')
-    if (this.idToWatchees[model.id]) {
-      watcheeGroup(this.idToWatchees[model.id]);
+    // By ID (e.g. 'MyModel1' or 'MyController10')
+    if (this.idNameToWatchees[model.id]) {
+      watcheeGroup(this.idNameToWatchees[model.id]);
+    }
+
+    // By ID (e.g. 'MyModel1' or 'MyController10')
+    if (this.idNameToWatchees[model.name]) {
+      watcheeGroup(this.idNameToWatchees[model.name]);
     }
 
     // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)

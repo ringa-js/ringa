@@ -34,8 +34,19 @@ describe('ModelWatcher', () => {
     let callback = () => {};
     watcher.watch('model1', callback);
 
-    expect(watcher.idToWatchees[model1.id].all[0].handler).toEqual(callback);
-    expect(watcher.idToWatchees[model1.id].byPath).toEqual({});
+    expect(watcher.idNameToWatchees['model1'].all[0].handler).toEqual(callback);
+    expect(watcher.idNameToWatchees['model1'].byPath).toEqual({});
+  });
+
+  //-----------------------------------
+  // Has a working watch() method (1.5)
+  //-----------------------------------
+  it('Has a working watch() method (1.5)', () => {
+    let callback = () => {};
+    watcher.watch('ModelSimple1', callback);
+
+    expect(watcher.idNameToWatchees['ModelSimple1'].all[0].handler).toEqual(callback);
+    expect(watcher.idNameToWatchees['ModelSimple1'].byPath).toEqual({});
   });
 
   //-----------------------------------
@@ -98,9 +109,9 @@ describe('ModelWatcher', () => {
   });
 
   //-----------------------------------
-  // Injection by id (1)
+  // Watch by name (1)
   //-----------------------------------
-  it('Injection by id (1)', (done) => {
+  it('Watch by name (1)', (done) => {
     watcher.watch('model1', () => {
       done();
     });
@@ -109,9 +120,9 @@ describe('ModelWatcher', () => {
   }, 5);
 
   //-----------------------------------
-  // Injection by id (1.5)
+  // Watch by Class (1.5)
   //-----------------------------------
-  it('Injection by id (1.5)', (done) => {
+  it('Watch by Class (1.5)', (done) => {
     watcher.watch(ModelSimple, () => {
       done();
     });
@@ -120,9 +131,9 @@ describe('ModelWatcher', () => {
   }, 5);
 
   //-----------------------------------
-  // Injection by id (2)
+  // Watch by name (2)
   //-----------------------------------
-  it('Injection by id (2)', (done) => {
+  it('Watch by name (2)', (done) => {
     watcher.watch('model1', (arg) => {
       expect(arg.length).toEqual(1);
       expect(arg[0].model === model1).toEqual(true);
@@ -137,9 +148,9 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
-  // Injection by id and path (1)
+  // Watch by name and path (1)
   //-----------------------------------
-  it('Injection by id and path (1)', (done) => {
+  it('Watch by name and path (1)', (done) => {
     watcher.watch('model1', 'prop1', (arg) => {
       expect(arg.length).toEqual(1);
       expect(arg[0].model === model1).toEqual(true);
@@ -151,9 +162,9 @@ describe('ModelWatcher', () => {
   }, 5);
 
   //-----------------------------------
-  // Injection by id and path (2)
+  // Watch by name and path (2)
   //-----------------------------------
-  it('Injection by id and path (2)', (done) => {
+  it('Watch by name and path (2)', (done) => {
     let called = false;
     watcher.watch('model1', 'someInvalidPath', (arg) => {
       called = true;
@@ -168,9 +179,40 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
-  // Injection by id and deep path (1)
+  // Watch by id and path (1)
   //-----------------------------------
-  it('Injection by id and deep path (1)', (done) => {
+  it('Watch by id and path (1)', (done) => {
+    watcher.watch('ModelSimple1', 'prop1', (arg) => {
+      expect(arg.length).toEqual(1);
+      expect(arg[0].model === model1).toEqual(true);
+      expect(arg[0].value).toEqual('someNewValue');
+      done();
+    });
+
+    model1.prop1 = 'someNewValue';
+  }, 5);
+
+  //-----------------------------------
+  // Watch by id and path (2)
+  //-----------------------------------
+  it('Watch by id and path (2)', (done) => {
+    let called = false;
+    watcher.watch('ModelSimple1', 'someInvalidPath', (arg) => {
+      called = true;
+    });
+
+    model1.prop1 = 'someNewValue';
+
+    setTimeout(() => {
+      expect(called).toEqual(false);
+      done();
+    }, 1);
+  }, 50);
+
+  //-----------------------------------
+  // Watch by name and deep path (1)
+  //-----------------------------------
+  it('Watch by name and deep path (1)', (done) => {
     watcher.watch('model1', 'prop1', (arg) => {
       expect(arg[0].value).toEqual(model1.prop1);
       done();
@@ -182,9 +224,9 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
-  // Injection by id and deep path (2)
+  // Watch by name and deep path (2)
   //-----------------------------------
-  it('Injection by id and deep path (2)', (done) => {
+  it('Watch by name and deep path (2)', (done) => {
     watcher.watch('model1', 'prop1.deep', (arg) => {
       expect(arg[0].value).toEqual({
         deep: 'someNewValue'
@@ -199,9 +241,9 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
-  // Injection by id and deep path (3)
+  // Watch by name and deep path (3)
   //-----------------------------------
-  it('Injection by id and deep path (3)', (done) => {
+  it('Watch by name and deep path (3)', (done) => {
     // prop1.deep.deeper doesn't exist!
     watcher.watch('model1', 'prop1.deep.deeper', (arg) => {
       expect(arg[0].value).toEqual({
@@ -217,9 +259,58 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
-  // Injection multiple separate handlers (1)
+  // Watch by id and deep path (1)
   //-----------------------------------
-  it('Injection multiple separate handlers (1)', (done) => {
+  it('Watch by id and deep path (1)', (done) => {
+    watcher.watch('ModelSimple1', 'prop1', (arg) => {
+      expect(arg[0].value).toEqual(model1.prop1);
+      done();
+    });
+
+    model1.prop1 = {
+      deep: 'someNewValue'
+    };
+  }, 50);
+
+  //-----------------------------------
+  // Watch by id and deep path (2)
+  //-----------------------------------
+  it('Watch by id and deep path (2)', (done) => {
+    watcher.watch('ModelSimple1', 'prop1.deep', (arg) => {
+      expect(arg[0].value).toEqual({
+        deep: 'someNewValue'
+      });
+      expect(arg[0].watchedValue).toEqual('someNewValue');
+      done();
+    });
+
+    model1.prop1 = {
+      deep: 'someNewValue'
+    };
+  }, 50);
+
+  //-----------------------------------
+  // Watch by id and deep path (3)
+  //-----------------------------------
+  it('Watch by id and deep path (3)', (done) => {
+    // prop1.deep.deeper doesn't exist!
+    watcher.watch('ModelSimple1', 'prop1.deep.deeper', (arg) => {
+      expect(arg[0].value).toEqual({
+        deep: 'someNewValue'
+      });
+      expect(arg[0].watchedValue).toEqual(undefined);
+      done();
+    });
+
+    model1.prop1 = {
+      deep: 'someNewValue'
+    };
+  }, 50);
+
+  //-----------------------------------
+  // Watch multiple separate handlers (1)
+  //-----------------------------------
+  it('Watch multiple separate handlers (1)', (done) => {
     let prop1Handler = false;
     watcher.watch('model1', 'prop1', (arg) => {
       expect(arg[0].value).toEqual('prop1val');
@@ -237,9 +328,9 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
-  // Injection multiple separate handlers (2)
+  // Watch multiple separate handlers (2)
   //-----------------------------------
-  it('Injection multiple separate handlers (2)', (done) => {
+  it('Watch multiple separate handlers (2)', (done) => {
     let prop1Handler = false;
     watcher.watch('model1', 'prop1', (arg) => {
       expect(arg[0].value).toEqual('prop1val');
@@ -257,9 +348,9 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
-  // Injection multiple combined handlers (1)
+  // Watch multiple combined handlers (1)
   //-----------------------------------
-  it('Injection multiple combined handlers (1)', (done) => {
+  it('Watch multiple combined handlers (1)', (done) => {
     let handler = (arg) => {
       expect(arg[0].model).toEqual(model1);
       expect(arg[0].value).toEqual('prop1val');
@@ -285,9 +376,9 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------------
-  // Injection multiple combined handlers (2)
+  // Watch multiple combined handlers (2)
   //-----------------------------------------
-  it('Injection multiple combined handlers (2)', (done) => {
+  it('Watch multiple combined handlers (2)', (done) => {
     let handler = (arg) => {
       expect(arg[0].model).toEqual(model1);
       expect(arg[0].value).toEqual('prop1val');
@@ -313,9 +404,9 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //--------------------------------------------------------------------------------
-  // Injection collision (requesting same type model that exists more than once) (1)
+  // Watch collision (requesting same type model that exists more than once) (1)
   //--------------------------------------------------------------------------------
-  it('Injection collision (requesting same type model that exists more than once) (1)', (done) => {
+  it('Watch collision (requesting same type model that exists more than once) (1)', (done) => {
     let handler = (arg) => {
       expect(arg[0].model).toEqual(model1);
       expect(arg[0].value).toEqual('prop1val');
