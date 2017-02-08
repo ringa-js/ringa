@@ -34,7 +34,11 @@ describe('Controller', () => {
   });
 
   it('should have a properly defined id', () => {
-    expect(controller.id).toEqual('testController');
+    expect(controller.id).toEqual('TestController1');
+  });
+
+  it('should have a properly defined name', () => {
+    expect(controller.name).toEqual('testController');
   });
 
   it('should default options properly', () => {

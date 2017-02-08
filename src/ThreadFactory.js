@@ -6,8 +6,8 @@ class ThreadFactory extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id, executorFactories, options) {
-    super(id || 'commandFactory');
+  constructor(name, executorFactories, options) {
+    super(name || 'commandFactory');
 
     options = options || {};
     options.synchronous = options.synchronous === undefined ? false : options.synchronous;

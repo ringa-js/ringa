@@ -12,7 +12,7 @@ describe('Core', () => {
   });
 
   //-----------------------------------
-  // Memory -> 1 Command Cleanup Thread
+  // Should warn on duplicate id!
   //-----------------------------------
   it('Should warn on duplicate id!', (done) => {
     console.warn = (value) => {
@@ -20,7 +20,7 @@ describe('Core', () => {
       done();
     };
 
-    new Ringa.RingaObject('testId');
-    new Ringa.RingaObject('testId');
+    new Ringa.RingaObject('name', 'testId');
+    new Ringa.RingaObject('name', 'testId');
   }, 50);
 });

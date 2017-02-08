@@ -47,6 +47,7 @@ export function notify(eventType) {
 
 export function __hardReset() {
   ids.map = {};
+  ids.counts = new WeakMap();
   executorCounts.map = new Map();
   busses.count = 0;
 }
