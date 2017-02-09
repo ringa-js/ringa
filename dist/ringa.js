@@ -682,17 +682,19 @@ var eventIx = 0;
  *     newValue: 1
  *   });
  *
- *   event.dispatch();
+ *   event.dispatch(...add a bus or DOM node here...);
  *
  * If no bus is provided and document is defined, the event will be dispatched on the document object, but you can provide
  * a custom DOMNode or bus to dispatch from:
  *
  *   event.dispatch(myDiv);
  *
+ * OR
+ *
  *   let b = new Ringa.Bus();
  *   event.dispatch(b);
  *
- * All RingaEvents bubble and are cancelable by default.
+ * All RingaEvents bubble and are cancelable by default but this can be customized.
  */
 
 var RingaEvent = function (_RingaObject) {
@@ -704,10 +706,11 @@ var RingaEvent = function (_RingaObject) {
   /**
    * Build a RingaEvent that wraps a CustomEvent internally.
    *
-   * @param type
-   * @param detail
-   * @param bubbles
-   * @param cancelable
+   * @param type The event type.
+   * @param detail Event details object. Note that properties on the RingaEvent in the details object are injected by name
+   *               into any executors this triggers, making passing values super simple.
+   * @param bubbles True if you want the event to bubble (default is true).
+   * @param cancelable True if you want the event to be cancellable (default is true).
    */
   function RingaEvent(type) {
     var detail = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -717,6 +720,8 @@ var RingaEvent = function (_RingaObject) {
     _classCallCheck(this, RingaEvent);
 
     var _this = _possibleConstructorReturn(this, (RingaEvent.__proto__ || Object.getPrototypeOf(RingaEvent)).call(this, 'RingaEvent[' + type + ', ' + eventIx++ + ']'));
+    // TODO add cancel support and unit tests!
+
 
     _this.detail = detail;
     detail.ringaEvent = _this;
@@ -764,6 +769,15 @@ var RingaEvent = function (_RingaObject) {
 
       return this;
     }
+
+    /**
+     * Internal dispatch function. This is called after a timeout of 0 milliseconds to clear the stack from
+     * dispatch().
+     *
+     * @param bus The bus to dispatch on.
+     * @private
+     */
+
   }, {
     key: '_dispatch',
     value: function _dispatch(bus) {
@@ -803,12 +817,28 @@ var RingaEvent = function (_RingaObject) {
 
       bus.dispatchEvent(this.customEvent ? this.customEvent : this);
     }
+
+    /**
+     * Called by each Controller when the event is caught. Note that a single RingaEvent can be caught by 0 or more Controllers.
+     *
+     * @param controller The Ringa.Controller that is announcing it caught the event.
+     * @private
+     */
+
   }, {
     key: '_caught',
     value: function _caught(controller) {
       this.__caught = true;
       this.catchers.push(controller);
     }
+
+    /**
+     * Called by a particular controller when the Thread(s) this event triggered in that controller have been completed.
+     *
+     * @param controller The Ringa.Controller that is announcing it is uncatching the event.
+     * @private
+     */
+
   }, {
     key: '_uncatch',
     value: function _uncatch(controller) {
@@ -817,39 +847,28 @@ var RingaEvent = function (_RingaObject) {
     }
 
     /**
-     * Completely kills the current Ringa thread, keeping any subsequent executors from running.
+     * Completely kills the current Ringa thread, keeping any subsequent executors from running. To be called by user code like so:
+     *
+     *   let event = Ringa.dispatch('someEvent');
+     *   ...
+     *   event.fail();
      */
 
   }, {
     key: 'fail',
     value: function fail(error) {
+      // TODO this should have a kill property passed in, and when true should kill *every* associated thread this event triggered (DISCUSS)
       this.pushError(error);
     }
-  }, {
-    key: 'pushError',
-    value: function pushError(error) {
-      this._errors = this._errors || [];
-      this.errors.push(error);
-    }
-  }, {
-    key: 'toString',
-    value: function toString() {
-      return 'whatever';
-      //return `RingaEvent [ '${this.type}' caught by ${this.controller ? this.controller.toString() : ''} ] `;
-    }
-  }, {
-    key: '_done',
-    value: function _done(controller) {
-      this._uncatch(controller);
 
-      if (this.catchers.length === 0) {
-        if (this.errors && this.errors.length) {
-          this._dispatchEvent(RingaEvent.FAIL, undefined, error);
-        } else {
-          this._dispatchEvent(RingaEvent.DONE);
-        }
-      }
-    }
+    /**
+     * Internal fail to be called by a catching Ringa.Controller when an executor has failed for any reason.
+     *
+     * @param controller The Controller who is responsible for the Thread that just failed.
+     * @param error Most likely an Error object but could be a string or anything a user manually passed.
+     * @private
+     */
+
   }, {
     key: '_fail',
     value: function _fail(controller, error) {
@@ -859,6 +878,57 @@ var RingaEvent = function (_RingaObject) {
         this._dispatchEvent(RingaEvent.FAIL, undefined, error);
       }
     }
+
+    /**
+     * Add an error to this event.
+     *
+     * @param error Any type of error (string, Error, etc.)
+     */
+
+  }, {
+    key: 'pushError',
+    value: function pushError(error) {
+      // TODO we need to add tests for this.
+      this._errors = this._errors || [];
+      this.errors.push(error);
+    }
+
+    /**
+     * Internal done called by a handling Ringa.Controller. Note that since multiple Controllers can handle a single
+     * event we have to listen for when all the handling Controllers have been completed before announcing we are, indeed,
+     * done.
+     *
+     * @param controller The Controller that is announcing it is done.
+     * @private
+     */
+
+  }, {
+    key: '_done',
+    value: function _done(controller) {
+      this._uncatch(controller);
+
+      // TODO add unit tests for multiple handling controllers and make sure all possible combinations work (e.g. like
+      // one controller fails and another succeeds.
+      if (this.catchers.length === 0) {
+        if (this.errors && this.errors.length) {
+          this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+        } else {
+          this._dispatchEvent(RingaEvent.DONE);
+        }
+      }
+    }
+
+    /**
+     * Each RingaEvent is itself a dispatcher. This is the internal method that should be called to announce an event to
+     * things that are listening to this event. Note this is not to be confused with dispatch() which dispatches this event
+     * on a bus.
+     *
+     * @param type Event type.
+     * @param detail Details.
+     * @param error And error, if there is one.
+     * @private
+     */
+
   }, {
     key: '_dispatchEvent',
     value: function _dispatchEvent(type, detail, error) {
@@ -900,16 +970,44 @@ var RingaEvent = function (_RingaObject) {
 
       return this;
     }
+
+    /**
+     * Listen for when every single Thread that is triggered by this event is done.
+     *
+     * @param handler A function callback.
+     * @returns {*}
+     */
+
   }, {
     key: 'addDoneListener',
     value: function addDoneListener(handler) {
+      // TODO add unit tests for multiple controllers handling a thread
       return this.addListener(RingaEvent.DONE, handler);
     }
+
+    /**
+     * Listen for when any thread triggered by this event has a failure.
+     *
+     * @param handler A function callback.
+     *
+     * @returns {*}
+     */
+
   }, {
     key: 'addFailListener',
     value: function addFailListener(handler) {
+      // TODO add unit tests for multiple controllers handling a thread
       return this.addListener(RingaEvent.FAIL, handler);
     }
+
+    /**
+     * Treat this event like a Promise, in that when it has completed all its triggered threads, it will call resolve or
+     * when any thread has a failure, it will call reject.
+     *
+     * @param resolve A function to call when all triggered threads have completed.
+     * @param reject A function to call when any triggered thread has a failure.
+     */
+
   }, {
     key: 'then',
     value: function then(resolve, reject) {
@@ -922,15 +1020,42 @@ var RingaEvent = function (_RingaObject) {
       }
       if (reject) this.addFailListener(reject);
     }
+
+    /**
+     * Treat this event like a Promise. Catch is called when any triggered thread has a failure.
+     *
+     * @param reject A function to call when any triggered thread has a failure.
+     */
+
   }, {
     key: 'catch',
     value: function _catch(reject) {
       this.addFailListener(reject);
     }
+
+    /**
+     * Outputs a pretty-printed outline of the entire state of all threads this event has triggered, every executor and its
+     * current state (NOT STARTED, RUNNING, DONE, or FAILED).
+     *
+     * @returns {string} A string of all the data, pretty printed.
+     */
+
   }, {
     key: 'toDebugString',
     value: function toDebugString() {
       return (0, _debug.ringaEventToDebugString)(this);
+    }
+
+    /**
+     * Converts this event to a pretty string with basic information about the event.
+     *
+     * @returns {string}
+     */
+
+  }, {
+    key: 'toString',
+    value: function toString() {
+      return 'RingaEvent [ \'' + this.type + '\' caught by ' + (this.controller ? this.controller.toString() : '') + ' ] ';
     }
   }, {
     key: 'type',
@@ -1066,19 +1191,22 @@ var Model = function (_RingaObject) {
 
       this['_' + name] = defaultValue;
 
-      Object.defineProperty(this, name, {
-        get: function get() {
-          return this['_' + name];
-        },
-        set: function set(value) {
-          if (this['_' + name] === value) {
-            return;
-          }
-
-          this['_' + name] = value;
-
-          this.notify(name);
+      var defaultGet = function defaultGet() {
+        return this['_' + name];
+      };
+      var defaultSet = function defaultSet(value) {
+        if (this['_' + name] === value) {
+          return;
         }
+
+        this['_' + name] = value;
+
+        this.notify(name);
+      };
+
+      Object.defineProperty(this, name, {
+        get: options.get || defaultGet,
+        set: options.set || defaultSet
       });
     }
   }]);
