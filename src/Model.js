@@ -25,19 +25,22 @@ class Model extends RingaObject {
   addProperty(name, defaultValue, options = {}) {
     this[`_${name}`] = defaultValue;
 
-    Object.defineProperty(this, name, {
-      get: function() {
-        return this[`_${name}`];
-      },
-      set: function(value) {
-        if (this[`_${name}`] === value) {
-          return;
-        }
-
-        this[`_${name}`] = value;
-
-        this.notify(name);
+    let defaultGet = function() {
+      return this[`_${name}`];
+    }
+    let defaultSet = function(value) {
+      if (this[`_${name}`] === value) {
+        return;
       }
+
+      this[`_${name}`] = value;
+
+      this.notify(name);
+    }
+
+    Object.defineProperty(this, name, {
+      get: options.get || defaultGet,
+      set: options.set || defaultSet
     });
   }
 }
