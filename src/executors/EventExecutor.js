@@ -3,8 +3,8 @@ import ExecutorAbstract from '../ExecutorAbstract';
 /**
  * EventExecutor dispatches an event. There are two primary ways to do this in a executor tree:
  *
- *   controller.addListener('event', 'someEvent'); // 'someEvent' will be dispatched on the bus of controller without details
- *   controller.addListener('event', event('someEvent', {prop: 'details'}, someOtherBus)); // With details
+ *   controller.addListener('event', ['someEvent']); // 'someEvent' will be dispatched on the bus of controller without details
+ *   controller.addListener('event', [event('someEvent', {prop: 'details'}, someOtherBus)]); // With details and a custom bus.
  */
 class EventExecutor extends ExecutorAbstract {
   //-----------------------------------
@@ -30,8 +30,8 @@ class EventExecutor extends ExecutorAbstract {
       return -1;
     }
 
-    // If EventExecutor triggers 'Event' and they have the same timeout length, then 'Event1' will fail the
-    // timeout first and then the 'Event' thread will timeout. So we add a small timeout buffer.
+    // If 'OrigEvent' triggers EventExecutor which dispatches 'Event' and they have the same timeout length, then 'OrigEvent'
+    // will timeout first and 0 milliseconds later 'Event' will timeout. So we add a small timeout buffer to allow for the lag.
     let buffer = 50;
 
     return (this._timeout !== undefined ? this.timeout : this.controller.options.timeout) + 50;
@@ -73,10 +73,9 @@ class EventExecutor extends ExecutorAbstract {
     if (!this.dispatchedRingaEvent.caught) {
       this.fail(new Error(`EventExecutor::_timeoutHandler(): ${this.toString()} dispatched '${this.dispatchedRingaEvent.type}' but it was never caught by anyone!`), true);
     }
-
     // If 'Event1' triggers 'Event2' and 'Event2' times out, this will automatically force 'Event1' to timeout.
     // In that case, we do not want to timeout 'Event1' as well.
-    if (!this.dispatchedRingaEvent._threadTimedOut) {
+    else if (!this.dispatchedRingaEvent._threadTimedOut) {
       super._timeoutHandler();
     }
   }
