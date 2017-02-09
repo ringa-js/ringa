@@ -2310,8 +2310,6 @@ var Controller = function (_RingaObject) {
     _this.watcherToArgNames = new Map();
 
     _this._eventHandler = _this._eventHandler.bind(_this);
-
-    _this.ringaEventToThread = new WeakMap();
     return _this;
   }
 
@@ -2580,8 +2578,6 @@ var Controller = function (_RingaObject) {
       var thread = threadFactory.build(ringaEvent);
 
       this.threads.add(thread);
-
-      this.ringaEventToThread[ringaEvent] = thread;
 
       ringaEvent._dispatchEvent(_RingaEvent2.default.PREHOOK);
 

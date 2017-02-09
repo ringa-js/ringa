@@ -54,8 +54,6 @@ class Controller extends RingaObject {
     this.watcherToArgNames = new Map();
 
     this._eventHandler = this._eventHandler.bind(this);
-
-    this.ringaEventToThread = new WeakMap();
   }
 
   //-----------------------------------
@@ -321,8 +319,6 @@ class Controller extends RingaObject {
     let thread = threadFactory.build(ringaEvent);
 
     this.threads.add(thread);
-
-    this.ringaEventToThread[ringaEvent] = thread;
 
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
