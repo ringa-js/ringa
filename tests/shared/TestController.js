@@ -1,8 +1,8 @@
 import Controller from '../../src/Controller';
 
 class TestController extends Controller {
-  constructor(id, domNode, options) {
-    super(id, domNode, options);
+  constructor(name, domNode, options) {
+    super(name, domNode, options);
 
     this.mounted = false;
   }

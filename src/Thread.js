@@ -95,7 +95,11 @@ class Thread extends RingaHashArray {
 
   _executorFailHandler(error, kill) {
     if (!this.all[this.index]) {
-      console.error('Thread::_executorFailHandler(): could not find executor to destroy it!');
+      let e = (this.all && this.all.length) ? this.all.map(e => {
+        return e.toString();
+      }).join(', ') : `No executors found on thread ${this.toString()}`;
+
+      console.error(`Thread::_executorFailHandler(): could not find executor to destroy it!\n\tIndex: ${this.index}\n\tExecutors: ${e}`);
     } else {
       this.all[this.index].destroy();
     }

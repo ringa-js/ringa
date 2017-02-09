@@ -156,14 +156,18 @@ class ExecutorAbstract extends RingaObject {
     let message;
 
     if (__DEV__) {
-      message = 'ExecutorAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+      message = `ExecutorAbstract::_timeoutHandler(): the timeout (${this.timeout} ms) for this executor was exceeded:\n\t${this.toString()}`;
     }
 
     if (!__DEV__) {
-      message = 'Ringa: command timeout exceeded ' + this.toString();
+      message = `Ringa: executor timeout (${this.timeout} ms) exceeded:\n\t${this.toString()}`;
     }
 
-    this.fail(new Error(message), this);
+    this.ringaEvent._threadTimedOut = true;
+
+    this.error = new Error(message);
+
+    this.failHandler(this.error, true);
   }
 }
 

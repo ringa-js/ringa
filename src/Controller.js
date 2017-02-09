@@ -21,8 +21,8 @@ class Controller extends RingaObject {
    * @param bus The native browser DOMNode element (not a React Node) to attach event listeners to OR a custom event bus.
    * @param options See documentation on Controller options. Defaults are provided, so this is optional.
    */
-  constructor(id, bus, options) {
-    super(id);
+  constructor(name, bus, options) {
+    super(name);
 
     // We want to error if bus is defined but is not actually a bus.
     // If Bus is an object, though, and options is undefined, this means
@@ -320,6 +320,8 @@ class Controller extends RingaObject {
 
     this.threads.add(thread);
 
+    ringaEvent._threads.push(thread);
+
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
     // TODO PREHOOK should allow the handler to cancel running of the thread.
@@ -402,7 +404,7 @@ class Controller extends RingaObject {
 
   threadFailHandler(thread, error, kill) {
     if (this.options.consoleLogFails) {
-      console.error(error, thread ? thread.toString() : '');
+      console.error(error, `In thread ${thread ? thread.toString() : ''}`);
     }
 
     if (kill) {

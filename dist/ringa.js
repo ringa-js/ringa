@@ -277,14 +277,18 @@ var ExecutorAbstract = function (_RingaObject) {
       var message = void 0;
 
       if (true) {
-        message = 'ExecutorAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+        message = 'ExecutorAbstract::_timeoutHandler(): the timeout (' + this.timeout + ' ms) for this executor was exceeded:\n\t' + this.toString();
       }
 
       if (false) {
-        message = 'Ringa: command timeout exceeded ' + this.toString();
+        message = 'Ringa: executor timeout (' + this.timeout + ' ms) exceeded:\n\t' + this.toString();
       }
 
-      this.fail(new Error(message), this);
+      this.ringaEvent._threadTimedOut = true;
+
+      this.error = new Error(message);
+
+      this.failHandler(this.error, true);
     }
   }, {
     key: 'ringaEvent',
@@ -737,8 +741,19 @@ var RingaEvent = function (_RingaObject) {
 
     _this.listeners = {};
 
+    // Controllers that are currently handling the event
     _this.catchers = [];
+    // Controllers that are done handling the event
+    _this._catchers = [];
+    // Was this event caught at all?
     _this.__caught = false;
+
+    _this._threads = [];
+
+    // We keep track of when an Event triggered a thread that timed out because if one event triggers another triggers
+    // another and the deepest one times out, we don't really need to get a timeout for all the parent ones that are
+    // waiting as well.
+    _this._threadTimedOut = false;
     return _this;
   }
 
@@ -843,7 +858,7 @@ var RingaEvent = function (_RingaObject) {
     key: '_uncatch',
     value: function _uncatch(controller) {
       var ix = this.catchers.indexOf(controller);
-      this.catchers.splice(ix, 1);
+      this._catchers.push(this.catchers.splice(ix, 1));
     }
 
     /**
@@ -1091,6 +1106,30 @@ var RingaEvent = function (_RingaObject) {
     key: 'caught',
     get: function get() {
       return this.__caught;
+    }
+
+    /**
+     * Returns an Array of every Controller that ran as a result of this event.
+     * @private
+     */
+
+  }, {
+    key: '_controllers',
+    get: function get() {
+      return [].concat(this._catchers, this.catchers);
+    }
+
+    /**
+     * Returns an Array of every single executor that ran (or will ran) as a result of this event, in order of execution.
+     * @private
+     */
+
+  }, {
+    key: '_executors',
+    get: function get() {
+      this.threads.reduce(function (a, thread) {
+        a = a.concat();
+      }, []);
     }
   }]);
 
@@ -2403,7 +2442,7 @@ var Controller = function (_RingaObject) {
    * @param bus The native browser DOMNode element (not a React Node) to attach event listeners to OR a custom event bus.
    * @param options See documentation on Controller options. Defaults are provided, so this is optional.
    */
-  function Controller(id, bus, options) {
+  function Controller(name, bus, options) {
     _classCallCheck(this, Controller);
 
     // We want to error if bus is defined but is not actually a bus.
@@ -2411,7 +2450,7 @@ var Controller = function (_RingaObject) {
     // the user is probably doing this:
     // new Controller('id', {options: true});
     // And skipping providing a bus, and that is okay.
-    var _this = _possibleConstructorReturn(this, (Controller.__proto__ || Object.getPrototypeOf(Controller)).call(this, id));
+    var _this = _possibleConstructorReturn(this, (Controller.__proto__ || Object.getPrototypeOf(Controller)).call(this, name));
 
     if (bus && !(typeof bus.addEventListener === 'function')) {
       if (true && options) {
@@ -2707,6 +2746,8 @@ var Controller = function (_RingaObject) {
 
       this.threads.add(thread);
 
+      ringaEvent._threads.push(thread);
+
       ringaEvent._dispatchEvent(_RingaEvent2.default.PREHOOK);
 
       // TODO PREHOOK should allow the handler to cancel running of the thread.
@@ -2797,7 +2838,7 @@ var Controller = function (_RingaObject) {
     key: 'threadFailHandler',
     value: function threadFailHandler(thread, error, kill) {
       if (this.options.consoleLogFails) {
-        console.error(error, thread ? thread.toString() : '');
+        console.error(error, 'In thread ' + (thread ? thread.toString() : ''));
       }
 
       if (kill) {
@@ -4840,7 +4881,11 @@ var Thread = function (_RingaHashArray) {
     key: '_executorFailHandler',
     value: function _executorFailHandler(error, kill) {
       if (!this.all[this.index]) {
-        console.error('Thread::_executorFailHandler(): could not find executor to destroy it!');
+        var e = this.all && this.all.length ? this.all.map(function (e) {
+          return e.toString();
+        }).join(', ') : 'No executors found on thread ' + this.toString();
+
+        console.error('Thread::_executorFailHandler(): could not find executor to destroy it!\n\tIndex: ' + this.index + '\n\tExecutors: ' + e);
       } else {
         this.all[this.index].destroy();
       }
@@ -4896,6 +4941,12 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+/**
+ * EventExecutor dispatches an event. There are two primary ways to do this in a executor tree:
+ *
+ *   controller.addListener('event', ['someEvent']); // 'someEvent' will be dispatched on the bus of controller without details
+ *   controller.addListener('event', [event('someEvent', {prop: 'details'}, someOtherBus)]); // With details and a custom bus.
+ */
 var EventExecutor = function (_ExecutorAbstract) {
   _inherits(EventExecutor, _ExecutorAbstract);
 
@@ -4920,37 +4971,54 @@ var EventExecutor = function (_ExecutorAbstract) {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  /**
-   * Internal execution method called by CommandThread only.
-   *
-   * @param doneHandler The handler to call when done() is called.
-   * @param failHandler The handler to call when fail() is called;
-   * @private
-   */
 
 
   _createClass(EventExecutor, [{
     key: '_execute',
+
+
+    //-----------------------------------
+    // Methods
+    //-----------------------------------
+    /**
+     * Internal execution method called by CommandThread only.
+     *
+     * @param doneHandler The handler to call when done() is called.
+     * @param failHandler The handler to call when fail() is called;
+     * @private
+     */
     value: function _execute(doneHandler, failHandler) {
       _get(EventExecutor.prototype.__proto__ || Object.getPrototypeOf(EventExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
       this.dispatchedRingaEvent = this.ringaEventFactory.build(this);
 
-      this.dispatchedRingaEvent.addDoneListener(this.dispatchedRingaEventDoneHandler.bind(this));
-      this.dispatchedRingaEvent.addFailListener(this.dispatchedRingaEventFailHandler.bind(this));
+      this.dispatchedRingaEvent.then(this.dispatchedRingaEventDoneHandler.bind(this));
+      this.dispatchedRingaEvent.catch(this.dispatchedRingaEventFailHandler.bind(this));
 
       var domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
 
       this.dispatchedRingaEvent.dispatch(domNode);
 
-      if (this.dispatchedRingaEvent.detail.requireCatch && !this.dispatchedRingaEvent.caught) {
+      if ((this.dispatchedRingaEvent.detail.requireCatch === undefined || this.dispatchedRingaEvent.detail.requireCatch) && !this.dispatchedRingaEvent.caught) {
         this.fail(Error('EventExecutor::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'));
       }
     }
   }, {
     key: 'toString',
     value: function toString() {
-      return this.id + ': ' + this.ringaEventFactory.eventType;
+      return this.id + '[dispatching \'' + this.ringaEventFactory.eventType + '\']';
+    }
+  }, {
+    key: '_timeoutHandler',
+    value: function _timeoutHandler() {
+      if (!this.dispatchedRingaEvent.caught) {
+        this.fail(new Error('EventExecutor::_timeoutHandler(): ' + this.toString() + ' dispatched \'' + this.dispatchedRingaEvent.type + '\' but it was never caught by anyone!'), true);
+      }
+      // If 'Event1' triggers 'Event2' and 'Event2' times out, this will automatically force 'Event1' to timeout.
+      // In that case, we do not want to timeout 'Event1' as well.
+      else if (!this.dispatchedRingaEvent._threadTimedOut) {
+          _get(EventExecutor.prototype.__proto__ || Object.getPrototypeOf(EventExecutor.prototype), '_timeoutHandler', this).call(this);
+        }
     }
 
     //-----------------------------------
@@ -4967,7 +5035,29 @@ var EventExecutor = function (_ExecutorAbstract) {
   }, {
     key: 'dispatchedRingaEventFailHandler',
     value: function dispatchedRingaEventFailHandler(error) {
+      // Alright, this failure is a timeout on our dispatched event, so the other handling thread will have already dealt with it. Don't display
+      // the error again.
+      if (this.dispatchedRingaEvent._threadTimedOut) {
+        // Lets clear our own timeout and just neither be done nor fail.
+        this.endTimeoutCheck();
+
+        return;
+      }
+
       this.fail(error);
+    }
+  }, {
+    key: 'timeout',
+    get: function get() {
+      if (this._timeout === undefined && this.controller.options.timeout === undefined) {
+        return -1;
+      }
+
+      // If 'OrigEvent' triggers EventExecutor which dispatches 'Event' and they have the same timeout length, then 'OrigEvent'
+      // will timeout first and 0 milliseconds later 'Event' will timeout. So we add a small timeout buffer to allow for the lag.
+      var buffer = 50;
+
+      return (this._timeout !== undefined ? this.timeout : this.controller.options.timeout) + 50;
     }
   }]);
 

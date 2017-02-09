@@ -379,4 +379,35 @@ describe('LifeCycle', () => {
     }, domNode);
 
   }, 1000);
+
+  //------------------------------------------------
+  // RingaEvent -> RingaEvent -> Wait -> Done
+  //------------------------------------------------
+  it('RingaEvent -> RingaEvent -> Wait -> Done', (done) => {
+    let controller2 = new TestController('testController2', domNode);
+
+    controller2.addListener('TestEvent2', done => {
+      setTimeout(done, 200);
+    });
+
+    controller.addListener('TestEvent', 'TestEvent2');
+
+    Ringa.dispatch('TestEvent', domNode).then(() => {
+      done();
+    });
+  }, 2000);
+
+  //------------------------------------------------
+  // RingaEvent -> RingaEvent -> Immediate -> Done
+  //------------------------------------------------
+  it('RingaEvent -> RingaEvent -> Wait -> Done', (done) => {
+    let controller2 = new TestController('testController2', domNode);
+
+    controller2.addListener('TestEvent2', () => {});
+    controller.addListener('TestEvent', 'TestEvent2');
+
+    Ringa.dispatch('TestEvent', domNode).then(() => {
+      done();
+    });
+  }, 2000);
 });

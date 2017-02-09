@@ -58,8 +58,19 @@ class RingaEvent extends RingaObject {
 
     this.listeners = {};
 
+    // Controllers that are currently handling the event
     this.catchers = [];
+    // Controllers that are done handling the event
+    this._catchers = [];
+    // Was this event caught at all?
     this.__caught = false;
+
+    this._threads = [];
+
+    // We keep track of when an Event triggered a thread that timed out because if one event triggers another triggers
+    // another and the deepest one times out, we don't really need to get a timeout for all the parent ones that are
+    // waiting as well.
+    this._threadTimedOut = false;
   }
 
   //-----------------------------------
@@ -91,6 +102,24 @@ class RingaEvent extends RingaObject {
 
   get caught() {
     return this.__caught;
+  }
+
+  /**
+   * Returns an Array of every Controller that ran as a result of this event.
+   * @private
+   */
+  get _controllers() {
+    return [].concat(this._catchers, this.catchers);
+  }
+
+  /**
+   * Returns an Array of every single executor that ran (or will ran) as a result of this event, in order of execution.
+   * @private
+   */
+  get _executors() {
+    this.threads.reduce((a, thread) => {
+      a = a.concat()
+    }, []);
   }
 
   //-----------------------------------
@@ -172,7 +201,7 @@ class RingaEvent extends RingaObject {
    */
   _uncatch(controller) {
     let ix = this.catchers.indexOf(controller);
-    this.catchers.splice(ix, 1);
+    this._catchers.push(this.catchers.splice(ix, 1));
   }
 
   /**
