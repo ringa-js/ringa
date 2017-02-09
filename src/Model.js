@@ -22,6 +22,33 @@ class Model extends RingaObject {
     });
   }
 
+  /**
+   * Add a property to this model that by default does its own notifications to ModelWatcher and verifies that if the
+   * value has not changed (strict reference compare A === B) then it won't notify and spam the ModelWatcher.
+   *
+   * If you want to do a custom shallow or deep compare on changes, you should provide your own custom setter.
+   *
+   * For reference, the default setter template is:
+   *
+   *  set ${name} (value) {
+   *    if (this._${name} === value) {
+   *      return;
+   *    }
+   *
+   *    this._${name} = value;
+   *
+   *    this.notify('${name}');
+   *  }
+   *
+   * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
+   * @param defaultValue The default value of the property.
+   * @param options Options can be:
+   *
+   *   -get: a getter function
+   *   -set: a setter function
+   *
+   *   Anything else will be saved as metadata to the value `_${name}Options`.
+   */
   addProperty(name, defaultValue, options = {}) {
     this[`_${name}`] = defaultValue;
 
@@ -29,6 +56,8 @@ class Model extends RingaObject {
       return this[`_${name}`];
     }
     let defaultSet = function(value) {
+      // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
+      // bubble up to this model and notify its watchers too.
       if (this[`_${name}`] === value) {
         return;
       }
@@ -42,6 +71,11 @@ class Model extends RingaObject {
       get: options.get || defaultGet,
       set: options.set || defaultSet
     });
+
+    delete options.get;
+    delete options.set;
+
+    this[`_${name}Options`] = options;
   }
 }
 
