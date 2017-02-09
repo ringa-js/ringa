@@ -73,7 +73,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
       let s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
 
       let str = `Ringa Injection Error!:\n` +
-                `\tExecutor: ${executor.toString()}\n` +
+                `\tExecutor: '${executor.toString()}' of type ${executor.constructor.name}\n` +
                 `\tMissing: ${argName}\n` +
                 `\tRequired: ${expectedArguments.join(', ')}\n` +
                 `\tAvailable: ${Object.keys(injections).sort().join(', ')}\n` +
