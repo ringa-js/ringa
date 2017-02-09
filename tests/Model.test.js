@@ -29,45 +29,77 @@ describe('Model', () => {
     expect(model.id).toEqual('Model1');
   });
 
-  //---------------------------------------------
-  // should have property added with addProperty
-  //---------------------------------------------
-  it('should have property added with addProperty', () => {
-    model.addProperty('myProp', true);
+  describe('addProperty', () => {
+    //---------------------------------------------
+    // should add property
+    //---------------------------------------------
+    it('should add property', () => {
+      model.addProperty('myProp', true);
 
-    expect(model.myProp).toEqual(true);
-  });
+      expect(model.myProp).toEqual(true);
+    });
 
-  //----------------------------------------
-  // should notify when property is changed
-  //----------------------------------------
-  it('should notify when property is changed', (done) => {
-    model.addProperty('myProp', 'default');
+    //----------------------------------------
+    // should notify when property is changed
+    //----------------------------------------
+    it('should notify when property is changed', (done) => {
+      model.addProperty('myProp', 'default');
 
-    let handler = (arg) => {
-      expect(arg[0].model).toEqual(model);
-      expect(arg[0].value).toEqual('myPropVal');
+      let handler = (arg) => {
+        expect(arg[0].model).toEqual(model);
+        expect(arg[0].value).toEqual('myPropVal');
+        done();
+      };
+
+      watcher.watch('Model1', 'myProp', handler);
+
+      model.myProp = 'myPropVal';
+    });
+
+    //---------------------------------------------------------
+    // should not notify if property is assigned current value
+    //---------------------------------------------------------
+    it('should not notify if property is assigned current value', (done) => {
+      model.addProperty('myProp', 'default');
+
+      let handler = jest.fn();
+
+      watcher.watch('Model1', 'myProp', handler);
+
+      model.myProp = 'default';
+
+      expect(handler).not.toBeCalled();
       done();
-    };
+    });
 
-    watcher.watch('Model1', 'myProp', handler);
+    //-------------------------------
+    // should accept a custom setter
+    //-------------------------------
+    it('should accept a custom setter', (done) => {
+      model.addProperty('myProp', 'default', {
+        set: function(value) {
+          this[`_myProp`] = value + 'Custom';
+        }
+      });
 
-    model.myProp = 'myPropVal';
-  });
+      model.myProp = 'newValue';
 
-  //---------------------------------------------------------
-  // should not notify if property is assigned current value
-  //---------------------------------------------------------
-  it('should not notify if property is assigned current value', (done) => {
-    model.addProperty('myProp', 'default');
+      expect(model.myProp).toEqual('newValueCustom');
+      done();
+    });
 
-    let handler = jest.fn();
+    //-------------------------------
+    // should accept a custom getter
+    //-------------------------------
+    it('should accept a custom getter', (done) => {
+      model.addProperty('myProp', 'default', {
+        get: function() {
+          return this[`_myProp`] + 'Custom';
+        }
+      });
 
-    watcher.watch('Model1', 'myProp', handler);
-
-    model.myProp = 'default';
-
-    expect(handler).not.toBeCalled();
-    done();
+      expect(model.myProp).toEqual('defaultCustom');
+      done();
+    });
   });
 });
