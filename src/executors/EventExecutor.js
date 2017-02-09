@@ -93,6 +93,9 @@ class EventExecutor extends ExecutorAbstract {
     // Alright, this failure is a timeout on our dispatched event, so the other handling thread will have already dealt with it. Don't display
     // the error again.
     if (this.dispatchedRingaEvent._threadTimedOut) {
+      // Lets clear our own timeout and just neither be done nor fail.
+      this.endTimeoutCheck();
+
       return;
     }
 
