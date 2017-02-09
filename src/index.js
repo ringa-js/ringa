@@ -10,6 +10,7 @@ import Model from './Model';
 import ModelWatcher from './ModelWatcher';
 import Bus, {busses} from './Bus';
 import IifExecutor from './executors/IifExecutor';
+import IntervalExecutor from './executors/IntervalExecutor';
 import {isDOMNode} from './util/type';
 
 import {ids} from './RingaObject';
@@ -25,6 +26,10 @@ export function dispatch (eventType, detail, bus = document) {
 
 export function iif (condition, trueExecutor, falseExecutor) {
   return new ExecutorFactory(IifExecutor, { condition, trueExecutor, falseExecutor });
+}
+
+export function interval (condition, executor, milliseconds, options) {
+  return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds, options });
 }
 
 export function spawn (executor) {
@@ -66,6 +71,7 @@ export default {
   RingaObject,
   dispatch,
   iif,
+  interval,
   spawn,
   event,
   assign,
