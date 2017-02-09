@@ -28,8 +28,8 @@ export function iif (condition, trueExecutor, falseExecutor) {
   return new ExecutorFactory(IifExecutor, { condition, trueExecutor, falseExecutor });
 }
 
-export function interval (condition, executor, milliseconds) {
-  return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds });
+export function interval (condition, executor, milliseconds, options) {
+  return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds, options });
 }
 
 export function spawn (executor) {

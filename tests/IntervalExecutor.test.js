@@ -67,13 +67,13 @@ describe('intervalExecutor', () => {
   }, 500);
 
   //--------------------------------------
-  // Calls the provided executor 50 times
+  // Calls the provided executor 10 times
   //--------------------------------------
-  it('Calls the provided executor', (done) => {
+  it('Calls the provided executor 10 times', (done) => {
     let a = 0;
 
     controller.addListener('myEvent', [
-      interval(() => { return a < 50; },
+      interval(() => { return a < 10; },
         () => {
           a += 1;
         }, 5)
@@ -81,9 +81,57 @@ describe('intervalExecutor', () => {
 
     let event = Ringa.dispatch('myEvent', domNode);
     event.addDoneListener(() => {
-      expect(a).toBe(50);
+      expect(a).toBe(10);
       done();
     });
 
-  }, 650);
+  }, 250);
+
+  //----------------------------
+  // Will kill an infinite loop
+  //----------------------------
+  it('Will kill an infinite loop', (done) => {
+    controller.addListener('myEvent', [
+      interval(() => true, () => {}, 0),
+      () => done()
+      ]);
+
+    let event = Ringa.dispatch('myEvent', domNode);
+  }, 500);
+
+  //----------------------------------------------
+  // Condition can access details passed to event
+  //----------------------------------------------
+  it('Condition can access details passed to event', (done) => {
+    let value = 'value';
+
+    controller.addListener('myEvent', [
+      interval((testDetail) => {
+        expect(testDetail).toBe(value);
+        done();
+        return false;
+      },
+        () => {}, 10)
+      ]);
+
+    Ringa.dispatch('myEvent', {testDetail: value}, domNode);
+  }, 50);
+
+  //---------------------------------
+  // Condition can access injections
+  //---------------------------------
+  it('Condition can access injections', (done) => {
+    controller.addListener('myEvent', [
+      interval(($controller, $thread, $detail) => {
+        expect($controller).toBeDefined();
+        expect($thread).toBeDefined();
+        expect($detail).toBeDefined();
+        done();
+        return false;
+      },
+        () => {}, 10)
+      ]);
+
+    Ringa.dispatch('myEvent', domNode);
+  }, 50);
 });

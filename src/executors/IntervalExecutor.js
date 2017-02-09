@@ -4,13 +4,15 @@ import {getArgNames} from '../util/function';
 import {buildArgumentsFromRingaEvent} from '../util/executors';
 
 class IntervalExecutor extends ExecutorAbstract {
-  constructor(thread, { condition, executor, milliseconds }) {
+  constructor(thread, { condition, executor, milliseconds, options = {} }) {
     super(thread);
 
     this.condition = condition;
     this.executor = executor;
     this.executorFactory = this.wrapExecutor(executor);
     this.milliseconds = milliseconds;
+    this.maxLoops = options.maxLoops || 100;
+    this.loops = 0;
   }
 
   _execute(doneHandler, failHandler) {
@@ -23,9 +25,9 @@ class IntervalExecutor extends ExecutorAbstract {
   }
 
   _interval() {
-    if (!this.condition.apply(this, this.args)) {
+    this.loops += 1;
+    if (!this.condition.apply(this, this.args) || this.loops > this.maxLoops) {
       this.done();
-      return;
     } else {
       this.resetTimeout();
       this.executorFactory.build(this.thread)._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
