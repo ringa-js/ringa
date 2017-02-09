@@ -54,6 +54,7 @@
     }
   ],
   "dependencies": {
+    "camelcase": "^4.0.0",
     "dateformat": "^2.0.0",
     "error-stack-parser": "^2.0.0",
     "hasharray": "^1.0.0",

@@ -1,12 +1,8 @@
 import RingaObject from './RingaObject';
 
 class Model extends RingaObject {
-  constructor(id) {
-    super(id);
-
-    if (!id) {
-      throw new Error(`Model():: id must be provided! Make sure it is unique. See ${this.constructor.name}.`);
-    }
+  constructor(name) {
+    super(name);
 
     this._modelInjectors = [];
   }
@@ -23,6 +19,25 @@ class Model extends RingaObject {
     // Notify all view objects through all injectors
     this._modelInjectors.forEach(mi => {
       mi.notify(this, propertyPath);
+    });
+  }
+
+  addProperty(name, defaultValue, options = {}) {
+    this[`_${name}`] = defaultValue;
+
+    Object.defineProperty(this, name, {
+      get: function() {
+        return this[`_${name}`];
+      },
+      set: function(value) {
+        if (this[`_${name}`] === value) {
+          return;
+        }
+
+        this[`_${name}`] = value;
+
+        this.notify(name);
+      }
     });
   }
 }

@@ -1,3 +1,5 @@
+import camelCase from 'camelcase';
+
 export const ids = {
   map: {},
   counts: new WeakMap()
@@ -18,6 +20,9 @@ export default class RingaObject {
 
     ids.counts[this.constructor]++;
 
+    if (!name) {
+      name = camelCase(this.constructor.name);
+    }
     this._name = name;
   }
 
