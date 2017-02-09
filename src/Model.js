@@ -22,13 +22,12 @@ class Model extends RingaObject {
     });
   }
 
-  addProperty(name, options) {
-    options.default = options.default || undefined;
-    this[`_${name}`] = options.default;
+  addProperty(name, defaultValue, options = {}) {
+    this[`_${name}`] = defaultValue;
 
     Object.defineProperty(this, name, {
       get: function() {
-        return this[`_${name}`]
+        return this[`_${name}`];
       },
       set: function(value) {
         if (this[`_${name}`] === value) {
