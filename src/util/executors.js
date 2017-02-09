@@ -54,8 +54,14 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
     };
 
   // Merge controller.options.injections into our injector
-  for (var key in executor.controller.options.injections) {
-    injections[key] = executor.controller.options.injections[key];
+  let i = executor.controller.options.injections;
+  for (let key in i) {
+    let _i = i[key];
+    if (typeof i[key] === 'function') {
+      _i = i[key]();
+    }
+
+    injections[key] = _i;
   }
 
   expectedArguments.forEach((argName) => {
@@ -64,15 +70,18 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
     } else if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
     } else {
-      let message = executor.toString() +
-      ': the property \'' +
-      argName +
-      '\' was not provided on the dispatched ringaEvent.' +
-      'Expected Arguments were: [\'' + expectedArguments.join('\'.\'') +
-      '\'] Dispatched from: ' +
-        (ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.');
+      let s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
 
-      throw Error(message);
+      let str = `Ringa Injection Error!:\n` +
+                `\tExecutor: ${executor.toString()}\n` +
+                `\tMissing: ${argName}\n` +
+                `\tRequired: ${expectedArguments.join(', ')}\n` +
+                `\tAvailable: ${Object.keys(injections).sort().join(', ')}\n` +
+                `\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n` +
+                `\tDispatched from: ${s}`;
+      console.error(str);
+
+      throw Error('Injection failed. See console errors above.');
     }
   });
 
