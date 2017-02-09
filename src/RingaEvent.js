@@ -54,7 +54,8 @@ class RingaEvent extends RingaObject {
 
     this.listeners = {};
 
-    this.caught = false;
+    this.catchers = [];
+    this.__caught = false;
   }
 
   //-----------------------------------
@@ -82,6 +83,10 @@ class RingaEvent extends RingaObject {
 
   get errors() {
     return this._errors;
+  }
+
+  get caught() {
+    return this.__caught;
   }
 
   //-----------------------------------
@@ -137,6 +142,16 @@ class RingaEvent extends RingaObject {
     bus.dispatchEvent(this.customEvent ? this.customEvent : this);
   }
 
+  _caught(controller) {
+    this.__caught = true;
+    this.catchers.push(controller);
+  }
+
+  _uncatch(controller) {
+    let ix = this.catchers.indexOf(controller);
+    this.catchers.splice(ix, 1);
+  }
+
   /**
    * Completely kills the current Ringa thread, keeping any subsequent executors from running.
    */
@@ -154,12 +169,25 @@ class RingaEvent extends RingaObject {
     //return `RingaEvent [ '${this.type}' caught by ${this.controller ? this.controller.toString() : ''} ] `;
   }
 
-  _done() {
-    this._dispatchEvent(RingaEvent.DONE);
+  _done(controller) {
+    this._uncatch(controller);
+
+    if (this.catchers.length === 0) {
+      if (this.errors && this.errors.length) {
+        this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+      } else {
+        this._dispatchEvent(RingaEvent.DONE);
+      }
+    }
+
   }
 
-  _fail(error) {
-    this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+  _fail(controller, error) {
+    this._uncatch(controller);
+
+    if (this.catchers.length === 0) {
+      this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+    }
   }
 
   _dispatchEvent(type, detail, error) {

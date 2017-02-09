@@ -55,7 +55,7 @@ describe('Command', () => {
   });
 
   it('should have a properly defined id', () => {
-    expect(command.id).toEqual('Controller1_CommandSimple_1');
+    expect(command.id).toEqual('Controller1_CommandSimple1');
   });
 
   it('should start and properly store the thread', () => {

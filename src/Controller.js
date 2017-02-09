@@ -54,6 +54,8 @@ class Controller extends RingaObject {
     this.watcherToArgNames = new Map();
 
     this._eventHandler = this._eventHandler.bind(this);
+
+    this.ringaEventToThread = new WeakMap();
   }
 
   //-----------------------------------
@@ -119,6 +121,7 @@ class Controller extends RingaObject {
     this.modelWatcher.addModel(model, injectionId);
 
     this.injections[injectionId || model.id] = model;
+    this.injections[model.name] = model;
   }
 
   /**
@@ -319,8 +322,10 @@ class Controller extends RingaObject {
 
     this.threads.add(thread);
 
-    ringaEvent.thread = thread;
+    this.ringaEventToThread[ringaEvent] = thread;
+
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
+
     // TODO PREHOOK should allow the handler to cancel running of the thread.
     thread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
@@ -339,24 +344,17 @@ class Controller extends RingaObject {
     // an attached ringaEvent yet!
     event.detail.ringaEvent = event.detail.ringaEvent || new RingaEvent(event.type, event.detail, event.bubbles, event.cancellable);
 
-    // TODO, how do we handle two controllers handling the same event?
-    if (event.detail.ringaEvent.controller) {
-      throw Error('Controller::_eventHandler(): event was received that has already been handled by another controller: ' + event);
-    }
-
-    this.__eventHandler(event.detail.ringaEvent);
+    return this.__eventHandler(event.detail.ringaEvent);
   }
 
   __eventHandler(ringaEvent) {
-    ringaEvent.controller = this;
-
     let threadFactory = this.eventTypeToThreadFactory[ringaEvent.type];
 
-    if (__DEV__ && !threadFactory) {
-      throw Error('Controller::_eventHandler(): caught an event but there is no associated ThreadFactory! Fatal error.');
-    }
+    ringaEvent._caught(this);
 
-    ringaEvent.caught = true;
+    if (__DEV__ && !threadFactory) {
+      throw Error('Controller::__eventHandler(): caught an event but there is no associated ThreadFactory! Fatal error.');
+    }
 
     let abort;
     try {
@@ -367,7 +365,7 @@ class Controller extends RingaObject {
         console.error(error);
       }
 
-      ringaEvent._fail(error);
+      ringaEvent._fail(this, error);
     }
 
     if (abort === true) {
@@ -419,7 +417,7 @@ class Controller extends RingaObject {
       }
     }
 
-    thread.ringaEvent._fail(error);
+    thread.ringaEvent._fail(this, error);
   }
 
   dispatch(eventType, details) {

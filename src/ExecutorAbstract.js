@@ -25,8 +25,8 @@ class ExecutorAbstract extends RingaObject {
       throw Error('ExecutorAbstract(): attempting to build a command connected to a Thread that has no attached controller.');
     }
 
-    let i = executorCounts.map[this.constructor] = executorCounts.map[this.constructor] ? executorCounts.map[this.constructor] + 1 : 1;
-    this.id = thread.controller.id + '_' + this.constructor.name + '_' + i;
+    let i = executorCounts.map[this.constructor] = (executorCounts.map[this.constructor] ? executorCounts.map[this.constructor] + 1 : 1);
+    this.id = thread.controller.id + '_' + this.constructor.name + i;
 
     this.thread = thread;
 
