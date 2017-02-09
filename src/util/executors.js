@@ -81,6 +81,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
                 `\tDispatched from: ${s}`;
       console.error(str);
 
+      // TODO Determine desired behavior to silence console.error & throw (discuss)
       throw Error('Injection failed. See console errors above.');
     }
   });
