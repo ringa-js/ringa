@@ -49,8 +49,8 @@ class IntervalExecutor extends ExecutorAbstract {
   }
 
   /**
-   * Internal loop function.
-   * Calls itself every (this.milliseconds) so long as the condition returns true and loops is less than maxLoops
+   * Internal recursive loop function.  Runs executor every (this.milliseconds) provided
+   * that the condition still evaluates truthy and (this.maxLoops) is not exceeded
    *
    * @private
    */
