@@ -8,14 +8,14 @@ class IntervalExecutor extends ExecutorAbstract {
   // Constructor
   //-----------------------------------
   /**
-   * Constructor for a new IntervalExecutor.
+   * Constructor for a new IntervalExecutor, which recursively uses the setTimeout function to run an executor repeatedly.
    *
-   * @param thread The parent thread that owns this command.
-   * @param condition The interval keeps looping so long as this returns truthy
-   * @param executor  The executor that runs on every loop
-   * @param milliseconds The time between each loop
+   * @param thread The parent thread that owns this executor.
+   * @param condition Interval is halted when this callback returns falsey.
+   * @param executor  The executor that runs on every interval
+   * @param milliseconds The time between each interval
    * @param options Defaults are provided, so this is optional.
-   * @param options.maxLoops Maximum number of loops before killing IntervalExecutor
+   * @param [options.maxLoops=-1] When maximum loops is exceeded, done() is called on the executor. -1 for no maximum.
    */
   constructor(thread, { condition, executor, milliseconds, options = {} }) {
     super(thread);
@@ -24,7 +24,7 @@ class IntervalExecutor extends ExecutorAbstract {
     this.executor = executor;
     this.executorFactory = this.wrapExecutor(executor);
     this.milliseconds = milliseconds;
-    this.maxLoops = options.maxLoops || 100;
+    this.maxLoops = options.maxLoops || -1;
     this.loops = 0;
   }
 
@@ -33,7 +33,7 @@ class IntervalExecutor extends ExecutorAbstract {
   //-----------------------------------
 
   /**
-   * Internal execution method called by CommandThread only.
+   * Internal execution method called by Thread only.
    *
    * @param doneHandler The handler to call when done() is called.
    * @param failHandler The handler to call when fail() is called;
@@ -49,20 +49,24 @@ class IntervalExecutor extends ExecutorAbstract {
   }
 
   /**
-   * Internal recursive loop function.  Runs executor every (this.milliseconds) provided
-   * that the condition still evaluates truthy and (this.maxLoops) is not exceeded
+   * Internal recursive loop method.  Runs executor every `milliseconds` provided
+   * that the condition callback still evaluates truthy and `maxLoops` is not exceeded
    *
    * @private
    */
   _interval() {
     this.loops += 1;
-    if (!this.condition.apply(this, this.args) || this.loops > this.maxLoops) {
+    if (!this.condition.apply(this, this.args) || this._hasExceededMaxLoops()) {
       this.done();
     } else {
       this.resetTimeout();
       this.executorFactory.build(this.thread)._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
       setTimeout(this._interval.bind(this), this.milliseconds);
     }
+  }
+
+  _hasExceededMaxLoops() {
+    return (this.maxLoops > -1) && (this.loops > this.maxLoops);
   }
 
   resetTimeout() {
