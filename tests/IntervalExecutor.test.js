@@ -92,7 +92,7 @@ describe('intervalExecutor', () => {
   //----------------------------
   it('Will kill an infinite loop', (done) => {
     controller.addListener('myEvent', [
-      interval(() => true, () => {}, 0),
+      interval(() => true, () => {}, 0, {maxLoops: 100}),
       () => done()
       ]);
 
