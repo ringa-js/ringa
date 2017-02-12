@@ -2,6 +2,7 @@ import ExecutorAbstract from '../ExecutorAbstract';
 import ExecutorFactory from '../ExecutorFactory';
 import {getArgNames} from '../util/function';
 import {buildArgumentsFromRingaEvent} from '../util/executors';
+import {wrapIfNotInstance} from '../util/type';
 
 class IntervalExecutor extends ExecutorAbstract {
   constructor(thread, { condition, executor, milliseconds, options = {} }) {
@@ -9,7 +10,7 @@ class IntervalExecutor extends ExecutorAbstract {
 
     this.condition = condition;
     this.executor = executor;
-    this.executorFactory = this.wrapExecutor(executor);
+    this.executorFactory = wrapIfNotInstance(executor, ExecutorFactory);
     this.milliseconds = milliseconds;
     this.maxLoops = options.maxLoops || 100;
     this.loops = 0;
@@ -47,15 +48,6 @@ class IntervalExecutor extends ExecutorAbstract {
 
   _intervalFail(error, kill) {
     this.fail(error, kill);
-  }
-
-
-  wrapExecutor(executor) {
-    if (!(executor instanceof ExecutorFactory)) {
-      executor = new ExecutorFactory(executor);
-    }
-
-    return executor;
   }
 
   toString() {
