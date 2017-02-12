@@ -33,7 +33,7 @@ class ParallelExecutor extends ExecutorAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
     this.executorFactoryArray.forEach((executorFactory) => {
-      executorFactory.build(this.thread)._execute(this._parallelDone, this._parallelFail);
+      executorFactory.build(this.thread)._execute(this._parallelDone.bind(this), this._parallelFail.bind(this));
     });
   }
 
