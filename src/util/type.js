@@ -10,3 +10,13 @@ export function isDOMNode(o){
     o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
   );
 }
+
+// If constructor is not in object's prototype chain,
+// return object wrapped in constructor
+export function wrapIfNotInstance(object, constructor) {
+  if (!(object instanceof constructor)) {
+    object = new constructor(object);
+  }
+
+  return object;
+}

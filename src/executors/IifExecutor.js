@@ -2,6 +2,7 @@ import ExecutorAbstract from '../ExecutorAbstract';
 import ExecutorFactory from '../ExecutorFactory';
 import {getArgNames} from '../util/function';
 import {buildArgumentsFromRingaEvent} from '../util/executors';
+import {wrapIfNotInstance} from '../util/type';
 
 class IifExecutor extends ExecutorAbstract {
   //-----------------------------------
@@ -40,17 +41,9 @@ class IifExecutor extends ExecutorAbstract {
     let argNames = getArgNames(this.condition);
     let args = buildArgumentsFromRingaEvent(this, argNames, this.ringaEvent);
     let conditionResult = this.condition.apply(this, args);
-    let executorFactory = this.wrapExecutor(!!conditionResult ? this.trueExecutor : this.falseExecutor);
+    let executorFactory = wrapIfNotInstance(!!conditionResult ? this.trueExecutor : this.falseExecutor, ExecutorFactory);
 
     executorFactory.build(this.thread)._execute(this.done, this.fail);
-  }
-
-  wrapExecutor(executor) {
-    if (!(executor instanceof ExecutorFactory)) {
-      executor = new ExecutorFactory(executor);
-    }
-
-    return executor;
   }
 
   toString() {

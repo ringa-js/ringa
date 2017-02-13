@@ -1,6 +1,7 @@
 import RingaHashArray from './RingaHashArray';
 import Thread from './Thread';
 import ExecutorFactory from './ExecutorFactory';
+import {wrapIfNotInstance} from './util/type';
 
 class ThreadFactory extends RingaHashArray {
   //-----------------------------------
@@ -18,9 +19,7 @@ class ThreadFactory extends RingaHashArray {
         console.error(`ThreadFactory():: Attempting to add an empty executee! This probably happened because you attempt to add an event (e.g. SomeController.MY_EVENT) before SomeController::addListener('myEvent') was called.`, executorFactories);
       }
 
-      if (!(obj instanceof ExecutorFactory)) {
-        obj = new ExecutorFactory(obj);
-      }
+      obj = wrapIfNotInstance(obj, ExecutorFactory);
 
       addOne.call(this, obj);
     }
