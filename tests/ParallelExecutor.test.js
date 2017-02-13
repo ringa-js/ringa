@@ -62,4 +62,24 @@ describe('parallelExecutor', () => {
       done();
     });
   }, 50);
+
+  //-----------------------------------------------------------
+  // should execute parallel executors between others in order
+  //-----------------------------------------------------------
+  it('should execute parallel executors between others in order', (done) => {
+    let callOrder = '';
+
+    controller.addListener('myEvent', [
+      () => {callOrder += '1'},
+      [() => {callOrder += '2'},
+       () => {callOrder += '2'}],
+      () => {callOrder += '3'}
+      ]);
+
+    let event = Ringa.dispatch('myEvent', domNode);
+    event.addDoneListener(() => {
+      expect(callOrder).toBe('1223');
+      done();
+    });
+  }, 50);
 });
