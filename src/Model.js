@@ -1,9 +1,15 @@
 import RingaObject from './RingaObject';
 
 class Model extends RingaObject {
-  constructor(name) {
-    super(name);
+  constructor(name, values) {
+    if (typeof name !== 'string') {
+      values = name;
+      name = undefined;
+    }
 
+    super(name, values);
+
+    this._values = values;
     this._modelInjectors = [];
   }
 
@@ -76,6 +82,10 @@ class Model extends RingaObject {
     delete options.set;
 
     this[`_${name}Options`] = options;
+
+    if (this._values && this._values[name]) {
+      this[`_${name}`] = this._values[name];
+    }
   }
 }
 

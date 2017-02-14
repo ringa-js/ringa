@@ -101,5 +101,33 @@ describe('Model', () => {
       expect(model.myProp).toEqual('defaultCustom');
       done();
     });
+
+    //------------------------------------------------
+    // should allow properties set through constructor
+    //------------------------------------------------
+    it('should accept a custom getter', (done) => {
+      model = new Model('someName', {
+        myProp: 123456
+      });
+
+      model.addProperty('myProp', 'default');
+
+      expect(model.myProp).toEqual(123456);
+      done();
+    });
+
+    //------------------------------------------------
+    // should allow properties set through constructor
+    //------------------------------------------------
+    it('should accept a custom getter', (done) => {
+      model = new Model({
+        myProp: 123456
+      });
+
+      model.addProperty('myProp', 'default');
+
+      expect(model.myProp).toEqual(123456);
+      done();
+    });
   });
 });
