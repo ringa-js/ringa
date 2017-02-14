@@ -30,7 +30,7 @@ class SleepExecutor extends ExecutorAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    sleep(this.milliseconds).then(() => this.done());
+    sleep(this.milliseconds).then(this.done);
   }
 
   toString() {
