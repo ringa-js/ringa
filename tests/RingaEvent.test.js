@@ -84,7 +84,7 @@ describe('RingaEvent', () => {
   //
   // https://github.com/jung-digital/ringa/issues/72
   //------------------------------------------------
-  it('Should inject properties into .then() resolve (1/3)', (done) => {
+  it('Should inject properties into done (1/3)', (done) => {
     controller.addListener('event', () => {});
 
     dispatch('event', domNode).addDoneListener((someInjection) => {
@@ -100,7 +100,7 @@ describe('RingaEvent', () => {
   //
   // https://github.com/jung-digital/ringa/issues/72
   //------------------------------------------------
-  it('Should inject properties into .then() resolve (2/3)', (done) => {
+  it('Should inject properties into done (2/3)', (done) => {
     controller.addListener('event', () => {});
 
     dispatch('event', {
@@ -117,7 +117,7 @@ describe('RingaEvent', () => {
   //
   // https://github.com/jung-digital/ringa/issues/72
   //------------------------------------------------
-  it('Should inject properties into .then() resolve (3/3)', (done) => {
+  it('Should inject properties into done (3/3)', (done) => {
     controller.addListener('event', () => {});
 
     dispatch('event', {
