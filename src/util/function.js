@@ -13,3 +13,13 @@ export const getArgNames = function (func) {
   s = s.replace(/\\+['"]/g, '').replace(/=\s*(["']).*?\1/g, '').replace(/=.*?(,|$)/g, '');
   return s.length !== 0 ? s.split(',') : [];
 };
+
+/**
+ * This function returns a resolved promise after `milliseconds` has elapsed
+ *
+ * @param milliseconds
+ * @returns {Promise}
+ */
+export const sleep = function (milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};
