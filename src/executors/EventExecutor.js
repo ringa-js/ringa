@@ -57,6 +57,8 @@ class EventExecutor extends ExecutorAbstract {
 
     let domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
 
+    this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
+
     this.dispatchedRingaEvent.dispatch(domNode);
 
     if ((this.dispatchedRingaEvent.detail.requireCatch === undefined || this.dispatchedRingaEvent.detail.requireCatch) &&
@@ -84,8 +86,6 @@ class EventExecutor extends ExecutorAbstract {
   // Events
   //-----------------------------------
   dispatchedRingaEventDoneHandler() {
-    this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
-
     this.done();
   }
 

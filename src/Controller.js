@@ -363,7 +363,7 @@ class Controller extends RingaObject {
         console.error(error);
       }
 
-      ringaEvent._fail(this, error);
+      ringaEvent._fail(this, error, true);
     }
 
     if (abort === true) {
@@ -399,7 +399,7 @@ class Controller extends RingaObject {
 
     this.notify(thread.ringaEvent);
 
-    thread.ringaEvent._done();
+    thread.ringaEvent._done(this);
   }
 
   threadFailHandler(thread, error, kill) {
@@ -415,7 +415,7 @@ class Controller extends RingaObject {
       }
     }
 
-    thread.ringaEvent._fail(this, error);
+    thread.ringaEvent._fail(this, error, kill);
   }
 
   dispatch(eventType, details) {

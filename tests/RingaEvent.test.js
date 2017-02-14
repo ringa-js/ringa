@@ -78,4 +78,54 @@ describe('RingaEvent', () => {
       done();
     });
   }, 50);
+
+  //------------------------------------------------
+  // Should inject properties into done handler
+  //
+  // https://github.com/jung-digital/ringa/issues/72
+  //------------------------------------------------
+  it('Should inject properties into .then() resolve (1/3)', (done) => {
+    controller.addListener('event', () => {});
+
+    dispatch('event', domNode).addDoneListener((someInjection) => {
+      expect(someInjection).toEqual({
+        test: 'test'
+      });
+      done();
+    });
+  }, 50);
+
+  //------------------------------------------------
+  // Should inject properties into done handler
+  //
+  // https://github.com/jung-digital/ringa/issues/72
+  //------------------------------------------------
+  it('Should inject properties into .then() resolve (2/3)', (done) => {
+    controller.addListener('event', () => {});
+
+    dispatch('event', {
+      someProp: 'whatever'
+    }, domNode).addDoneListener((someInjection, someProp) => {
+      expect(someInjection).toEqual({test: 'test'});
+      expect(someProp).toEqual('whatever');
+      done();
+    });
+  }, 50);
+
+  //------------------------------------------------
+  // Should inject properties into done handler
+  //
+  // https://github.com/jung-digital/ringa/issues/72
+  //------------------------------------------------
+  it('Should inject properties into .then() resolve (3/3)', (done) => {
+    controller.addListener('event', () => {});
+
+    dispatch('event', {
+      // This should override the one on the controller
+      someInjection: 'whatever'
+    }, domNode).addDoneListener((someInjection) => {
+      expect(someInjection).toEqual('whatever');
+      done();
+    });
+  }, 50);
 });

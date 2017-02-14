@@ -75,7 +75,7 @@ class Thread extends RingaHashArray {
   //-----------------------------------
   _executorDoneHandler() {
     if (!this.all[this.index]) {
-      console.error('Thread::_executorDoneHandler(): could not find executor to destroy it!');
+      this._finCouldNotFindError();
     } else {
       this.all[this.index].destroy();
     }
@@ -95,11 +95,7 @@ class Thread extends RingaHashArray {
 
   _executorFailHandler(error, kill) {
     if (!this.all[this.index]) {
-      let e = (this.all && this.all.length) ? this.all.map(e => {
-        return e.toString();
-      }).join(', ') : `No executors found on thread ${this.toString()}`;
-
-      console.error(`Thread::_executorFailHandler(): could not find executor to destroy it!\n\tIndex: ${this.index}\n\tExecutors: ${e}`);
+      this._finCouldNotFindError();
     } else {
       this.all[this.index].destroy();
     }
@@ -115,6 +111,20 @@ class Thread extends RingaHashArray {
     if (!kill) {
       this._executorDoneHandler();
     }
+  }
+
+  _finCouldNotFindError() {
+    let e = (this.all && this.all.length) ? this.all.map(e => {
+        return e.toString();
+      }).join(', ') : `No executors found on thread ${this.toString()}`;
+
+    console.error(`Thread: could not find executor to destroy it! This could be caused by an internal Ringa error or an error in an executor. All information below:\n` +
+      `\t- Executor Index: ${this.index}\n` +
+      `\t- All Executors: ${e}\n` +
+      `\t- Executor Failure that triggered this was:\n` +
+      (error.stack ? `\t${error.stack}\n` : `${error}`) +
+      `\t- Failure Dispatch Stack Trace:\n` +
+      `\t${new Error().stack}`);
   }
 }
 
