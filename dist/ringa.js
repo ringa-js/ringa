@@ -96,7 +96,7 @@ var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
 var _debug = __webpack_require__(13);
 
-var _type = __webpack_require__(6);
+var _type = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -423,6 +423,42 @@ exports.default = RingaObject;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+exports.isPromise = isPromise;
+exports.isDOMNode = isDOMNode;
+exports.wrapIfNotInstance = wrapIfNotInstance;
+function isPromise(obj) {
+  return !!obj && ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
+}
+
+// Returns true if it is a DOM node
+// http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
+function isDOMNode(o) {
+  return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === "object" ? o instanceof Node : o && (typeof o === 'undefined' ? 'undefined' : _typeof(o)) === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string";
+}
+
+// If constructor is not in object's prototype chain,
+// return object wrapped in constructor
+function wrapIfNotInstance(object, constructor) {
+  if (!(object instanceof constructor)) {
+    object = new constructor(object);
+  }
+
+  return object;
+}
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * This function returns the arguments for another method as an array.
  *
@@ -440,7 +476,7 @@ var getArgNames = exports.getArgNames = function getArgNames(func) {
 };
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -478,7 +514,7 @@ var _RingaEventFactory = __webpack_require__(9);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
-var _function = __webpack_require__(2);
+var _function = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -550,7 +586,7 @@ var ExecutorFactory = function () {
 exports.default = ExecutorFactory;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -600,29 +636,60 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
     throw Error('buildArgumentsFromRingaEvent(): An internal error has occurred in that expectedArguments is not an Array!');
   }
 
-  var injections = executor._injections = executor._injections || {
-    $controller: executor.controller,
-    $thread: executor.thread,
-    $ringaEvent: ringaEvent,
-    $lastEvent: ringaEvent.detail.$lastEvent,
-    $customEvent: ringaEvent.customEvent,
-    $target: ringaEvent.target,
-    $detail: ringaEvent.detail,
-    done: executor.done,
-    fail: executor.fail,
-    $lastPromiseResult: ringaEvent.lastPromiseResult,
-    $lastPromiseError: ringaEvent.lastPromiseError
+  var mergeControllerInjections = function mergeControllerInjections(injections, controller) {
+    // Merge controller.options.injections into our injector
+    var i = controller.options.injections;
+    for (var key in i) {
+      var _i = i[key];
+      if (typeof i[key] === 'function') {
+        _i = i[key]();
+      }
+
+      injections[key] = _i;
+    }
   };
 
-  // Merge controller.options.injections into our injector
-  var i = executor.controller.options.injections;
-  for (var key in i) {
-    var _i = i[key];
-    if (typeof i[key] === 'function') {
-      _i = i[key]();
-    }
+  var injections = void 0;
 
-    injections[key] = _i;
+  // In the RingaEvent.then() resolve callback, we don't have a currently running executor so we have to
+  // check for that here and then pass undefined if we don't have one.
+  if (executor) {
+    injections = executor._injections = executor._injections || {
+      $controller: executor.controller,
+      $thread: executor.thread,
+      $ringaEvent: ringaEvent,
+      $lastEvent: ringaEvent.detail.$lastEvent,
+      $customEvent: ringaEvent.customEvent,
+      $target: ringaEvent.target,
+      $detail: ringaEvent.detail,
+      done: executor.done,
+      fail: executor.fail,
+      $lastPromiseResult: ringaEvent.lastPromiseResult,
+      $lastPromiseError: ringaEvent.lastPromiseError
+    };
+
+    // Merge only injections for the controller that is the current context for the executor.
+    mergeControllerInjections(injections, executor.controller);
+  } else {
+    injections = {};
+
+    // We loop through all the controllers that caught and handled the event and combine all of their injections
+    // together... this probably needs to be thought through some more, but it will work for 99% of cases.
+    // Note that this means the if Controllers A and B both handled the event in order (A, B) and they both
+    // have an injection named 'model', then only the 'model' injection from A will be available.
+    ringaEvent._controllers.forEach(function (controller) {
+      mergeControllerInjections(injections, controller);
+    });
+
+    injections = Object.assign(injections, {
+      $ringaEvent: ringaEvent,
+      $lastEvent: ringaEvent.detail.$lastEvent,
+      $customEvent: ringaEvent.customEvent,
+      $target: ringaEvent.target,
+      $detail: ringaEvent.detail,
+      $lastPromiseResult: ringaEvent.lastPromiseResult,
+      $lastPromiseError: ringaEvent.lastPromiseError
+    });
   }
 
   expectedArguments.forEach(function (argName) {
@@ -633,9 +700,10 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
     } else {
       var s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
 
-      var str = 'Ringa Injection Error!:\n' + ('\tExecutor: \'' + executor.toString() + '\' of type ' + executor.constructor.name + '\n') + ('\tMissing: ' + argName + '\n') + ('\tRequired: ' + expectedArguments.join(', ') + '\n') + ('\tAvailable: ' + Object.keys(injections).sort().join(', ') + '\n') + '\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n' + ('\tDispatched from: ' + s);
+      var str = 'Ringa Injection Error!:\n' + (executor ? '\tExecutor: \'' + executor.toString() + '\' of type ' + executor.constructor.name + '\n' : 'No active Executor\n') + ('\tMissing: ' + argName + '\n') + ('\tRequired: ' + expectedArguments.join(', ') + '\n') + ('\tAvailable: ' + Object.keys(injections).sort().join(', ') + '\n') + '\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n' + ('\tDispatched from: ' + s);
       console.error(str);
 
+      // TODO Determine desired behavior to silence console.error & throw (discuss)
       throw Error('Injection failed. See console errors above.');
     }
   });
@@ -644,7 +712,7 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
 };
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -666,7 +734,11 @@ var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
 var _debug = __webpack_require__(13);
 
-var _type = __webpack_require__(6);
+var _type = __webpack_require__(2);
+
+var _function = __webpack_require__(3);
+
+var _executors = __webpack_require__(5);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -843,6 +915,10 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: '_caught',
     value: function _caught(controller) {
+      if (true && !controller) {
+        throw new Error('RingaEvent::_caught(): controller was not defined!');
+      }
+
       this.__caught = true;
       this.catchers.push(controller);
     }
@@ -858,7 +934,12 @@ var RingaEvent = function (_RingaObject) {
     key: '_uncatch',
     value: function _uncatch(controller) {
       var ix = this.catchers.indexOf(controller);
-      this._catchers.push(this.catchers.splice(ix, 1));
+
+      if (true && ix === -1) {
+        throw new Error('RingaEvent::_uncatch(): controller that is uncatching could not be found. Was done called twice?');
+      }
+
+      this._catchers.push(this.catchers.splice(ix, 1)[0]);
     }
 
     /**
@@ -886,12 +967,12 @@ var RingaEvent = function (_RingaObject) {
 
   }, {
     key: '_fail',
-    value: function _fail(controller, error) {
-      this._uncatch(controller);
-
-      if (this.catchers.length === 0) {
-        this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+    value: function _fail(controller, error, killed) {
+      if (killed) {
+        this._uncatch(controller);
       }
+
+      this._dispatchEvent(RingaEvent.FAIL, undefined, error);
     }
 
     /**
@@ -920,6 +1001,10 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: '_done',
     value: function _done(controller) {
+      if (true && !controller) {
+        throw new Error('RingaEvent::_done(): controller is not defined!');
+      }
+
       this._uncatch(controller);
 
       // TODO add unit tests for multiple handling controllers and make sure all possible combinations work (e.g. like
@@ -996,8 +1081,14 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'addDoneListener',
     value: function addDoneListener(handler) {
+      var _this3 = this;
+
       // TODO add unit tests for multiple controllers handling a thread
-      return this.addListener(RingaEvent.DONE, handler);
+      return this.addListener(RingaEvent.DONE, function () {
+        var argNames = (0, _function.getArgNames)(handler);
+        var args = (0, _executors.buildArgumentsFromRingaEvent)(undefined, argNames, _this3);
+        handler.apply(undefined, args);
+      });
     }
 
     /**
@@ -1027,12 +1118,9 @@ var RingaEvent = function (_RingaObject) {
     key: 'then',
     value: function then(resolve, reject) {
       if (resolve) {
-        if (!reject) {
-          this.addFailListener(resolve.bind(undefined, undefined));
-        }
-
         this.addDoneListener(resolve);
       }
+
       if (reject) this.addFailListener(reject);
     }
 
@@ -1116,7 +1204,7 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: '_controllers',
     get: function get() {
-      return [].concat(this._catchers, this.catchers);
+      return this._catchers.concat(this.catchers);
     }
 
     /**
@@ -1141,31 +1229,6 @@ RingaEvent.FAIL = 'fail';
 RingaEvent.PREHOOK = 'prehook';
 
 exports.default = RingaEvent;
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-exports.isPromise = isPromise;
-exports.isDOMNode = isDOMNode;
-function isPromise(obj) {
-  return !!obj && ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
-}
-
-// Returns true if it is a DOM node
-// http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
-function isDOMNode(o) {
-  return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === "object" ? o instanceof Node : o && (typeof o === 'undefined' ? 'undefined' : _typeof(o)) === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string";
-}
 
 /***/ }),
 /* 7 */
@@ -1195,11 +1258,17 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Model = function (_RingaObject) {
   _inherits(Model, _RingaObject);
 
-  function Model(name) {
+  function Model(name, values) {
     _classCallCheck(this, Model);
 
-    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name));
+    if (typeof name !== 'string') {
+      values = name;
+      name = undefined;
+    }
 
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values));
+
+    _this._values = values;
     _this._modelInjectors = [];
     return _this;
   }
@@ -1283,6 +1352,10 @@ var Model = function (_RingaObject) {
       delete options.set;
 
       this['_' + name + 'Options'] = options;
+
+      if (this._values && this._values[name]) {
+        this['_' + name] = this._values[name];
+      }
     }
   }]);
 
@@ -1728,7 +1801,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaEvent = __webpack_require__(5);
+var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
@@ -1805,9 +1878,11 @@ var _Thread = __webpack_require__(33);
 
 var _Thread2 = _interopRequireDefault(_Thread);
 
-var _ExecutorFactory = __webpack_require__(3);
+var _ExecutorFactory = __webpack_require__(4);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
+
+var _type = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1837,9 +1912,7 @@ var ThreadFactory = function (_RingaHashArray) {
         console.error('ThreadFactory():: Attempting to add an empty executee! This probably happened because you attempt to add an event (e.g. SomeController.MY_EVENT) before SomeController::addListener(\'myEvent\') was called.', executorFactories);
       }
 
-      if (!(obj instanceof _ExecutorFactory2.default)) {
-        obj = new _ExecutorFactory2.default(obj);
-      }
+      obj = (0, _type.wrapIfNotInstance)(obj, _ExecutorFactory2.default);
 
       addOne.call(this, obj);
     };
@@ -2438,7 +2511,7 @@ var _hasharray = __webpack_require__(11);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
-var _RingaEvent = __webpack_require__(5);
+var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
@@ -2450,9 +2523,9 @@ var _snakeCase = __webpack_require__(31);
 
 var _snakeCase2 = _interopRequireDefault(_snakeCase);
 
-var _executors = __webpack_require__(4);
+var _executors = __webpack_require__(5);
 
-var _function = __webpack_require__(2);
+var _function = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2829,7 +2902,7 @@ var Controller = function (_RingaObject) {
           console.error(error);
         }
 
-        ringaEvent._fail(this, error);
+        ringaEvent._fail(this, error, true);
       }
 
       if (abort === true) {
@@ -2868,7 +2941,7 @@ var Controller = function (_RingaObject) {
 
       this.notify(thread.ringaEvent);
 
-      thread.ringaEvent._done();
+      thread.ringaEvent._done(this);
     }
   }, {
     key: 'threadFailHandler',
@@ -2885,7 +2958,7 @@ var Controller = function (_RingaObject) {
         }
       }
 
-      thread.ringaEvent._fail(this, error);
+      thread.ringaEvent._fail(this, error, kill);
     }
   }, {
     key: 'dispatch',
@@ -3024,9 +3097,9 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _executors = __webpack_require__(4);
+var _executors = __webpack_require__(5);
 
-var _function = __webpack_require__(2);
+var _function = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3170,13 +3243,15 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _ExecutorFactory = __webpack_require__(3);
+var _ExecutorFactory = __webpack_require__(4);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _function = __webpack_require__(2);
+var _function = __webpack_require__(3);
 
-var _executors = __webpack_require__(4);
+var _executors = __webpack_require__(5);
+
+var _type = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3189,6 +3264,17 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var IifExecutor = function (_ExecutorAbstract) {
   _inherits(IifExecutor, _ExecutorAbstract);
 
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructor for a new IifExecutor.
+   *
+   * @param thread The parent thread that owns this executor.
+   * @param condition A callback function whose return value can be truthy or falsey, determining whether to run the trueExecutor or the falseExecutor.
+   * @param trueExecutor  The executor run if condition returns a truthy value
+   * @param falseExecutor The executor run if condition returns a falsey value
+   */
   function IifExecutor(thread, _ref) {
     var condition = _ref.condition,
         trueExecutor = _ref.trueExecutor,
@@ -3204,6 +3290,19 @@ var IifExecutor = function (_ExecutorAbstract) {
     return _this;
   }
 
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
+  /**
+   * Internal execution method called by Thread only.
+   *
+   * @param doneHandler The handler to call when done() is called.
+   * @param failHandler The handler to call when fail() is called;
+   * @private
+   */
+
+
   _createClass(IifExecutor, [{
     key: '_execute',
     value: function _execute(doneHandler, failHandler) {
@@ -3212,18 +3311,9 @@ var IifExecutor = function (_ExecutorAbstract) {
       var argNames = (0, _function.getArgNames)(this.condition);
       var args = (0, _executors.buildArgumentsFromRingaEvent)(this, argNames, this.ringaEvent);
       var conditionResult = this.condition.apply(this, args);
-      var executorFactory = this.wrapExecutor(!!conditionResult ? this.trueExecutor : this.falseExecutor);
+      var executorFactory = (0, _type.wrapIfNotInstance)(!!conditionResult ? this.trueExecutor : this.falseExecutor, _ExecutorFactory2.default);
 
       executorFactory.build(this.thread)._execute(this.done, this.fail);
-    }
-  }, {
-    key: 'wrapExecutor',
-    value: function wrapExecutor(executor) {
-      if (!(executor instanceof _ExecutorFactory2.default)) {
-        executor = new _ExecutorFactory2.default(executor);
-      }
-
-      return executor;
     }
   }, {
     key: 'toString',
@@ -3256,13 +3346,15 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _ExecutorFactory = __webpack_require__(3);
+var _ExecutorFactory = __webpack_require__(4);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _function = __webpack_require__(2);
+var _function = __webpack_require__(3);
 
-var _executors = __webpack_require__(4);
+var _executors = __webpack_require__(5);
+
+var _type = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3275,6 +3367,19 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var IntervalExecutor = function (_ExecutorAbstract) {
   _inherits(IntervalExecutor, _ExecutorAbstract);
 
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructor for a new IntervalExecutor, which recursively uses the setTimeout function to run an executor repeatedly.
+   *
+   * @param thread The parent thread that owns this executor.
+   * @param condition Interval is halted when this callback returns falsey.
+   * @param executor  The executor that runs on every interval
+   * @param milliseconds The time between each interval
+   * @param options Defaults are provided, so this is optional.
+   * @param [options.maxLoops=-1] When maximum loops is exceeded, done() is called on the executor. -1 for no maximum.
+   */
   function IntervalExecutor(thread, _ref) {
     var condition = _ref.condition,
         executor = _ref.executor,
@@ -3288,12 +3393,25 @@ var IntervalExecutor = function (_ExecutorAbstract) {
 
     _this.condition = condition;
     _this.executor = executor;
-    _this.executorFactory = _this.wrapExecutor(executor);
+    _this.executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
     _this.milliseconds = milliseconds;
-    _this.maxLoops = options.maxLoops || 100;
+    _this.maxLoops = options.maxLoops || -1;
     _this.loops = 0;
     return _this;
   }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
+  /**
+   * Internal execution method called by Thread only.
+   *
+   * @param doneHandler The handler to call when done() is called.
+   * @param failHandler The handler to call when fail() is called;
+   * @private
+   */
+
 
   _createClass(IntervalExecutor, [{
     key: '_execute',
@@ -3305,17 +3423,30 @@ var IntervalExecutor = function (_ExecutorAbstract) {
 
       this._interval();
     }
+
+    /**
+     * Internal recursive loop method.  Runs executor every `milliseconds` provided
+     * that the condition callback still evaluates truthy and `maxLoops` is not exceeded
+     *
+     * @private
+     */
+
   }, {
     key: '_interval',
     value: function _interval() {
       this.loops += 1;
-      if (!this.condition.apply(this, this.args) || this.loops > this.maxLoops) {
+      if (!this.condition.apply(this, this.args) || this._hasExceededMaxLoops()) {
         this.done();
       } else {
         this.resetTimeout();
         this.executorFactory.build(this.thread)._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
         setTimeout(this._interval.bind(this), this.milliseconds);
       }
+    }
+  }, {
+    key: '_hasExceededMaxLoops',
+    value: function _hasExceededMaxLoops() {
+      return this.maxLoops > -1 && this.loops > this.maxLoops;
     }
   }, {
     key: 'resetTimeout',
@@ -3333,15 +3464,6 @@ var IntervalExecutor = function (_ExecutorAbstract) {
     key: '_intervalFail',
     value: function _intervalFail(error, kill) {
       this.fail(error, kill);
-    }
-  }, {
-    key: 'wrapExecutor',
-    value: function wrapExecutor(executor) {
-      if (!(executor instanceof _ExecutorFactory2.default)) {
-        executor = new _ExecutorFactory2.default(executor);
-      }
-
-      return executor;
     }
   }, {
     key: 'toString',
@@ -3370,7 +3492,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _ExecutorFactory2 = __webpack_require__(3);
+var _ExecutorFactory2 = __webpack_require__(4);
 
 var _ExecutorFactory3 = _interopRequireDefault(_ExecutorFactory2);
 
@@ -5014,7 +5136,7 @@ var Thread = function (_RingaHashArray) {
     key: '_executorDoneHandler',
     value: function _executorDoneHandler() {
       if (!this.all[this.index]) {
-        console.error('Thread::_executorDoneHandler(): could not find executor to destroy it!');
+        this._finCouldNotFindError();
       } else {
         this.all[this.index].destroy();
       }
@@ -5035,11 +5157,7 @@ var Thread = function (_RingaHashArray) {
     key: '_executorFailHandler',
     value: function _executorFailHandler(error, kill) {
       if (!this.all[this.index]) {
-        var e = this.all && this.all.length ? this.all.map(function (e) {
-          return e.toString();
-        }).join(', ') : 'No executors found on thread ' + this.toString();
-
-        console.error('Thread::_executorFailHandler(): could not find executor to destroy it!\n\tIndex: ' + this.index + '\n\tExecutors: ' + e);
+        this._finCouldNotFindError();
       } else {
         this.all[this.index].destroy();
       }
@@ -5055,6 +5173,15 @@ var Thread = function (_RingaHashArray) {
       if (!kill) {
         this._executorDoneHandler();
       }
+    }
+  }, {
+    key: '_finCouldNotFindError',
+    value: function _finCouldNotFindError() {
+      var e = this.all && this.all.length ? this.all.map(function (e) {
+        return e.toString();
+      }).join(', ') : 'No executors found on thread ' + this.toString();
+
+      console.error('Thread: could not find executor to destroy it! This could be caused by an internal Ringa error or an error in an executor. All information below:\n' + ('\t- Executor Index: ' + this.index + '\n') + ('\t- All Executors: ' + e + '\n') + '\t- Executor Failure that triggered this was:\n' + (error.stack ? '\t' + error.stack + '\n' : '' + error) + '\t- Failure Dispatch Stack Trace:\n' + ('\t' + new Error().stack));
     }
   }, {
     key: 'controller',
@@ -5151,6 +5278,8 @@ var EventExecutor = function (_ExecutorAbstract) {
 
       var domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
 
+      this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
+
       this.dispatchedRingaEvent.dispatch(domNode);
 
       if ((this.dispatchedRingaEvent.detail.requireCatch === undefined || this.dispatchedRingaEvent.detail.requireCatch) && !this.dispatchedRingaEvent.caught) {
@@ -5182,8 +5311,6 @@ var EventExecutor = function (_ExecutorAbstract) {
   }, {
     key: 'dispatchedRingaEventDoneHandler',
     value: function dispatchedRingaEventDoneHandler() {
-      this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
-
       this.done();
     }
   }, {
@@ -5239,9 +5366,9 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _executors = __webpack_require__(4);
+var _executors = __webpack_require__(5);
 
-var _function = __webpack_require__(2);
+var _function = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5348,6 +5475,12 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
+var _ExecutorFactory = __webpack_require__(4);
+
+var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
+
+var _type = __webpack_require__(2);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -5359,25 +5492,63 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var ParallelExecutor = function (_ExecutorAbstract) {
   _inherits(ParallelExecutor, _ExecutorAbstract);
 
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructor for a new ParallelExecutor
+   *
+   * @param thread The parent thread that owns this executor.
+   * @param executorArray The executors to run in parallel
+   */
   function ParallelExecutor(thread, executorArray) {
     _classCallCheck(this, ParallelExecutor);
 
     var _this = _possibleConstructorReturn(this, (ParallelExecutor.__proto__ || Object.getPrototypeOf(ParallelExecutor)).call(this, thread));
 
     _this.executorArray = executorArray;
+    _this.executorFactoryArray = executorArray.map(function (e) {
+      return (0, _type.wrapIfNotInstance)(e, _ExecutorFactory2.default);
+    });
+    _this.awaitingExecutors = executorArray.length;
     return _this;
   }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * Internal execution method called by Thread only.
+   *
+   * @param doneHandler The handler to call when done() is called.
+   * @param failHandler The handler to call when fail() is called;
+   * @private
+   */
+
 
   _createClass(ParallelExecutor, [{
     key: '_execute',
     value: function _execute(doneHandler, failHandler) {
+      var _this2 = this;
+
       _get(ParallelExecutor.prototype.__proto__ || Object.getPrototypeOf(ParallelExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
-      // throw.Error('Parallels have not been implemented yet');
+      this.executorFactoryArray.forEach(function (executorFactory) {
+        executorFactory.build(_this2.thread)._execute(_this2._parallelDone.bind(_this2), _this2._parallelFail.bind(_this2));
+      });
     }
   }, {
-    key: 'toString',
-    value: function toString() {
-      return this.id + ': ' + this.condition.toString().substring(0, 64);
+    key: '_parallelDone',
+    value: function _parallelDone() {
+      this.awaitingExecutors -= 1;
+
+      if (this.awaitingExecutors === 0) {
+        this.done();
+      }
+    }
+  }, {
+    key: '_parallelFail',
+    value: function _parallelFail(error) {
+      this.fail(error);
     }
   }]);
 
@@ -5447,7 +5618,7 @@ var _Command = __webpack_require__(17);
 
 var _Command2 = _interopRequireDefault(_Command);
 
-var _ExecutorFactory = __webpack_require__(3);
+var _ExecutorFactory = __webpack_require__(4);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
@@ -5459,7 +5630,7 @@ var _Controller = __webpack_require__(16);
 
 var _Controller2 = _interopRequireDefault(_Controller);
 
-var _RingaEvent = __webpack_require__(5);
+var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
@@ -5495,7 +5666,7 @@ var _IntervalExecutor = __webpack_require__(19);
 
 var _IntervalExecutor2 = _interopRequireDefault(_IntervalExecutor);
 
-var _type = __webpack_require__(6);
+var _type = __webpack_require__(2);
 
 var _ExecutorAbstract = __webpack_require__(0);
 
