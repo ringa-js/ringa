@@ -130,6 +130,8 @@ var ExecutorAbstract = function (_RingaObject) {
 
     var _this = _possibleConstructorReturn(this, (ExecutorAbstract.__proto__ || Object.getPrototypeOf(ExecutorAbstract)).call(this));
 
+    _this.hasBeenRun = false;
+
     if (true && !thread.controller) {
       throw Error('ExecutorAbstract(): attempting to build a command connected to a Thread that has no attached controller.');
     }
@@ -185,6 +187,12 @@ var ExecutorAbstract = function (_RingaObject) {
   }, {
     key: '_execute',
     value: function _execute(doneHandler, failHandler) {
+      if (this.hasBeenRun) {
+        throw new Error('ExecutorAbstract::_execute(): an executor has been run twice!');
+      }
+
+      this.hasBeenRun = true;
+
       this.doneHandler = doneHandler;
       this.failHandler = failHandler;
 
@@ -379,7 +387,7 @@ var RingaObject = function () {
     // Methods
     //-----------------------------------
     value: function destroy() {
-      delete ids[this.id];
+      delete ids.map[this.id];
 
       return this;
     }
@@ -1361,7 +1369,7 @@ var Model = function (_RingaObject) {
       name = undefined;
     }
 
-    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name));
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
 
     _this._values = values;
     _this._modelInjectors = [];
@@ -1918,7 +1926,7 @@ var RingaEventFactory = function () {
     _classCallCheck(this, RingaEventFactory);
 
     this.eventType = eventType;
-    this.detail = detail;
+    this.detailOrig = detail;
     this.domNode = domNode;
     this.bubbles = true;
     this.cancellable = true;
@@ -1933,7 +1941,7 @@ var RingaEventFactory = function () {
   _createClass(RingaEventFactory, [{
     key: 'build',
     value: function build(executor) {
-      var newDetail = (0, _ringaEvent.mergeRingaEventDetails)(executor.ringaEvent, this.detail, executor.controller.options.warnOnDetailOverwrite);
+      var newDetail = (0, _ringaEvent.mergeRingaEventDetails)(executor.ringaEvent, this.detailOrig, executor.controller.options.warnOnDetailOverwrite);
 
       newDetail._executor = executor;
       newDetail.requireCatch = this.requireCatch;
@@ -2358,13 +2366,13 @@ exports.mergeRingaEventDetails = mergeRingaEventDetails;
 function mergeRingaEventDetails(ringaEvent, detail) {
   var warnOnOverwrite = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
-  var nextDetail = detail || {};
+  var nextDetail = Object.assign({}, detail); // Make sure we clone!!
   var prevDetail = ringaEvent.detail || {};
 
   for (var key in prevDetail) {
     if (prevDetail.hasOwnProperty(key)) {
       if (true && nextDetail[key] !== undefined && (warnOnOverwrite || ringaEvent.debug)) {
-        console.warn("mergeRingaEventDetails(): overwriting property '" + key + "' on " + ringaEvent + ".\n" + ("Old value: " + JSON.stringify(prevDetail[key]) + "\n") + ("New value: " + JSON.stringify(nextDetail[key]) + "\n"));
+        console.warn("mergeRingaEventDetails(): overwriting property '" + key + "' on " + ringaEvent + ".\n" + ("Old value: " + prevDetail[key] + "\n") + ("New value: " + nextDetail[key] + "\n"));
       }
       if (nextDetail[key] === undefined) {
         nextDetail[key] = prevDetail[key];

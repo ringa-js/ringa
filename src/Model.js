@@ -7,7 +7,7 @@ class Model extends RingaObject {
       name = undefined;
     }
 
-    super(name);
+    super(name, (values && values.id) ? values.id : undefined);
 
     this._values = values;
     this._modelInjectors = [];

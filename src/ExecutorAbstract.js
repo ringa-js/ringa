@@ -21,6 +21,8 @@ class ExecutorAbstract extends RingaObject {
   constructor(thread) {
     super();
 
+    this.hasBeenRun = false;
+
     if (__DEV__ && !thread.controller) {
       throw Error('ExecutorAbstract(): attempting to build a command connected to a Thread that has no attached controller.');
     }
@@ -81,6 +83,12 @@ class ExecutorAbstract extends RingaObject {
    * @private
    */
   _execute(doneHandler, failHandler) {
+    if (this.hasBeenRun) {
+      throw new Error('ExecutorAbstract::_execute(): an executor has been run twice!');
+    }
+
+    this.hasBeenRun = true;
+
     this.doneHandler = doneHandler;
     this.failHandler = failHandler;
 

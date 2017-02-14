@@ -55,7 +55,7 @@ export default class RingaObject {
   // Methods
   //-----------------------------------
   destroy() {
-    delete ids[this.id];
+    delete ids.map[this.id];
 
     return this;
   }
