@@ -1174,7 +1174,7 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'toString',
     value: function toString() {
-      return 'RingaEvent [ \'' + this.type + '\' caught by ' + (this._controllers ? this._controllers.toString() : 'nothing yet.') + ' ] ';
+      return 'RingaEvent[\'' + this.type + '\' caught by ' + (this._controllers ? this._controllers.toString() : 'nothing yet.') + ' ] ';
     }
 
     /**
@@ -2363,8 +2363,8 @@ function mergeRingaEventDetails(ringaEvent, detail) {
 
   for (var key in prevDetail) {
     if (prevDetail.hasOwnProperty(key)) {
-      if (true && nextDetail[key] !== undefined && warnOnOverwrite) {
-        console.warn("mergeRingaEventDetails(): property from previous event " + ringaEvent + " will be overwritten by new details '" + key + "' property.");
+      if (true && nextDetail[key] !== undefined && (warnOnOverwrite || ringaEvent.debug)) {
+        console.warn("mergeRingaEventDetails(): overwriting property '" + key + "' on " + ringaEvent + ".\n" + ("Old value: " + JSON.stringify(prevDetail[key]) + "\n") + ("New value: " + JSON.stringify(nextDetail[key]) + "\n"));
       }
       if (nextDetail[key] === undefined) {
         nextDetail[key] = prevDetail[key];
@@ -2672,7 +2672,7 @@ var Controller = function (_RingaObject) {
     _this.options.throwKillsThread = _this.options.throwKillsThread === undefined ? true : _this.options.throwKillsThread;
     _this.options.consoleLogFails = _this.options.consoleLogFails === undefined ? true : _this.options.consoleLogFails;
     _this.options.injections = _this.options.injections || {};
-    _this.options.warnOnDetailOverwrite = _this.options.warnOnDetailOverwrite === undefined ? true : _this.options.warnOnDetailOverwrite;
+    _this.options.warnOnDetailOverwrite = _this.options.warnOnDetailOverwrite === undefined ? false : _this.options.warnOnDetailOverwrite;
 
     _this.threads = new _hasharray2.default('id');
 

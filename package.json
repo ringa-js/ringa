@@ -1,6 +1,6 @@
 {
   "name": "ringa",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Ringa is a highly extensible ES6 MVC-inspired library designed to help you build scalable and highly debuggable applications.",
   "main": "./dist/ringa.js",
   "directories": {

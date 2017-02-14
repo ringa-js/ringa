@@ -440,7 +440,7 @@ class RingaEvent extends RingaObject {
    * @returns {string}
    */
   toString() {
-    return `RingaEvent [ '${this.type}' caught by ${this._controllers ? this._controllers.toString() : 'nothing yet.'} ] `;
+    return `RingaEvent['${this.type}' caught by ${this._controllers ? this._controllers.toString() : 'nothing yet.'} ] `;
   }
 
   /**
