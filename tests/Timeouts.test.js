@@ -46,7 +46,7 @@ describe('Timeouts', () => {
 
     setTimeout(() => {
       expect(event._threadTimedOut).toEqual(false);
-      expect(event.detail.$lastEvent._threadTimedOut).toEqual(true);
+      expect(event.lastEvent._threadTimedOut).toEqual(true);
 
       done();
     }, 100);

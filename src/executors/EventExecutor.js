@@ -57,7 +57,7 @@ class EventExecutor extends ExecutorAbstract {
 
     let domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
 
-    this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
+    this.ringaEvent.lastEvent = this.dispatchedRingaEvent;
 
     this.dispatchedRingaEvent.dispatch(domNode);
 

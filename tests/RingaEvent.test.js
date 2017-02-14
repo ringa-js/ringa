@@ -128,4 +128,22 @@ describe('RingaEvent', () => {
       done();
     });
   }, 50);
+
+  //------------------------------------------------
+  // Should allow a debug property to be set and keep
+  // track of Ringa debugging information
+  //
+  // https://github.com/jung-digital/ringa/issues/78
+  //------------------------------------------------
+  it('Should have a debug property', (done) => {
+    controller.addListener('event', () => {});
+
+    dispatch('event', {
+      // This should override the one on the controller
+      someInjection: 'whatever'
+    }, domNode).addDoneListener((someInjection) => {
+      expect(someInjection).toEqual('whatever');
+      done();
+    });
+  }, 50);
 });

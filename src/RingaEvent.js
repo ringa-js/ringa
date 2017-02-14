@@ -124,6 +124,43 @@ class RingaEvent extends RingaObject {
     }, []);
   }
 
+  /**
+   * When debug is true (or a number) this outputs verbose information about the event that was dispatched both
+   * to the console AND to detail.$debug Object.
+   *
+   * @returns {{}|*|boolean}
+   */
+  get debug() {
+    return this.detail && this.detail.debug;
+  }
+
+  /**
+   * Sets the last promise result of this particular event.
+   *
+   * @param value
+   */
+  set lastPromiseResult(value) {
+    this._lastPromiseResult = value;
+  }
+
+  /**
+   * Gets the last promise result of this event. If this event triggered another event, then returns that events
+   * lastPromiseResult. Hence this method is recursive.
+   *
+   * @returns {*} A Promise result.
+   */
+  get lastPromiseResult() {
+    if (this._lastPromiseResult) {
+      return this._lastPromiseResult;
+    }
+
+    if (this.lastEvent) {
+      return this.lastEvent.lastPromiseResult;
+    }
+
+    return undefined;
+  }
+
   //-----------------------------------
   // Methods
   //-----------------------------------
@@ -164,22 +201,24 @@ class RingaEvent extends RingaObject {
     this.dispatched = true;
 
     // TODO this should be in dispatch not _dispatch
-    if (__DEV__) {
+    if (__DEV__ || this.detail.debug) {
       setTimeout(() => {
         if (!this.caught) {
-          console.warn('RingaEvent::dispatch(): the RingaEvent \'' + this.type + '\' was never caught! Did you dispatch on the proper DOM node?');
+          console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
         }
       }, 0);
 
       this.dispatchStack = ErrorStackParser.parse(new Error());
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
-      if (this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
+      if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
         this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
       }
     } else {
       this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
     }
+
+    this.addDebug(`Dispatching on ${bus} ${this.customEvent ? 'as custom event.' : 'as RingaEvent.'} (${this.bubbles ? 'bubbling' : 'does not bubble'})`);
 
     bus.dispatchEvent(this.customEvent ? this.customEvent : this);
   }
@@ -197,6 +236,8 @@ class RingaEvent extends RingaObject {
 
     this.__caught = true;
     this.catchers.push(controller);
+
+    this.addDebug(`Caught by ${controller}`);
   }
 
   /**
@@ -213,6 +254,8 @@ class RingaEvent extends RingaObject {
     }
 
     this._catchers.push(this.catchers.splice(ix, 1)[0]);
+
+    this.addDebug(`Uncaught by ${controller}`);
   }
 
   /**
@@ -238,6 +281,8 @@ class RingaEvent extends RingaObject {
     if (killed) {
       this._uncatch(controller);
     }
+
+    this.addDebug('Fail');
 
     this._dispatchEvent(RingaEvent.FAIL, undefined, error);
   }
@@ -267,6 +312,8 @@ class RingaEvent extends RingaObject {
     }
 
     this._uncatch(controller);
+
+    this.addDebug('Done');
 
     // TODO add unit tests for multiple handling controllers and make sure all possible combinations work (e.g. like
     // one controller fails and another succeeds.
@@ -393,7 +440,37 @@ class RingaEvent extends RingaObject {
    * @returns {string}
    */
   toString() {
-    return `RingaEvent [ '${this.type}' caught by ${this.controller ? this.controller.toString() : ''} ] `;
+    return `RingaEvent [ '${this.type}' caught by ${this._controllers ? this._controllers.toString() : 'nothing yet.'} ] `;
+  }
+
+  /**
+   * Add a debugging message to this RingaEvent for when a user sets RingaEvent::detail.debug to true OR
+   * a numeric level value.
+   *
+   * @param message The message to output.
+   * @param level The numeric level of the message. Default is 0.
+   */
+  addDebug(message, level = 0) {
+    if (this.debug === undefined) {
+      return;
+    }
+
+    if (typeof this.debug === 'number') {
+      if (level <= this.debug) {
+        return;
+      }
+    }
+
+    let obj = {
+      timestamp: new Date(),
+      stack: ErrorStackParser.parse(new Error()),
+      message: message
+    };
+
+    console.log(`[RingaEvent '${this.type}' Debug] ${message}`, obj);
+
+    this.detail.$debug = this.detail.$debug || [];
+    this.detail.$debug.push(message);
   }
 }
 

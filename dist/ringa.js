@@ -380,6 +380,8 @@ var RingaObject = function () {
     //-----------------------------------
     value: function destroy() {
       delete ids[this.id];
+
+      return this;
     }
   }, {
     key: 'toString',
@@ -389,8 +391,12 @@ var RingaObject = function () {
   }, {
     key: 'id',
     set: function set(value) {
+      if (typeof value !== 'string') {
+        throw new Error('RingaObject::id: must be a string! Was ' + JSON.stringify(value));
+      }
+
       if (ids.map[value]) {
-        console.warn('Duplicate Ringa id discovered: \'' + value + '\' for \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
+        console.warn('Duplicate Ringa id discovered: ' + JSON.stringify(value) + ' for \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
       }
 
       ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.
@@ -658,7 +664,7 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
       $controller: executor.controller,
       $thread: executor.thread,
       $ringaEvent: ringaEvent,
-      $lastEvent: ringaEvent.detail.$lastEvent,
+      $lastEvent: ringaEvent.lastEvent,
       $customEvent: ringaEvent.customEvent,
       $target: ringaEvent.target,
       $detail: ringaEvent.detail,
@@ -683,7 +689,7 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
 
     injections = Object.assign(injections, {
       $ringaEvent: ringaEvent,
-      $lastEvent: ringaEvent.detail.$lastEvent,
+      $lastEvent: ringaEvent.lastEvent,
       $customEvent: ringaEvent.customEvent,
       $target: ringaEvent.target,
       $detail: ringaEvent.detail,
@@ -888,19 +894,21 @@ var RingaEvent = function (_RingaObject) {
       if (true) {
         setTimeout(function () {
           if (!_this2.caught) {
-            console.warn('RingaEvent::dispatch(): the RingaEvent \'' + _this2.type + '\' was never caught! Did you dispatch on the proper DOM node?');
+            console.warn('RingaEvent::dispatch(): the RingaEvent \'' + _this2.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
           }
         }, 0);
 
         this.dispatchStack = _errorStackParser2.default.parse(new Error());
         this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
-        if (this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
+        if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
           this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
         }
       } else {
         this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
       }
+
+      this.addDebug('Dispatching on ' + bus + ' ' + (this.customEvent ? 'as custom event.' : 'as RingaEvent.') + ' (' + (this.bubbles ? 'bubbling' : 'does not bubble') + ')');
 
       bus.dispatchEvent(this.customEvent ? this.customEvent : this);
     }
@@ -921,6 +929,8 @@ var RingaEvent = function (_RingaObject) {
 
       this.__caught = true;
       this.catchers.push(controller);
+
+      this.addDebug('Caught by ' + controller);
     }
 
     /**
@@ -940,6 +950,8 @@ var RingaEvent = function (_RingaObject) {
       }
 
       this._catchers.push(this.catchers.splice(ix, 1)[0]);
+
+      this.addDebug('Uncaught by ' + controller);
     }
 
     /**
@@ -971,6 +983,8 @@ var RingaEvent = function (_RingaObject) {
       if (killed) {
         this._uncatch(controller);
       }
+
+      this.addDebug('Fail');
 
       this._dispatchEvent(RingaEvent.FAIL, undefined, error);
     }
@@ -1006,6 +1020,8 @@ var RingaEvent = function (_RingaObject) {
       }
 
       this._uncatch(controller);
+
+      this.addDebug('Done');
 
       // TODO add unit tests for multiple handling controllers and make sure all possible combinations work (e.g. like
       // one controller fails and another succeeds.
@@ -1158,7 +1174,42 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'toString',
     value: function toString() {
-      return 'RingaEvent [ \'' + this.type + '\' caught by ' + (this.controller ? this.controller.toString() : '') + ' ] ';
+      return 'RingaEvent [ \'' + this.type + '\' caught by ' + (this._controllers ? this._controllers.toString() : 'nothing yet.') + ' ] ';
+    }
+
+    /**
+     * Add a debugging message to this RingaEvent for when a user sets RingaEvent::detail.debug to true OR
+     * a numeric level value.
+     *
+     * @param message The message to output.
+     * @param level The numeric level of the message. Default is 0.
+     */
+
+  }, {
+    key: 'addDebug',
+    value: function addDebug(message) {
+      var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+      if (this.debug === undefined) {
+        return;
+      }
+
+      if (typeof this.debug === 'number') {
+        if (level <= this.debug) {
+          return;
+        }
+      }
+
+      var obj = {
+        timestamp: new Date(),
+        stack: _errorStackParser2.default.parse(new Error()),
+        message: message
+      };
+
+      console.log('[RingaEvent \'' + this.type + '\' Debug] ' + message, obj);
+
+      this.detail.$debug = this.detail.$debug || [];
+      this.detail.$debug.push(message);
     }
   }, {
     key: 'type',
@@ -1219,6 +1270,50 @@ var RingaEvent = function (_RingaObject) {
         a = a.concat();
       }, []);
     }
+
+    /**
+     * When debug is true (or a number) this outputs verbose information about the event that was dispatched both
+     * to the console AND to detail.$debug Object.
+     *
+     * @returns {{}|*|boolean}
+     */
+
+  }, {
+    key: 'debug',
+    get: function get() {
+      return this.detail && this.detail.debug;
+    }
+
+    /**
+     * Sets the last promise result of this particular event.
+     *
+     * @param value
+     */
+
+  }, {
+    key: 'lastPromiseResult',
+    set: function set(value) {
+      this._lastPromiseResult = value;
+    }
+
+    /**
+     * Gets the last promise result of this event. If this event triggered another event, then returns that events
+     * lastPromiseResult. Hence this method is recursive.
+     *
+     * @returns {*} A Promise result.
+     */
+    ,
+    get: function get() {
+      if (this._lastPromiseResult) {
+        return this._lastPromiseResult;
+      }
+
+      if (this.lastEvent) {
+        return this.lastEvent.lastPromiseResult;
+      }
+
+      return undefined;
+    }
   }]);
 
   return RingaEvent;
@@ -1261,12 +1356,12 @@ var Model = function (_RingaObject) {
   function Model(name, values) {
     _classCallCheck(this, Model);
 
-    if (typeof name !== 'string') {
+    if (typeof name !== 'string' && values === undefined) {
       values = name;
       name = undefined;
     }
 
-    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values));
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name));
 
     _this._values = values;
     _this._modelInjectors = [];
@@ -5117,6 +5212,8 @@ var Thread = function (_RingaHashArray) {
       var executor = this.all[this.index];
 
       try {
+        this.ringaEvent.addDebug('Executing: ' + executor);
+
         executor._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
       } catch (error) {
         this._executorFailHandler(error);
@@ -5135,11 +5232,15 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: '_executorDoneHandler',
     value: function _executorDoneHandler() {
+      var executor = void 0;
+
       if (!this.all[this.index]) {
         this._finCouldNotFindError();
       } else {
-        this.all[this.index].destroy();
+        executor = this.all[this.index].destroy();
       }
+
+      this.ringaEvent.addDebug('Done: ' + executor);
 
       this.index++;
 
@@ -5156,11 +5257,15 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: '_executorFailHandler',
     value: function _executorFailHandler(error, kill) {
+      var executor = void 0;
+
       if (!this.all[this.index]) {
-        this._finCouldNotFindError();
+        this._finCouldNotFindError(error);
       } else {
-        this.all[this.index].destroy();
+        executor = this.all[this.index].destroy();
       }
+
+      this.ringaEvent.addDebug('Fail: ' + executor);
 
       this.error = error;
 
@@ -5176,12 +5281,12 @@ var Thread = function (_RingaHashArray) {
     }
   }, {
     key: '_finCouldNotFindError',
-    value: function _finCouldNotFindError() {
+    value: function _finCouldNotFindError(error) {
       var e = this.all && this.all.length ? this.all.map(function (e) {
         return e.toString();
       }).join(', ') : 'No executors found on thread ' + this.toString();
 
-      console.error('Thread: could not find executor to destroy it! This could be caused by an internal Ringa error or an error in an executor. All information below:\n' + ('\t- Executor Index: ' + this.index + '\n') + ('\t- All Executors: ' + e + '\n') + '\t- Executor Failure that triggered this was:\n' + (error.stack ? '\t' + error.stack + '\n' : '' + error) + '\t- Failure Dispatch Stack Trace:\n' + ('\t' + new Error().stack));
+      console.error('Thread: could not find executor to destroy it! This could be caused by an internal Ringa error or an error in an executor. All information below:\n' + ('\t- Executor Index: ' + this.index + '\n') + ('\t- All Executors: ' + e + '\n') + (error ? '\t- Executor Failure that triggered this was:\n' + (error.stack ? '\t' + error.stack + '\n' : '' + error) : '') + '\t- Failure Dispatch Stack Trace:\n' + ('\t' + new Error().stack));
     }
   }, {
     key: 'controller',
@@ -5278,7 +5383,7 @@ var EventExecutor = function (_ExecutorAbstract) {
 
       var domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
 
-      this.ringaEvent.detail.$lastEvent = this.dispatchedRingaEvent;
+      this.ringaEvent.lastEvent = this.dispatchedRingaEvent;
 
       this.dispatchedRingaEvent.dispatch(domNode);
 

@@ -60,6 +60,8 @@ class Thread extends RingaHashArray {
     let executor = this.all[this.index];
 
     try {
+      this.ringaEvent.addDebug(`Executing: ${executor}`);
+
       executor._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
     } catch (error) {
       this._executorFailHandler(error);
@@ -74,11 +76,15 @@ class Thread extends RingaHashArray {
   // Events
   //-----------------------------------
   _executorDoneHandler() {
+    let executor;
+
     if (!this.all[this.index]) {
       this._finCouldNotFindError();
     } else {
-      this.all[this.index].destroy();
+      executor = this.all[this.index].destroy();
     }
+
+    this.ringaEvent.addDebug(`Done: ${executor}`);
 
     this.index++;
 
@@ -94,11 +100,15 @@ class Thread extends RingaHashArray {
   }
 
   _executorFailHandler(error, kill) {
+    let executor;
+
     if (!this.all[this.index]) {
-      this._finCouldNotFindError();
+      this._finCouldNotFindError(error);
     } else {
-      this.all[this.index].destroy();
+      executor = this.all[this.index].destroy();
     }
+
+    this.ringaEvent.addDebug(`Fail: ${executor}`);
 
     this.error = error;
 
@@ -113,7 +123,7 @@ class Thread extends RingaHashArray {
     }
   }
 
-  _finCouldNotFindError() {
+  _finCouldNotFindError(error) {
     let e = (this.all && this.all.length) ? this.all.map(e => {
         return e.toString();
       }).join(', ') : `No executors found on thread ${this.toString()}`;
@@ -121,8 +131,8 @@ class Thread extends RingaHashArray {
     console.error(`Thread: could not find executor to destroy it! This could be caused by an internal Ringa error or an error in an executor. All information below:\n` +
       `\t- Executor Index: ${this.index}\n` +
       `\t- All Executors: ${e}\n` +
-      `\t- Executor Failure that triggered this was:\n` +
-      (error.stack ? `\t${error.stack}\n` : `${error}`) +
+      (error ? `\t- Executor Failure that triggered this was:\n` +
+      (error.stack ? `\t${error.stack}\n` : `${error}`) : '') +
       `\t- Failure Dispatch Stack Trace:\n` +
       `\t${new Error().stack}`);
   }
