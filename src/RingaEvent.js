@@ -2,6 +2,8 @@ import RingaObject from './RingaObject';
 import ErrorStackParser from 'error-stack-parser';
 import {ringaEventToDebugString} from './util/debug';
 import {isDOMNode} from './util/type';
+import {getArgNames} from './util/function';
+import {buildArgumentsFromRingaEvent} from './util/executors';
 
 let eventIx = 0;
 
@@ -109,7 +111,7 @@ class RingaEvent extends RingaObject {
    * @private
    */
   get _controllers() {
-    return [].concat(this._catchers, this.catchers);
+    return this._catchers.concat(this.catchers);
   }
 
   /**
@@ -201,7 +203,7 @@ class RingaEvent extends RingaObject {
    */
   _uncatch(controller) {
     let ix = this.catchers.indexOf(controller);
-    this._catchers.push(this.catchers.splice(ix, 1));
+    this._catchers.push(this.catchers.splice(ix, 1)[0]);
   }
 
   /**
@@ -319,7 +321,11 @@ class RingaEvent extends RingaObject {
    */
   addDoneListener(handler) {
     // TODO add unit tests for multiple controllers handling a thread
-    return this.addListener(RingaEvent.DONE, handler);
+    return this.addListener(RingaEvent.DONE, () => {
+      let argNames = getArgNames(handler);
+      let args = buildArgumentsFromRingaEvent(undefined, argNames, this);
+      handler.apply(undefined, args);
+    });
   }
 
   /**
@@ -343,12 +349,9 @@ class RingaEvent extends RingaObject {
    */
   then(resolve, reject) {
     if (resolve) {
-      if (!reject) {
-        this.addFailListener(resolve.bind(undefined, undefined));
-      }
-
       this.addDoneListener(resolve);
     }
+
     if (reject) this.addFailListener(reject);
   }
 
