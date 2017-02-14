@@ -61,7 +61,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
         $controller: executor.controller,
         $thread: executor.thread,
         $ringaEvent: ringaEvent,
-        $lastEvent: ringaEvent.detail.$lastEvent,
+        $lastEvent: ringaEvent.lastEvent,
         $customEvent: ringaEvent.customEvent,
         $target: ringaEvent.target,
         $detail: ringaEvent.detail,
@@ -86,7 +86,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
 
     injections = Object.assign(injections, {
       $ringaEvent: ringaEvent,
-      $lastEvent: ringaEvent.detail.$lastEvent,
+      $lastEvent: ringaEvent.lastEvent,
       $customEvent: ringaEvent.customEvent,
       $target: ringaEvent.target,
       $detail: ringaEvent.detail,

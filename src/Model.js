@@ -2,12 +2,12 @@ import RingaObject from './RingaObject';
 
 class Model extends RingaObject {
   constructor(name, values) {
-    if (typeof name !== 'string') {
+    if (typeof name !== 'string' && values === undefined) {
       values = name;
       name = undefined;
     }
 
-    super(name, values);
+    super(name);
 
     this._values = values;
     this._modelInjectors = [];

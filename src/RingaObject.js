@@ -30,8 +30,12 @@ export default class RingaObject {
   // Properties
   //-----------------------------------
   set id(value) {
+    if (typeof value !== 'string') {
+      throw new Error(`RingaObject::id: must be a string! Was ${JSON.stringify(value)}`);
+    }
+
     if (ids.map[value]) {
-      console.warn(`Duplicate Ringa id discovered: '${value}' for '${this.constructor.name}'. Call RingaObject::destroy() to clear up the id.`);
+      console.warn(`Duplicate Ringa id discovered: ${JSON.stringify(value)} for '${this.constructor.name}'. Call RingaObject::destroy() to clear up the id.`);
     }
 
     ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.
@@ -52,6 +56,8 @@ export default class RingaObject {
   //-----------------------------------
   destroy() {
     delete ids[this.id];
+
+    return this;
   }
 
   toString(value) {

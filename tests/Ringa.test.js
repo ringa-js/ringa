@@ -16,7 +16,7 @@ describe('Core', () => {
   //-----------------------------------
   it('Should warn on duplicate id!', (done) => {
     console.warn = (value) => {
-      expect(value).toEqual('Duplicate Ringa id discovered: \'testId\' for \'RingaObject\'. Call RingaObject::destroy() to clear up the id.');
+      expect(value).toEqual(`Duplicate Ringa id discovered: \"testId\" for \'RingaObject\'. Call RingaObject::destroy() to clear up the id.`);
       done();
     };
 
