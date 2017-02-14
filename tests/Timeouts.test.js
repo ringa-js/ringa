@@ -38,7 +38,7 @@ describe('Timeouts', () => {
     controller2.options.timeout = 50;
 
     controller2.addListener('TestEvent2', (done) => {
-      // Passing done should force a timeout.
+      // Expecting done should force a timeout.
     });
     controller.addListener('TestEvent', 'TestEvent2');
 

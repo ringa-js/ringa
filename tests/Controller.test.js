@@ -376,7 +376,7 @@ describe('Controller', () => {
 
     controller.addListener(TestController.TEST_EVENT_TYPES, [() => {}]);
 
-    Ringa.dispatch(TestController.TEST_EVENT_TYPES, undefined, domNode).then(_ => done());
+    Ringa.dispatch(TestController.TEST_EVENT_TYPES, undefined, domNode).then(() => done());
   });
 
   it('should auto-add event types as snake case properties', () => {

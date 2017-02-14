@@ -2,6 +2,8 @@ import RingaObject from './RingaObject';
 import ErrorStackParser from 'error-stack-parser';
 import {ringaEventToDebugString} from './util/debug';
 import {isDOMNode} from './util/type';
+import {getArgNames} from './util/function';
+import {buildArgumentsFromRingaEvent} from './util/executors';
 
 let eventIx = 0;
 
@@ -109,7 +111,7 @@ class RingaEvent extends RingaObject {
    * @private
    */
   get _controllers() {
-    return [].concat(this._catchers, this.catchers);
+    return this._catchers.concat(this.catchers);
   }
 
   /**
@@ -189,6 +191,10 @@ class RingaEvent extends RingaObject {
    * @private
    */
   _caught(controller) {
+    if (__DEV__ && !controller) {
+      throw new Error('RingaEvent::_caught(): controller was not defined!');
+    }
+
     this.__caught = true;
     this.catchers.push(controller);
   }
@@ -201,7 +207,12 @@ class RingaEvent extends RingaObject {
    */
   _uncatch(controller) {
     let ix = this.catchers.indexOf(controller);
-    this._catchers.push(this.catchers.splice(ix, 1));
+
+    if (__DEV__ && ix === -1) {
+      throw new Error('RingaEvent::_uncatch(): controller that is uncatching could not be found. Was done called twice?');
+    }
+
+    this._catchers.push(this.catchers.splice(ix, 1)[0]);
   }
 
   /**
@@ -223,12 +234,12 @@ class RingaEvent extends RingaObject {
    * @param error Most likely an Error object but could be a string or anything a user manually passed.
    * @private
    */
-  _fail(controller, error) {
-    this._uncatch(controller);
-
-    if (this.catchers.length === 0) {
-      this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+  _fail(controller, error, killed) {
+    if (killed) {
+      this._uncatch(controller);
     }
+
+    this._dispatchEvent(RingaEvent.FAIL, undefined, error);
   }
 
   /**
@@ -251,6 +262,10 @@ class RingaEvent extends RingaObject {
    * @private
    */
   _done(controller) {
+    if (__DEV__ && !controller) {
+      throw new Error('RingaEvent::_done(): controller is not defined!');
+    }
+
     this._uncatch(controller);
 
     // TODO add unit tests for multiple handling controllers and make sure all possible combinations work (e.g. like
@@ -319,7 +334,11 @@ class RingaEvent extends RingaObject {
    */
   addDoneListener(handler) {
     // TODO add unit tests for multiple controllers handling a thread
-    return this.addListener(RingaEvent.DONE, handler);
+    return this.addListener(RingaEvent.DONE, () => {
+      let argNames = getArgNames(handler);
+      let args = buildArgumentsFromRingaEvent(undefined, argNames, this);
+      handler.apply(undefined, args);
+    });
   }
 
   /**
@@ -343,12 +362,9 @@ class RingaEvent extends RingaObject {
    */
   then(resolve, reject) {
     if (resolve) {
-      if (!reject) {
-        this.addFailListener(resolve.bind(undefined, undefined));
-      }
-
       this.addDoneListener(resolve);
     }
+
     if (reject) this.addFailListener(reject);
   }
 
