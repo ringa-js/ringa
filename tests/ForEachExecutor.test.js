@@ -44,7 +44,7 @@ describe('ForEachExecutor', () => {
       expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
       done();
     });
-  }, 50);
+  }, 250);
 
   //---------------------------------------------------------------------------------------
   // forEach: Iterates over an array calling the executor for each (sequential check)
@@ -83,7 +83,7 @@ describe('ForEachExecutor', () => {
       expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
       done();
     });
-  }, 50);
+  }, 250);
 
   //---------------------------------------------------------------------------------------
   // forEachParallel: Iterates over an array calling the executor for each (parallel check)
@@ -104,5 +104,5 @@ describe('ForEachExecutor', () => {
       expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
       done();
     });
-  }, 50);
+  }, 250);
 });

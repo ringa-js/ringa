@@ -3614,9 +3614,15 @@ var IifExecutor = function (_ExecutorAbstract) {
       var argNames = (0, _function.getArgNames)(this.condition);
       var args = (0, _executors.buildArgumentsFromRingaEvent)(this, argNames, this.ringaEvent);
       var conditionResult = this.condition.apply(this, args);
-      var executorFactory = (0, _type.wrapIfNotInstance)(!!conditionResult ? this.trueExecutor : this.falseExecutor, _ExecutorFactory2.default);
+      var executor = !!conditionResult ? this.trueExecutor : this.falseExecutor;
 
-      executorFactory.build(this.thread)._execute(this.done, this.fail);
+      if (executor) {
+        var executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
+
+        executorFactory.build(this.thread)._execute(this.done, this.fail);
+      } else {
+        this.done();
+      }
     }
   }, {
     key: 'toString',
