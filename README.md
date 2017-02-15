@@ -37,63 +37,64 @@ The following example illustrates a few of the important features available in R
 * Model watching
 * Injection
 
+```
+import {Controller, Model, dispatch, while} from 'ringa';
 
-    import {Controller, Model, dispatch, while} from 'ringa';
+class CountModel extends Model {
+  constructor() {
+    this.addProperty('count', 0);
+  }
+}
 
-    class CountModel extends Model {
-      constructor() {
-        this.addProperty('count', 0);
-      }
-    }
-    
-    class BlastoffController extends Controller {
-      constructor() {
-        // Attach to document
-        super('Blastoff Controller', document);
+class BlastoffController extends Controller {
+  constructor() {
+    // Attach to document
+    super('Blastoff Controller', document);
 
-        // Add a model, accessible and injectable by its name which by default is a camelcase of its Class name
-        this.addModel(new CountModel()); 
+    // Add a model, accessible and injectable by its name which by default is a camelcase of its Class name
+    this.addModel(new CountModel()); 
 
-        // 1) inject 'countModel'
-        // 2) inject 'millis' by name from the dispatched events detail object
-        // 3) provide a 'done' and 'fail' callback (function could also return a Promise)
-        const decrement = (countModel, millis, done) => {
-          setTimeout(() => {
-            countModel.count--;
+    // 1) inject 'countModel'
+    // 2) inject 'millis' by name from the dispatched events detail object
+    // 3) provide a 'done' and 'fail' callback (function could also return a Promise)
+    const decrement = (countModel, millis, done) => {
+      setTimeout(() => {
+        countModel.count--;
 
-            done();
-          }, millis);
-        };
+        done();
+      }, millis);
+    };
 
-        // Creates BlastoffController.RUN_COUNTDOWN
-        this.addListener('runCountdown', [
-          (countModel, startMessage, total) => {
-            console.log(startMessage);
+    // Creates BlastoffController.RUN_COUNTDOWN
+    this.addListener('runCountdown', [
+      (countModel, startMessage, total) => {
+        console.log(startMessage);
 
-            countModel.count = total;
-          },
-          while(countModel => countModel.count > 0, decrement),
-          (finalMessage) => {
-            console.log(finalMessage);
-          },
-        ]);
-      }
-    }
-    
-    let controller = new BlastoffController();
+        countModel.count = total;
+      },
+      while(countModel => countModel.count > 0, decrement),
+      (finalMessage) => {
+        console.log(finalMessage);
+      },
+    ]);
+  }
+}
 
-    // Watch our model and wait for the notification event 'count'
-    controller.watch('myModel', 'count', count => {
-      console.log(count); // 5, 4, 3, 2, 1, 0...
-    });
+let controller = new BlastoffController();
 
-    // Kick everything off with a single event!
-    dispatch(BlastoffController.RUN_COUNTDOWN, {
-      startMessage: 'Starting Countdown...',
-      finalMessage: 'Blastoff!',
-      total: 5
-      millis: 1000
-    }, document);
+// Watch our model and wait for the notification event 'count'
+controller.watch('myModel', 'count', count => {
+  console.log(count); // 5, 4, 3, 2, 1, 0...
+});
+
+// Kick everything off with a single event!
+dispatch(BlastoffController.RUN_COUNTDOWN, {
+  startMessage: 'Starting Countdown...',
+  finalMessage: 'Blastoff!',
+  total: 5
+  millis: 1000
+}, document);
+```
 
 **Output**
 
