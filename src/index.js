@@ -10,6 +10,7 @@ import Model from './Model';
 import ModelWatcher from './ModelWatcher';
 import Bus, {busses} from './Bus';
 import IifExecutor from './executors/IifExecutor';
+import ForEachExecutor from './executors/ForEachExecutor';
 import IntervalExecutor from './executors/IntervalExecutor';
 import {isDOMNode} from './util/type';
 
@@ -22,6 +23,14 @@ export function dispatch (eventType, detail, bus = document) {
     detail = undefined;
   }
   return new RingaEvent(eventType, detail).dispatch(bus);
+}
+
+export function forEach(arrayProperty, property, executor) {
+  return new ExecutorFactory(ForEachExecutor, { arrayProperty, property, executor });
+}
+
+export function forEachParallel(arrayProperty, property, executor) {
+  return new ExecutorFactory(ForEachExecutor, { arrayProperty, property, executor, sequential: false });
 }
 
 export function iif (condition, trueExecutor, falseExecutor) {
@@ -71,6 +80,8 @@ export default {
   RingaObject,
   dispatch,
   iif,
+  forEach,
+  forEachParallel,
   interval,
   spawn,
   event,

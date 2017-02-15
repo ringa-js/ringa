@@ -27,7 +27,6 @@ class IifExecutor extends ExecutorAbstract {
   //-----------------------------------
   // Methods
   //-----------------------------------
-
   /**
    * Internal execution method called by Thread only.
    *
