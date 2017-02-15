@@ -1,3 +1,80 @@
+export const getInjections = function(ringaEvent, executor = undefined) {
+  let mergeControllerInjections = function(injections, controller) {
+    // Merge controller.options.injections into our injector
+    let i = controller.options.injections;
+    for (let key in i) {
+      let _i = i[key];
+      if (typeof i[key] === 'function') {
+        _i = i[key]();
+      }
+
+      injections[key] = _i;
+    }
+  }
+
+  let injections;
+
+  // In the RingaEvent.then() resolve callback, we don't have a currently running executor so we have to
+  // check for that here and then pass undefined if we don't have one.
+  if (executor) {
+    injections = executor._injections = executor._injections || {
+        $controller: executor.controller,
+        $thread: executor.thread,
+        $ringaEvent: ringaEvent,
+        $lastEvent: ringaEvent.lastEvent,
+        $customEvent: ringaEvent.customEvent,
+        $target: ringaEvent.target,
+        $detail: ringaEvent.detail,
+        done: executor.done,
+        fail: executor.fail,
+        $lastPromiseResult: ringaEvent.lastPromiseResult,
+        $lastPromiseError: ringaEvent.lastPromiseError
+      };
+
+    // Merge only injections for the controller that is the current context for the executor.
+    mergeControllerInjections(injections, executor.controller);
+  } else {
+    injections = {};
+
+    // We loop through all the controllers that caught and handled the event and combine all of their injections
+    // together... this probably needs to be thought through some more, but it will work for 99% of cases.
+    // Note that this means the if Controllers A and B both handled the event in order (A, B) and they both
+    // have an injection named 'model', then only the 'model' injection from A will be available.
+    ringaEvent._controllers.forEach(controller => {
+      mergeControllerInjections(injections, controller);
+    });
+
+    injections = Object.assign(injections, {
+      $ringaEvent: ringaEvent,
+      $lastEvent: ringaEvent.lastEvent,
+      $customEvent: ringaEvent.customEvent,
+      $target: ringaEvent.target,
+      $detail: ringaEvent.detail,
+      $lastPromiseResult: ringaEvent.lastPromiseResult,
+      $lastPromiseError: ringaEvent.lastPromiseError
+    });
+  }
+
+  let re = ringaEvent;
+  let events = [];
+
+  while (re) {
+    events.push(re);
+    re = re.lastEvent;
+  }
+
+  // TODO write units tests to verify this is working okay.
+  events.reverse().forEach(event => {
+    if (event.detail) {
+      for (let key in event.detail) {
+        injections[key] = event.detail[key];
+      }
+    }
+  });
+
+  return injections;
+}
+
 /**
  * This method is used for injecting RingaEvent.detail properties into a function owned by a Executor. It uses the data
  * gathered from introspecting a provided function to determine a set of arguments to
@@ -39,66 +116,10 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
     throw Error('buildArgumentsFromRingaEvent(): An internal error has occurred in that expectedArguments is not an Array!');
   }
 
-  let mergeControllerInjections = function(injections, controller) {
-    // Merge controller.options.injections into our injector
-    let i = controller.options.injections;
-    for (let key in i) {
-      let _i = i[key];
-      if (typeof i[key] === 'function') {
-        _i = i[key]();
-      }
-
-      injections[key] = _i;
-    }
-  }
-
-  let injections;
-
-  // In the RingaEvent.then() resolve callback, we don't have a currently running executor so we have to
-  // check for that here and then pass undefined if we don't have one.
-  if (executor) {
-    injections = executor._injections = executor._injections || {
-        $controller: executor.controller,
-        $thread: executor.thread,
-        $ringaEvent: ringaEvent,
-        $lastEvent: ringaEvent.lastEvent,
-        $customEvent: ringaEvent.customEvent,
-        $target: ringaEvent.target,
-        $detail: ringaEvent.detail,
-        done: executor.done,
-        fail: executor.fail,
-        $lastPromiseResult: ringaEvent.lastPromiseResult,
-        $lastPromiseError: ringaEvent.lastPromiseError
-      };
-
-    // Merge only injections for the controller that is the current context for the executor.
-      mergeControllerInjections(injections, executor.controller);
-  } else {
-    injections = {};
-
-    // We loop through all the controllers that caught and handled the event and combine all of their injections
-    // together... this probably needs to be thought through some more, but it will work for 99% of cases.
-    // Note that this means the if Controllers A and B both handled the event in order (A, B) and they both
-    // have an injection named 'model', then only the 'model' injection from A will be available.
-    ringaEvent._controllers.forEach(controller => {
-      mergeControllerInjections(injections, controller);
-    });
-
-    injections = Object.assign(injections, {
-      $ringaEvent: ringaEvent,
-      $lastEvent: ringaEvent.lastEvent,
-      $customEvent: ringaEvent.customEvent,
-      $target: ringaEvent.target,
-      $detail: ringaEvent.detail,
-      $lastPromiseResult: ringaEvent.lastPromiseResult,
-      $lastPromiseError: ringaEvent.lastPromiseError
-    });
-  }
+  let injections = getInjections(ringaEvent, executor);
 
   expectedArguments.forEach((argName) => {
-    if (ringaEvent.detail && ringaEvent.detail.hasOwnProperty(argName)) {
-      args.push(ringaEvent.detail[argName]);
-    } else if (injections.hasOwnProperty(argName)) {
+    if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
     } else {
       let s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';

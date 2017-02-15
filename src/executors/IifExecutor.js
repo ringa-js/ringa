@@ -27,7 +27,6 @@ class IifExecutor extends ExecutorAbstract {
   //-----------------------------------
   // Methods
   //-----------------------------------
-
   /**
    * Internal execution method called by Thread only.
    *
@@ -41,9 +40,15 @@ class IifExecutor extends ExecutorAbstract {
     let argNames = getArgNames(this.condition);
     let args = buildArgumentsFromRingaEvent(this, argNames, this.ringaEvent);
     let conditionResult = this.condition.apply(this, args);
-    let executorFactory = wrapIfNotInstance(!!conditionResult ? this.trueExecutor : this.falseExecutor, ExecutorFactory);
+    let executor = !!conditionResult ? this.trueExecutor : this.falseExecutor;
 
-    executorFactory.build(this.thread)._execute(this.done, this.fail);
+    if (executor) {
+      let executorFactory = wrapIfNotInstance(executor, ExecutorFactory);
+
+      executorFactory.build(this.thread)._execute(this.done, this.fail);
+    } else {
+      this.done();
+    }
   }
 
   toString() {

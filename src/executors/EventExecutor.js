@@ -55,6 +55,13 @@ class EventExecutor extends ExecutorAbstract {
     this.dispatchedRingaEvent.then(this.dispatchedRingaEventDoneHandler.bind(this));
     this.dispatchedRingaEvent.catch(this.dispatchedRingaEventFailHandler.bind(this));
 
+    // If this executor has custom injections, we need to pass those to the event.
+    if (this._injections) {
+      for (let key in this._injections) {
+        this.dispatchedRingaEvent.detail[key] = this._injections[key];
+      }
+    }
+
     let domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
 
     this.ringaEvent.lastEvent = this.dispatchedRingaEvent;
@@ -86,6 +93,15 @@ class EventExecutor extends ExecutorAbstract {
   // Events
   //-----------------------------------
   dispatchedRingaEventDoneHandler() {
+    // TODO write unit tests for this
+    if (this.dispatchedRingaEvent.detail) {
+      for (let key in this.dispatchedRingaEvent.detail) {
+        if (this.ringaEvent.detail[key] === undefined) {
+          this.ringaEvent.detail[key] = this.dispatchedRingaEvent.detail[key];
+        }
+      }
+    }
+
     this.done();
   }
 

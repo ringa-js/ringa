@@ -11,6 +11,7 @@ class Model extends RingaObject {
 
     this._values = values;
     this._modelInjectors = [];
+    this.watchers = [];
   }
 
   addInjector(modelInjector) {
@@ -26,6 +27,14 @@ class Model extends RingaObject {
     this._modelInjectors.forEach(mi => {
       mi.notify(this, propertyPath);
     });
+
+    this.watchers.forEach(handler => {
+      handler(propertyPath);
+    });
+  }
+
+  watch(handler) {
+    this.watchers.push(handler);
   }
 
   /**
