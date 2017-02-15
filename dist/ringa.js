@@ -3413,6 +3413,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+/**
+ * Iterates over an Array found by name via standard injection scope.
+ */
 var ForEachExecutor = function (_ExecutorAbstract) {
   _inherits(ForEachExecutor, _ExecutorAbstract);
 
@@ -3422,11 +3425,11 @@ var ForEachExecutor = function (_ExecutorAbstract) {
   /**
    * Constructor for a new ForEachExecutor.
    *
-   * @param thread The parent thread that owns this executor.
-   * @param arrayProperty The property (found via the available injections) to do a forEach on.
-   * @param property The name property for each element in the loop to add to the event detail for the executor.
-   * @param executor  The executor to run for each item.
-   * @param sequential True if we should wait for each previous executor to run before running the next. Default is true.
+   * @param {Thread} thread The parent thread that owns this executor.
+   * @param {Array} arrayProperty The property (found via the available injections) to do a forEach on.
+   * @param {string} property The name property for each element in the loop to add to the event detail for the executor.
+   * @param {*} executor  The Ringa executor to run for each item.
+   * @param {bool} [sequential = true] True if we should wait for each previous executor to run before running the next.
    */
   function ForEachExecutor(thread, _ref) {
     var arrayProperty = _ref.arrayProperty,
@@ -3453,8 +3456,8 @@ var ForEachExecutor = function (_ExecutorAbstract) {
   /**
    * Internal execution method called by Thread only.
    *
-   * @param doneHandler The handler to call when done() is called.
-   * @param failHandler The handler to call when fail() is called;
+   * @param {function} doneHandler The handler to call when done() is called.
+   * @param {function} failHandler The handler to call when fail() is called;
    * @private
    */
 
