@@ -55,11 +55,22 @@ export const getInjections = function(ringaEvent, executor = undefined) {
     });
   }
 
-  if (ringaEvent.detail) {
-    for (let key in ringaEvent.detail) {
-      injections[key] = ringaEvent.detail[key];
-    }
+  let re = ringaEvent;
+  let events = [];
+
+  while (re) {
+    events.push(re);
+    re = re.lastEvent;
   }
+
+  // TODO write units tests to verify this is working okay.
+  events.reverse().forEach(event => {
+    if (event.detail) {
+      for (let key in event.detail) {
+        injections[key] = event.detail[key];
+      }
+    }
+  });
 
   return injections;
 }

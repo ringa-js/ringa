@@ -686,11 +686,22 @@ var getInjections = exports.getInjections = function getInjections(ringaEvent) {
     });
   }
 
-  if (ringaEvent.detail) {
-    for (var key in ringaEvent.detail) {
-      injections[key] = ringaEvent.detail[key];
-    }
+  var re = ringaEvent;
+  var events = [];
+
+  while (re) {
+    events.push(re);
+    re = re.lastEvent;
   }
+
+  // TODO write units tests to verify this is working okay.
+  events.reverse().forEach(function (event) {
+    if (event.detail) {
+      for (var key in event.detail) {
+        injections[key] = event.detail[key];
+      }
+    }
+  });
 
   return injections;
 };
@@ -5637,6 +5648,15 @@ var EventExecutor = function (_ExecutorAbstract) {
   }, {
     key: 'dispatchedRingaEventDoneHandler',
     value: function dispatchedRingaEventDoneHandler() {
+      // TODO write unit tests for this
+      if (this.dispatchedRingaEvent.detail) {
+        for (var key in this.dispatchedRingaEvent.detail) {
+          if (this.ringaEvent.detail[key] === undefined) {
+            this.ringaEvent.detail[key] = this.dispatchedRingaEvent.detail[key];
+          }
+        }
+      }
+
       this.done();
     }
   }, {

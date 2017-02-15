@@ -93,6 +93,15 @@ class EventExecutor extends ExecutorAbstract {
   // Events
   //-----------------------------------
   dispatchedRingaEventDoneHandler() {
+    // TODO write unit tests for this
+    if (this.dispatchedRingaEvent.detail) {
+      for (let key in this.dispatchedRingaEvent.detail) {
+        if (this.ringaEvent.detail[key] === undefined) {
+          this.ringaEvent.detail[key] = this.dispatchedRingaEvent.detail[key];
+        }
+      }
+    }
+
     this.done();
   }
 
