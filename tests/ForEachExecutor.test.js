@@ -28,81 +28,85 @@ describe('ForEachExecutor', () => {
     __hardReset();
   });
 
-  //----------------------------------------------------------------------
-  // forEach: Iterates over an array calling the executor for each
-  //----------------------------------------------------------------------
-  it('forEach: Iterates over an array calling the executor for each', (done) => {
-    let result = [];
+  describe('forEach', () => {
+    //----------------------------------------------------------------------
+    // forEach: Iterates over an array calling the executor for each
+    //----------------------------------------------------------------------
+    it('Iterates over an array calling the executor for each', (done) => {
+      let result = [];
 
-    controller.addListener('myEvent', forEach('items', 'item', (item) => {
-      result.push(item);
-    }));
+      controller.addListener('myEvent', forEach('items', 'item', (item) => {
+        result.push(item);
+      }));
 
-    Ringa.dispatch('myEvent', {
-      items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    }, domNode).then(() => {
-      expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      done();
-    });
-  }, 250);
+      Ringa.dispatch('myEvent', {
+        items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      }, domNode).then(() => {
+        expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        done();
+      });
+    }, 250);
 
-  //---------------------------------------------------------------------------------------
-  // forEach: Iterates over an array calling the executor for each (sequential check)
-  //---------------------------------------------------------------------------------------
-  it('forEach: Iterates over an array calling the executor for each (sequential check)', (done) => {
-    let result = [];
+    //---------------------------------------------------------------------------------------
+    // forEach: Iterates over an array calling the executor for each (sequential check)
+    //---------------------------------------------------------------------------------------
+    it('Iterates over an array calling the executor for each (sequential check)', (done) => {
+      let result = [];
 
-    controller.addListener('itemEvent', [
-      (item) => {result.push(item);},
-      (item) => {result.push(item);}
-    ]);
+      controller.addListener('itemEvent', [
+        (item) => {result.push(item);},
+        (item) => {result.push(item);}
+      ]);
 
-    controller.addListener('myEvent', forEach('items', 'item', 'itemEvent'));
+      controller.addListener('myEvent', forEach('items', 'item', 'itemEvent'));
 
-    Ringa.dispatch('myEvent', {
-      items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    }, domNode).then(() => {
-      expect(result).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10]);
-      done();
+      Ringa.dispatch('myEvent', {
+        items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      }, domNode).then(() => {
+        expect(result).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10]);
+        done();
+      });
     });
   });
 
-  //----------------------------------------------------------------------
-  // forEachParallel: Iterates over an array calling the executor for each
-  //----------------------------------------------------------------------
-  it('forEachParallel: Iterates over an array calling the executor for each', (done) => {
-    let result = [];
+  describe('forEachParallel', () => {
+    //----------------------------------------------------------------------
+    // Iterates over an array calling the executor for each
+    //----------------------------------------------------------------------
+    it('Iterates over an array calling the executor for each', (done) => {
+      let result = [];
 
-    controller.addListener('myEvent', forEachParallel('items', 'item', (item) => {
-      result.push(item);
-    }));
+      controller.addListener('myEvent', forEachParallel('items', 'item', (item) => {
+        result.push(item);
+      }));
 
-    Ringa.dispatch('myEvent', {
-      items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    }, domNode).then(() => {
-      expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      done();
-    });
-  }, 250);
+      Ringa.dispatch('myEvent', {
+        items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      }, domNode).then(() => {
+        expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        done();
+      });
+    }, 250);
 
-  //---------------------------------------------------------------------------------------
-  // forEachParallel: Iterates over an array calling the executor for each (parallel check)
-  //---------------------------------------------------------------------------------------
-  it('forEachParallel: Iterates over an array calling the executor for each (parallel check)', (done) => {
-    let result = [];
+    //---------------------------------------------------------------------------------------
+    // Iterates over an array calling the executor for each (parallel check)
+    //---------------------------------------------------------------------------------------
+    it('Iterates over an array calling the executor for each (parallel check)', (done) => {
+      let result = [];
 
-    controller.addListener('itemEvent', [
-      (item) => {result.push(item);},
-      (item) => {result.push(item);}
-    ]);
+      controller.addListener('itemEvent', [
+        (item) => {result.push(item);},
+        (item) => {result.push(item);}
+      ]);
 
-    controller.addListener('myEvent', forEachParallel('items', 'item', 'itemEvent'));
+      controller.addListener('myEvent', forEachParallel('items', 'item', 'itemEvent'));
 
-    Ringa.dispatch('myEvent', {
-      items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    }, domNode).then(() => {
-      expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      done();
-    });
-  }, 250);
+      Ringa.dispatch('myEvent', {
+        items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      }, domNode).then(() => {
+        expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        done();
+      });
+    }, 250);
+  });
 });
