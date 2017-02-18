@@ -31,6 +31,8 @@ export const getInjections = function(ringaEvent, executor = undefined) {
         $detail: ringaEvent.detail,
         done: executor.done,
         fail: executor.fail,
+        stop: executor.stop,
+        resume: executor.resume,
         $lastPromiseResult: ringaEvent.lastPromiseResult,
         $lastPromiseError: ringaEvent.lastPromiseError
       };

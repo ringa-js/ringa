@@ -173,6 +173,23 @@ class RingaEvent extends RingaObject {
    * @param bus
    */
   dispatch(bus = document) {
+    if (__DEV__ || this.detail.debug) {
+      setTimeout(() => {
+        if (!this.caught) {
+          console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
+        }
+      }, 50);
+
+      this.dispatchStack = ErrorStackParser.parse(new Error());
+      this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
+
+      if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
+        this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
+      }
+    } else {
+      this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
+    }
+
     setTimeout(this._dispatch.bind(this, bus), 0);
 
     return this;
@@ -199,24 +216,6 @@ class RingaEvent extends RingaObject {
     }
 
     this.dispatched = true;
-
-    // TODO this should be in dispatch not _dispatch
-    if (__DEV__ || this.detail.debug) {
-      setTimeout(() => {
-        if (!this.caught) {
-          console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
-        }
-      }, 0);
-
-      this.dispatchStack = ErrorStackParser.parse(new Error());
-      this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
-
-      if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
-        this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
-      }
-    } else {
-      this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
-    }
 
     this.addDebug(`Dispatching on ${bus} ${this.customEvent ? 'as custom event.' : 'as RingaEvent.'} (${this.bubbles ? 'bubbling' : 'does not bubble'})`);
 
@@ -471,6 +470,20 @@ class RingaEvent extends RingaObject {
 
     this.detail.$debug = this.detail.$debug || [];
     this.detail.$debug.push(message);
+  }
+
+  /**
+   * A simple output of the most relevant features of this RingaEvent. Useful for console display.
+   *
+   * @returns {{type: *, detail: ({}|*), controllers: Array, bubbles: *, dispatchStack: (*|string), fullEvent: RingaEvent}}
+   */
+  debugDisplay() {
+    return {
+      type: this.type,
+      detail: this.detail,
+      controllers: this.catchers,
+      bubbles: this.bubbles
+    };
   }
 }
 

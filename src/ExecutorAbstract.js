@@ -36,6 +36,8 @@ class ExecutorAbstract extends RingaObject {
 
     this.done = this.done.bind(this);
     this.fail = this.fail.bind(this);
+    this.stop = this.stop.bind(this);
+    this.resume = this.resume.bind(this);
   }
 
   //-----------------------------------
@@ -149,6 +151,20 @@ class ExecutorAbstract extends RingaObject {
     this.error = error;
 
     this.failHandler(error, kill);
+  }
+
+  /**
+   * Stops the timeout check.
+   */
+  stop() {
+    this.endTimeoutCheck();
+  }
+
+  /**
+   * Resumes the timeout check.
+   */
+  resume() {
+    this.startTimeoutCheck();
   }
 
   /**

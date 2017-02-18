@@ -43,8 +43,29 @@ export function interval (condition, executor, milliseconds, options) {
   return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds, options });
 }
 
-export function spawn (executor) {
+const debugStyle = 'background: #660000; color: white; font-weight: bold;';
+export function stop ($ringaEvent, stop, done) {
+  stop();
 
+  let funcName = `go${$ringaEvent.id}`;
+
+  console.log(`%cRinga STOP! RingaEvent:`, debugStyle);
+  console.log($ringaEvent.debugDisplay());
+  console.log(`%cDispatched From:`, debugStyle);
+  console.log(`%c${$ringaEvent.dispatchStack.join('\n').toString().replace(/@/g, '\t')}`, debugStyle);
+  console.log(`%c'window.ringaEvent' has been set and is ready for editing.`, debugStyle);
+  console.log(`%cTo resume this stopped event thread, run '${funcName}()' in the console.`, debugStyle);
+
+  if (typeof window !== 'undefined') {
+
+    window.ringaEvent = $ringaEvent;
+    window[funcName] = () => {
+      window.ringaEvent = undefined;
+      window[funcName] = undefined;
+      console.log(`%cResuming Ringa Thread...`, debugStyle);
+      done();
+    };
+  }
 }
 
 export function assign (executor, detail) {
@@ -99,9 +120,8 @@ export default {
   forEach,
   forEachParallel,
   interval,
-  spawn,
   event,
   assign,
   notify,
-  debug
+  stop
 };

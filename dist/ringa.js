@@ -145,6 +145,8 @@ var ExecutorAbstract = function (_RingaObject) {
 
     _this.done = _this.done.bind(_this);
     _this.fail = _this.fail.bind(_this);
+    _this.stop = _this.stop.bind(_this);
+    _this.resume = _this.resume.bind(_this);
     return _this;
   }
 
@@ -266,6 +268,26 @@ var ExecutorAbstract = function (_RingaObject) {
       this.error = error;
 
       this.failHandler(error, kill);
+    }
+
+    /**
+     * Stops the timeout check.
+     */
+
+  }, {
+    key: 'stop',
+    value: function stop() {
+      this.endTimeoutCheck();
+    }
+
+    /**
+     * Resumes the timeout check.
+     */
+
+  }, {
+    key: 'resume',
+    value: function resume() {
+      this.startTimeoutCheck();
     }
 
     /**
@@ -478,6 +500,8 @@ var getInjections = exports.getInjections = function getInjections(ringaEvent) {
       $detail: ringaEvent.detail,
       done: executor.done,
       fail: executor.fail,
+      stop: executor.stop,
+      resume: executor.resume,
       $lastPromiseResult: ringaEvent.lastPromiseResult,
       $lastPromiseError: ringaEvent.lastPromiseError
     };
@@ -921,7 +945,26 @@ var RingaEvent = function (_RingaObject) {
      * @param bus
      */
     value: function dispatch() {
+      var _this2 = this;
+
       var bus = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+
+      if (true) {
+        setTimeout(function () {
+          if (!_this2.caught) {
+            console.warn('RingaEvent::dispatch(): the RingaEvent \'' + _this2.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
+          }
+        }, 50);
+
+        this.dispatchStack = _errorStackParser2.default.parse(new Error());
+        this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
+
+        if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
+          this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
+        }
+      } else {
+        this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
+      }
 
       setTimeout(this._dispatch.bind(this, bus), 0);
 
@@ -939,8 +982,6 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: '_dispatch',
     value: function _dispatch(bus) {
-      var _this2 = this;
-
       if (true && this.dispatched) {
         throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
       }
@@ -954,24 +995,6 @@ var RingaEvent = function (_RingaObject) {
       }
 
       this.dispatched = true;
-
-      // TODO this should be in dispatch not _dispatch
-      if (true) {
-        setTimeout(function () {
-          if (!_this2.caught) {
-            console.warn('RingaEvent::dispatch(): the RingaEvent \'' + _this2.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
-          }
-        }, 0);
-
-        this.dispatchStack = _errorStackParser2.default.parse(new Error());
-        this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
-
-        if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
-          this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
-        }
-      } else {
-        this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
-      }
 
       this.addDebug('Dispatching on ' + bus + ' ' + (this.customEvent ? 'as custom event.' : 'as RingaEvent.') + ' (' + (this.bubbles ? 'bubbling' : 'does not bubble') + ')');
 
@@ -1275,6 +1298,23 @@ var RingaEvent = function (_RingaObject) {
 
       this.detail.$debug = this.detail.$debug || [];
       this.detail.$debug.push(message);
+    }
+
+    /**
+     * A simple output of the most relevant features of this RingaEvent. Useful for console display.
+     *
+     * @returns {{type: *, detail: ({}|*), controllers: Array, bubbles: *, dispatchStack: (*|string), fullEvent: RingaEvent}}
+     */
+
+  }, {
+    key: 'debugDisplay',
+    value: function debugDisplay() {
+      return {
+        type: this.type,
+        detail: this.detail,
+        controllers: this.catchers,
+        bubbles: this.bubbles
+      };
     }
   }, {
     key: 'type',
@@ -6075,7 +6115,7 @@ exports.forEach = forEach;
 exports.forEachParallel = forEachParallel;
 exports.iif = iif;
 exports.interval = interval;
-exports.spawn = spawn;
+exports.stop = stop;
 exports.assign = assign;
 exports.event = event;
 exports.notify = notify;
@@ -6174,7 +6214,30 @@ function interval(condition, executor, milliseconds, options) {
   return new _ExecutorFactory2.default(_IntervalExecutor2.default, { condition: condition, executor: executor, milliseconds: milliseconds, options: options });
 }
 
-function spawn(executor) {}
+var debugStyle = 'background: #660000; color: white; font-weight: bold;';
+function stop($ringaEvent, stop, done) {
+  stop();
+
+  var funcName = 'go' + $ringaEvent.id;
+
+  console.log('%cRinga STOP! RingaEvent:', debugStyle);
+  console.log($ringaEvent.debugDisplay());
+  console.log('%cDispatched From:', debugStyle);
+  console.log('%c' + $ringaEvent.dispatchStack.join('\n').toString().replace(/@/g, '\t'), debugStyle);
+  console.log('%c\'window.ringaEvent\' has been set and is ready for editing.', debugStyle);
+  console.log('%cTo resume this stopped event thread, run \'' + funcName + '()\' in the console.', debugStyle);
+
+  if (typeof window !== 'undefined') {
+
+    window.ringaEvent = $ringaEvent;
+    window[funcName] = function () {
+      window.ringaEvent = undefined;
+      window[funcName] = undefined;
+      console.log('%cResuming Ringa Thread...', debugStyle);
+      done();
+    };
+  }
+}
 
 function assign(executor, detail) {
   return new _AssignFactory2.default(executor, detail);
@@ -6239,11 +6302,10 @@ exports.default = {
   forEach: forEach,
   forEachParallel: forEachParallel,
   interval: interval,
-  spawn: spawn,
   event: event,
   assign: assign,
   notify: notify,
-  debug: debug
+  stop: stop
 };
 
 /***/ })
