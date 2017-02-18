@@ -13,6 +13,8 @@ import IifExecutor from './executors/IifExecutor';
 import ForEachExecutor from './executors/ForEachExecutor';
 import IntervalExecutor from './executors/IntervalExecutor';
 import {isDOMNode} from './util/type';
+import {injectionNames, constructorNames, uglifyWhitelist} from './util/debug';
+import {injectionInfo} from './util/executors';
 
 import {ids} from './RingaObject';
 import {executorCounts} from './ExecutorAbstract';
@@ -59,11 +61,24 @@ export function notify(eventType) {
   };
 }
 
+export function debug() {
+  return {
+    injectionNames: injectionNames(),
+    constructorNames: constructorNames(),
+    uglifyWhitelist: uglifyWhitelist()
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.ringaDebug = debug;
+}
+
 export function __hardReset() {
   ids.map = {};
   ids.counts = new WeakMap();
   executorCounts.map = new Map();
   busses.count = 0;
+  injectionInfo.byName = {};
 }
 
 export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus, Model, ModelWatcher };
@@ -74,6 +89,7 @@ export default {
   ExecutorFactory,
   ThreadFactory,
   Event: RingaEvent,
+  RingaEvent,
   Model,
   ModelWatcher,
   Bus,
@@ -86,5 +102,6 @@ export default {
   spawn,
   event,
   assign,
-  notify
+  notify,
+  debug
 };

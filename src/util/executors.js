@@ -1,3 +1,7 @@
+export const injectionInfo = {
+  byName: {}
+};
+
 export const getInjections = function(ringaEvent, executor = undefined) {
   let mergeControllerInjections = function(injections, controller) {
     // Merge controller.options.injections into our injector
@@ -71,6 +75,12 @@ export const getInjections = function(ringaEvent, executor = undefined) {
       }
     }
   });
+
+  if (__DEV__) {
+    for (var key in injections) {
+      injectionInfo.byName[key] = key;
+    }
+  }
 
   return injections;
 }

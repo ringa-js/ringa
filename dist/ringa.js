@@ -94,9 +94,9 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _debug = __webpack_require__(13);
+var _debug = __webpack_require__(7);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -348,7 +348,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var ids = exports.ids = {
   map: {},
-  counts: new WeakMap()
+  counts: new WeakMap(),
+  constructorNames: {}
 };
 
 var RingaObject = function () {
@@ -371,6 +372,11 @@ var RingaObject = function () {
     if (!name) {
       name = (0, _camelcase2.default)(this.constructor.name);
     }
+
+    if (true) {
+      ids.constructorNames[this.constructor.name] = this.constructor.name;
+    }
+
     this._name = name;
   }
 
@@ -437,6 +443,165 @@ exports.default = RingaObject;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var injectionInfo = exports.injectionInfo = {
+  byName: {}
+};
+
+var getInjections = exports.getInjections = function getInjections(ringaEvent) {
+  var executor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+  var mergeControllerInjections = function mergeControllerInjections(injections, controller) {
+    // Merge controller.options.injections into our injector
+    var i = controller.options.injections;
+    for (var _key in i) {
+      var _i = i[_key];
+      if (typeof i[_key] === 'function') {
+        _i = i[_key]();
+      }
+
+      injections[_key] = _i;
+    }
+  };
+
+  var injections = void 0;
+
+  // In the RingaEvent.then() resolve callback, we don't have a currently running executor so we have to
+  // check for that here and then pass undefined if we don't have one.
+  if (executor) {
+    injections = executor._injections = executor._injections || {
+      $controller: executor.controller,
+      $thread: executor.thread,
+      $ringaEvent: ringaEvent,
+      $lastEvent: ringaEvent.lastEvent,
+      $customEvent: ringaEvent.customEvent,
+      $target: ringaEvent.target,
+      $detail: ringaEvent.detail,
+      done: executor.done,
+      fail: executor.fail,
+      $lastPromiseResult: ringaEvent.lastPromiseResult,
+      $lastPromiseError: ringaEvent.lastPromiseError
+    };
+
+    // Merge only injections for the controller that is the current context for the executor.
+    mergeControllerInjections(injections, executor.controller);
+  } else {
+    injections = {};
+
+    // We loop through all the controllers that caught and handled the event and combine all of their injections
+    // together... this probably needs to be thought through some more, but it will work for 99% of cases.
+    // Note that this means the if Controllers A and B both handled the event in order (A, B) and they both
+    // have an injection named 'model', then only the 'model' injection from A will be available.
+    ringaEvent._controllers.forEach(function (controller) {
+      mergeControllerInjections(injections, controller);
+    });
+
+    injections = Object.assign(injections, {
+      $ringaEvent: ringaEvent,
+      $lastEvent: ringaEvent.lastEvent,
+      $customEvent: ringaEvent.customEvent,
+      $target: ringaEvent.target,
+      $detail: ringaEvent.detail,
+      $lastPromiseResult: ringaEvent.lastPromiseResult,
+      $lastPromiseError: ringaEvent.lastPromiseError
+    });
+  }
+
+  var re = ringaEvent;
+  var events = [];
+
+  while (re) {
+    events.push(re);
+    re = re.lastEvent;
+  }
+
+  // TODO write units tests to verify this is working okay.
+  events.reverse().forEach(function (event) {
+    if (event.detail) {
+      for (var _key2 in event.detail) {
+        injections[_key2] = event.detail[_key2];
+      }
+    }
+  });
+
+  if (true) {
+    for (var key in injections) {
+      injectionInfo.byName[key] = key;
+    }
+  }
+
+  return injections;
+};
+
+/**
+ * This method is used for injecting RingaEvent.detail properties into a function owned by a Executor. It uses the data
+ * gathered from introspecting a provided function to determine a set of arguments to
+ * call the function with. It maps everything on ringaEvent.detail to arguments on the function.
+ *
+ * If our function is:
+ *
+ *    execute(user, filter) {...}
+ *
+ *  Then expectedArguments should be ['user', 'filter']
+ *
+ *  To generate the expected arguments, see util/function.js::getArgNames.
+ *
+ * We want to find ringaEvent.detail['user'] and ringaEvent.detail['filter']
+ * and pass those through and error if one of them is missing.
+ *
+ * Note that there are other properties that can be requested in the arguments list of execute:
+ *
+ * $controller: the Controller object that is handling this thread
+ * $thread: the Thread object that built this Command
+ * $ringaEvent: the ringaEvent itself (instead of one of its detail properties)
+ * $customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
+ * $target: the target DOMNode that triggered the customEvent was dispatched on.
+ * done: the parent Executor::done(). CommandFunction is an example of where this is needed.
+ * fail: the parent Executor::fail(). CommandFunction is an example of where this is needed.
+ * $lastPromiseResult: the last Promise result from a previous executor.
+ * $lastPromiseError: the last Promise error from a previous executor.
+ *
+ * @param executor The Executor subclass instance.
+ * @param expectedArguments An array of argument names that the target function expects.
+ * @param ringaEvent An instance of RingaEvent that has been dispatched and contains a details Object with properties to be injected.
+ *
+ * @returns {Array}
+ */
+var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = function buildArgumentsFromRingaEvent(executor, expectedArguments, ringaEvent) {
+  var args = [];
+
+  if (!(expectedArguments instanceof Array)) {
+    throw Error('buildArgumentsFromRingaEvent(): An internal error has occurred in that expectedArguments is not an Array!');
+  }
+
+  var injections = getInjections(ringaEvent, executor);
+
+  expectedArguments.forEach(function (argName) {
+    if (injections.hasOwnProperty(argName)) {
+      args.push(injections[argName]);
+    } else {
+      var s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
+
+      var str = 'Ringa Injection Error!:\n' + (executor ? '\tExecutor: \'' + executor.toString() + '\' of type ' + executor.constructor.name + '\n' : 'No active Executor\n') + ('\tMissing: ' + argName + '\n') + ('\tRequired: ' + expectedArguments.join(', ') + '\n') + ('\tAvailable: ' + Object.keys(injections).sort().join(', ') + '\n') + '\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n' + ('\tDispatched from: ' + s);
+      console.error(str);
+
+      // TODO Determine desired behavior to silence console.error & throw (discuss)
+      throw Error('Injection failed. See console errors above.');
+    }
+  });
+
+  return args;
+};
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -464,7 +629,7 @@ function wrapIfNotInstance(object, constructor) {
 }
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -502,7 +667,7 @@ var sleep = exports.sleep = function sleep(milliseconds) {
 };
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -540,11 +705,11 @@ var _SleepExecutor = __webpack_require__(39);
 
 var _SleepExecutor2 = _interopRequireDefault(_SleepExecutor);
 
-var _RingaEventFactory = __webpack_require__(9);
+var _RingaEventFactory = __webpack_require__(10);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -618,155 +783,6 @@ var ExecutorFactory = function () {
 exports.default = ExecutorFactory;
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-var getInjections = exports.getInjections = function getInjections(ringaEvent) {
-  var executor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-
-  var mergeControllerInjections = function mergeControllerInjections(injections, controller) {
-    // Merge controller.options.injections into our injector
-    var i = controller.options.injections;
-    for (var key in i) {
-      var _i = i[key];
-      if (typeof i[key] === 'function') {
-        _i = i[key]();
-      }
-
-      injections[key] = _i;
-    }
-  };
-
-  var injections = void 0;
-
-  // In the RingaEvent.then() resolve callback, we don't have a currently running executor so we have to
-  // check for that here and then pass undefined if we don't have one.
-  if (executor) {
-    injections = executor._injections = executor._injections || {
-      $controller: executor.controller,
-      $thread: executor.thread,
-      $ringaEvent: ringaEvent,
-      $lastEvent: ringaEvent.lastEvent,
-      $customEvent: ringaEvent.customEvent,
-      $target: ringaEvent.target,
-      $detail: ringaEvent.detail,
-      done: executor.done,
-      fail: executor.fail,
-      $lastPromiseResult: ringaEvent.lastPromiseResult,
-      $lastPromiseError: ringaEvent.lastPromiseError
-    };
-
-    // Merge only injections for the controller that is the current context for the executor.
-    mergeControllerInjections(injections, executor.controller);
-  } else {
-    injections = {};
-
-    // We loop through all the controllers that caught and handled the event and combine all of their injections
-    // together... this probably needs to be thought through some more, but it will work for 99% of cases.
-    // Note that this means the if Controllers A and B both handled the event in order (A, B) and they both
-    // have an injection named 'model', then only the 'model' injection from A will be available.
-    ringaEvent._controllers.forEach(function (controller) {
-      mergeControllerInjections(injections, controller);
-    });
-
-    injections = Object.assign(injections, {
-      $ringaEvent: ringaEvent,
-      $lastEvent: ringaEvent.lastEvent,
-      $customEvent: ringaEvent.customEvent,
-      $target: ringaEvent.target,
-      $detail: ringaEvent.detail,
-      $lastPromiseResult: ringaEvent.lastPromiseResult,
-      $lastPromiseError: ringaEvent.lastPromiseError
-    });
-  }
-
-  var re = ringaEvent;
-  var events = [];
-
-  while (re) {
-    events.push(re);
-    re = re.lastEvent;
-  }
-
-  // TODO write units tests to verify this is working okay.
-  events.reverse().forEach(function (event) {
-    if (event.detail) {
-      for (var key in event.detail) {
-        injections[key] = event.detail[key];
-      }
-    }
-  });
-
-  return injections;
-};
-
-/**
- * This method is used for injecting RingaEvent.detail properties into a function owned by a Executor. It uses the data
- * gathered from introspecting a provided function to determine a set of arguments to
- * call the function with. It maps everything on ringaEvent.detail to arguments on the function.
- *
- * If our function is:
- *
- *    execute(user, filter) {...}
- *
- *  Then expectedArguments should be ['user', 'filter']
- *
- *  To generate the expected arguments, see util/function.js::getArgNames.
- *
- * We want to find ringaEvent.detail['user'] and ringaEvent.detail['filter']
- * and pass those through and error if one of them is missing.
- *
- * Note that there are other properties that can be requested in the arguments list of execute:
- *
- * $controller: the Controller object that is handling this thread
- * $thread: the Thread object that built this Command
- * $ringaEvent: the ringaEvent itself (instead of one of its detail properties)
- * $customEvent: the customEvent that is wrapped by the ringaEvent that was used to bubble up the DOM
- * $target: the target DOMNode that triggered the customEvent was dispatched on.
- * done: the parent Executor::done(). CommandFunction is an example of where this is needed.
- * fail: the parent Executor::fail(). CommandFunction is an example of where this is needed.
- * $lastPromiseResult: the last Promise result from a previous executor.
- * $lastPromiseError: the last Promise error from a previous executor.
- *
- * @param executor The Executor subclass instance.
- * @param expectedArguments An array of argument names that the target function expects.
- * @param ringaEvent An instance of RingaEvent that has been dispatched and contains a details Object with properties to be injected.
- *
- * @returns {Array}
- */
-var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = function buildArgumentsFromRingaEvent(executor, expectedArguments, ringaEvent) {
-  var args = [];
-
-  if (!(expectedArguments instanceof Array)) {
-    throw Error('buildArgumentsFromRingaEvent(): An internal error has occurred in that expectedArguments is not an Array!');
-  }
-
-  var injections = getInjections(ringaEvent, executor);
-
-  expectedArguments.forEach(function (argName) {
-    if (injections.hasOwnProperty(argName)) {
-      args.push(injections[argName]);
-    } else {
-      var s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
-
-      var str = 'Ringa Injection Error!:\n' + (executor ? '\tExecutor: \'' + executor.toString() + '\' of type ' + executor.constructor.name + '\n' : 'No active Executor\n') + ('\tMissing: ' + argName + '\n') + ('\tRequired: ' + expectedArguments.join(', ') + '\n') + ('\tAvailable: ' + Object.keys(injections).sort().join(', ') + '\n') + '\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n' + ('\tDispatched from: ' + s);
-      console.error(str);
-
-      // TODO Determine desired behavior to silence console.error & throw (discuss)
-      throw Error('Injection failed. See console errors above.');
-    }
-  });
-
-  return args;
-};
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -787,13 +803,13 @@ var _errorStackParser = __webpack_require__(24);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
-var _debug = __webpack_require__(13);
+var _debug = __webpack_require__(7);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
-var _executors = __webpack_require__(5);
+var _executors = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1384,6 +1400,93 @@ exports.default = RingaEvent;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.now = now;
+exports.format = format;
+exports.ringaEventToDebugString = ringaEventToDebugString;
+exports.injectionNames = injectionNames;
+exports.constructorNames = constructorNames;
+exports.uglifyWhitelist = uglifyWhitelist;
+
+var _dateformat = __webpack_require__(23);
+
+var _dateformat2 = _interopRequireDefault(_dateformat);
+
+var _executors = __webpack_require__(2);
+
+var _RingaObject = __webpack_require__(1);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function now() {
+  return new Date();
+}
+
+function format(date) {
+  if (!date) {
+    return '?';
+  }
+
+  return (0, _dateformat2.default)(date, 'hh:mm:ss');
+}
+
+/**
+ * Generates a state tree of the process tree that this event has invoked at the state of this being called.
+ *
+ * Type: 1 [Event]
+ *       2 [Controller]
+ *       3 [Thread]
+ *       4 [Executor]
+ *       0 [Metadata]
+ * @private
+ */
+function ringaEventToDebugString(ringaEvent) {
+  var thread = ringaEvent.thread;
+  var controller = ringaEvent.controller;
+  var out = '';
+
+  // Unfortunately because the state is not a "tree" we cannot generate this using
+  // recursion, which would be much more elegant
+  out += ringaEvent.id + ' ' + (ringaEvent.dispatched ? 'dispatched' : '') + '\n';
+
+  if (controller) {
+    out += '  ' + controller.id;
+
+    if (thread) {
+      out += '    ' + thread.id;
+
+      thread._list.forEach(function (command) {
+        out += '      ' + command.id + ' [' + format(command.startTime) + ' - ' + format(command.endTime) + ']\n';
+      });
+    }
+  } else {
+    out += '  not yet caught.\n';
+  }
+
+  return out;
+}
+
+function injectionNames() {
+  return Object.keys(_executors.injectionInfo.byName);
+}
+
+function constructorNames() {
+  return Object.keys(_RingaObject.ids.constructorNames);
+}
+
+function uglifyWhitelist() {
+  return JSON.stringify(injectionNames().concat(constructorNames()).sort());
+}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -1519,7 +1622,7 @@ var Model = function (_RingaObject) {
 exports.default = Model;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1535,7 +1638,7 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _Model = __webpack_require__(7);
+var _Model = __webpack_require__(8);
 
 var _Model2 = _interopRequireDefault(_Model);
 
@@ -1943,7 +2046,7 @@ var ModelWatcher = function (_RingaObject) {
 exports.default = ModelWatcher;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2012,7 +2115,7 @@ var RingaEventFactory = function () {
 exports.default = RingaEventFactory;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2024,7 +2127,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(12);
+var _RingaHashArray2 = __webpack_require__(13);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -2032,11 +2135,11 @@ var _Thread = __webpack_require__(34);
 
 var _Thread2 = _interopRequireDefault(_Thread);
 
-var _ExecutorFactory = __webpack_require__(4);
+var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2105,7 +2208,7 @@ var ThreadFactory = function (_RingaHashArray) {
 exports.default = ThreadFactory;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2114,7 +2217,7 @@ exports.default = ThreadFactory;
 module.exports = __webpack_require__(25);
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2126,7 +2229,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hasharray = __webpack_require__(11);
+var _hasharray = __webpack_require__(12);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -2334,74 +2437,6 @@ var RingaHashArray = function (_RingaObject) {
 }(_RingaObject3.default);
 
 exports.default = RingaHashArray;
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.now = now;
-exports.format = format;
-exports.ringaEventToDebugString = ringaEventToDebugString;
-
-var _dateformat = __webpack_require__(23);
-
-var _dateformat2 = _interopRequireDefault(_dateformat);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function now() {
-  return new Date();
-}
-
-function format(date) {
-  if (!date) {
-    return '?';
-  }
-
-  return (0, _dateformat2.default)(date, 'hh:mm:ss');
-}
-
-/**
- * Generates a state tree of the process tree that this event has invoked at the state of this being called.
- *
- * Type: 1 [Event]
- *       2 [Controller]
- *       3 [Thread]
- *       4 [Executor]
- *       0 [Metadata]
- * @private
- */
-function ringaEventToDebugString(ringaEvent) {
-  var thread = ringaEvent.thread;
-  var controller = ringaEvent.controller;
-  var out = '';
-
-  // Unfortunately because the state is not a "tree" we cannot generate this using
-  // recursion, which would be much more elegant
-  out += ringaEvent.id + ' ' + (ringaEvent.dispatched ? 'dispatched' : '') + '\n';
-
-  if (controller) {
-    out += '  ' + controller.id;
-
-    if (thread) {
-      out += '    ' + thread.id;
-
-      thread._list.forEach(function (command) {
-        out += '      ' + command.id + ' [' + format(command.startTime) + ' - ' + format(command.endTime) + ']\n';
-      });
-    }
-  } else {
-    out += '  not yet caught.\n';
-  }
-
-  return out;
-}
 
 /***/ }),
 /* 14 */
@@ -2653,7 +2688,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ThreadFactory = __webpack_require__(10);
+var _ThreadFactory = __webpack_require__(11);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
@@ -2661,7 +2696,7 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _hasharray = __webpack_require__(11);
+var _hasharray = __webpack_require__(12);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -2669,7 +2704,7 @@ var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _ModelWatcher = __webpack_require__(8);
+var _ModelWatcher = __webpack_require__(9);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
@@ -2677,9 +2712,9 @@ var _snakeCase = __webpack_require__(32);
 
 var _snakeCase2 = _interopRequireDefault(_snakeCase);
 
-var _executors = __webpack_require__(5);
+var _executors = __webpack_require__(2);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3251,9 +3286,9 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _executors = __webpack_require__(5);
+var _executors = __webpack_require__(2);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3397,13 +3432,13 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _ExecutorFactory = __webpack_require__(4);
+var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
 
-var _executors = __webpack_require__(5);
+var _executors = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3561,15 +3596,15 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _ExecutorFactory = __webpack_require__(4);
+var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
-var _executors = __webpack_require__(5);
+var _executors = __webpack_require__(2);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3669,15 +3704,15 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _ExecutorFactory = __webpack_require__(4);
+var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
-var _executors = __webpack_require__(5);
+var _executors = __webpack_require__(2);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3815,7 +3850,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _ExecutorFactory2 = __webpack_require__(4);
+var _ExecutorFactory2 = __webpack_require__(5);
 
 var _ExecutorFactory3 = _interopRequireDefault(_ExecutorFactory2);
 
@@ -5359,7 +5394,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(12);
+var _RingaHashArray2 = __webpack_require__(13);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -5715,9 +5750,9 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _executors = __webpack_require__(5);
+var _executors = __webpack_require__(2);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5824,11 +5859,11 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _ExecutorFactory = __webpack_require__(4);
+var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5962,7 +5997,7 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _function = __webpack_require__(3);
+var _function = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -6044,17 +6079,18 @@ exports.spawn = spawn;
 exports.assign = assign;
 exports.event = event;
 exports.notify = notify;
+exports.debug = debug;
 exports.__hardReset = __hardReset;
 
 var _Command = __webpack_require__(17);
 
 var _Command2 = _interopRequireDefault(_Command);
 
-var _ExecutorFactory = __webpack_require__(4);
+var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _ThreadFactory = __webpack_require__(10);
+var _ThreadFactory = __webpack_require__(11);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
@@ -6070,7 +6106,7 @@ var _RingaObject = __webpack_require__(1);
 
 var _RingaObject2 = _interopRequireDefault(_RingaObject);
 
-var _RingaEventFactory = __webpack_require__(9);
+var _RingaEventFactory = __webpack_require__(10);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -6078,11 +6114,11 @@ var _AssignFactory = __webpack_require__(21);
 
 var _AssignFactory2 = _interopRequireDefault(_AssignFactory);
 
-var _Model = __webpack_require__(7);
+var _Model = __webpack_require__(8);
 
 var _Model2 = _interopRequireDefault(_Model);
 
-var _ModelWatcher = __webpack_require__(8);
+var _ModelWatcher = __webpack_require__(9);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
@@ -6102,7 +6138,11 @@ var _IntervalExecutor = __webpack_require__(20);
 
 var _IntervalExecutor2 = _interopRequireDefault(_IntervalExecutor);
 
-var _type = __webpack_require__(2);
+var _type = __webpack_require__(3);
+
+var _debug = __webpack_require__(7);
+
+var _executors = __webpack_require__(2);
 
 var _ExecutorAbstract = __webpack_require__(0);
 
@@ -6154,11 +6194,24 @@ function notify(eventType) {
   };
 }
 
+function debug() {
+  return {
+    injectionNames: (0, _debug.injectionNames)(),
+    constructorNames: (0, _debug.constructorNames)(),
+    uglifyWhitelist: (0, _debug.uglifyWhitelist)()
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.ringaDebug = debug;
+}
+
 function __hardReset() {
   _RingaObject.ids.map = {};
   _RingaObject.ids.counts = new WeakMap();
   _ExecutorAbstract.executorCounts.map = new Map();
   _Bus.busses.count = 0;
+  _executors.injectionInfo.byName = {};
 }
 
 exports.Command = _Command2.default;
@@ -6176,6 +6229,7 @@ exports.default = {
   ExecutorFactory: _ExecutorFactory2.default,
   ThreadFactory: _ThreadFactory2.default,
   Event: _RingaEvent2.default,
+  RingaEvent: _RingaEvent2.default,
   Model: _Model2.default,
   ModelWatcher: _ModelWatcher2.default,
   Bus: _Bus2.default,
@@ -6188,7 +6242,8 @@ exports.default = {
   spawn: spawn,
   event: event,
   assign: assign,
-  notify: notify
+  notify: notify,
+  debug: debug
 };
 
 /***/ })
