@@ -2960,16 +2960,17 @@ var Controller = function (_RingaObject) {
      *
      * @param eventType The event type, expected to be a String.
      * @param executor A single executor (function, event type, Promise, Ringa Command) or an array of these.
+     * @param useCapture True if you want to use capture to listen to the event.
      * @returns {*} The ThreadFactory instance that will be run when the event is received.
      */
 
   }, {
     key: 'addListener',
-    value: function addListener(eventType, executor) {
+    value: function addListener(eventType, executor, useCapture) {
       var threadFactory = void 0;
 
-      if (true && arguments[2]) {
-        throw Error('Controller::addListener(): you provided a third argument. This does nothing and probably means you forgot to wrap your second executor in an array.');
+      if (true && arguments[2] && typeof arguments[2] !== 'boolean') {
+        throw Error('Controller::addListener(): you provided a third argument which was not a boolean for useCapture (was ' + useCapture + '). This does nothing and probably means you forgot to wrap your second executor in an array.');
       }
 
       if (executor && !(executor instanceof _ThreadFactory2.default) && !(executor instanceof Array)) {
@@ -3002,19 +3003,19 @@ var Controller = function (_RingaObject) {
 
       this.eventTypeToThreadFactory[eventType] = threadFactory;
 
-      this._attachListenerToBus(eventType);
+      this._attachListenerToBus(eventType, useCapture);
 
       return threadFactory;
     }
   }, {
     key: '_attachListenerToBus',
-    value: function _attachListenerToBus(eventType) {
+    value: function _attachListenerToBus(eventType, useCapture) {
       if (!this.bus) {
         return; // We will be attached once the bus comes in to the station.
       }
 
       if (typeof eventType === 'string') {
-        this.bus.addEventListener(eventType, this._eventHandler);
+        this.bus.addEventListener(eventType, this._eventHandler, useCapture);
       } else {
         var _eventType = undefined;
 
