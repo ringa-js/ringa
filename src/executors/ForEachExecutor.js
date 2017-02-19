@@ -29,9 +29,20 @@ class ForEachExecutor extends ExecutorAbstract {
   }
 
   //-----------------------------------
+  // Properties
+  //-----------------------------------
+  /**
+   * No timeout for forEach since we have no idea how long our children are going to take.
+   *
+   * @returns {number}
+   */
+  get timeout() {
+    return -1;
+  }
+
+  //-----------------------------------
   // Methods
   //-----------------------------------
-
   /**
    * Internal execution method called by Thread only.
    *
