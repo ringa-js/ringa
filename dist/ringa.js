@@ -238,15 +238,37 @@ var ExecutorAbstract = function (_RingaObject) {
   }, {
     key: 'done',
     value: function done() {
+      var _this3 = this;
+
       if (true && this.error) {
         throw new Error('ExecutorAbstract::done(): called done on a executor that has already errored!');
       }
 
-      this.endTimeoutCheck();
+      var _done = function _done() {
+        _this3.endTimeoutCheck();
 
-      this.endTime = (0, _debug.now)();
+        _this3.endTime = (0, _debug.now)();
 
-      this.doneHandler(true);
+        _this3.doneHandler(true);
+      };
+
+      if (true && this.controller.options.throttle) {
+        var elapsed = new Date().getTime() - this.startTime;
+        var _controller$options$t = this.controller.options.throttle,
+            min = _controller$options$t.min,
+            max = _controller$options$t.max;
+
+        var millis = Math.random() * (max - min) + min - elapsed;
+
+        // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
+        if (millis < 5) {
+          _done();
+        } else {
+          setTimeout(_done, millis);
+        }
+      } else {
+        _done();
+      }
     }
 
     /**
