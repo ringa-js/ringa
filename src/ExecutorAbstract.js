@@ -130,11 +130,28 @@ class ExecutorAbstract extends RingaObject {
       throw new Error('ExecutorAbstract::done(): called done on a executor that has already errored!');
     }
 
-    this.endTimeoutCheck();
+    let _done = () => {
+      this.endTimeoutCheck();
 
-    this.endTime = now();
+      this.endTime = now();
 
-    this.doneHandler(true);
+      this.doneHandler(true);
+    };
+
+    if (__DEV__ && this.controller.options.throttle) {
+      let elapsed = new Date().getTime() - this.startTime;
+      let { min, max } = this.controller.options.throttle;
+      let millis = (Math.random() * (max - min)) + min - elapsed;
+
+      // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
+      if (millis < 5) {
+        _done();
+      } else {
+        setTimeout(_done, millis);
+      }
+    } else {
+      _done();
+    }
   }
 
   /**
