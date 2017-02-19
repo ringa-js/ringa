@@ -62,11 +62,11 @@ class EventExecutor extends ExecutorAbstract {
       }
     }
 
-    let domNode = this.dispatchedRingaEvent.domNode || this.ringaEvent.target;
+    let bus = this.dispatchedRingaEvent.bus || this.controller.bus;
 
     this.ringaEvent.lastEvent = this.dispatchedRingaEvent;
 
-    this.dispatchedRingaEvent.dispatch(domNode);
+    this.dispatchedRingaEvent.dispatch(bus);
 
     if ((this.dispatchedRingaEvent.detail.requireCatch === undefined || this.dispatchedRingaEvent.detail.requireCatch) &&
         !this.dispatchedRingaEvent.caught) {

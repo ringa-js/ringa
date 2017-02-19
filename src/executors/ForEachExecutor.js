@@ -50,6 +50,10 @@ class ForEachExecutor extends ExecutorAbstract {
       throw new Error(`ForEachExecutor::_execute(): Could not find an array with the name ${this.arrayProperty}`);
     }
 
+    if (array.length === 0) {
+      this.done();
+    }
+
     this.executors = array.map((item, ix) => {
       let executor = executorFactory.build(this.thread);
       executor._injections = {};

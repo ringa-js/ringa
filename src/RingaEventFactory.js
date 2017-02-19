@@ -1,6 +1,7 @@
 import RingaEvent from './RingaEvent';
 import { mergeRingaEventDetails } from './util/ringaEvent';
-
+import {getArgNames} from './util/function';
+import {buildArgumentsFromRingaEvent} from './util/executors';
 
 class RingaEventFactory {
   //-----------------------------------
@@ -19,7 +20,17 @@ class RingaEventFactory {
   // Methods
   //-----------------------------------
   build(executor) {
-    let newDetail = mergeRingaEventDetails(executor.ringaEvent, this.detailOrig, executor.controller.options.warnOnDetailOverwrite);
+    let detail;
+
+    if (typeof this.detailOrig === 'function') {
+      let argNames = getArgNames(this.detailOrig);
+      let args = buildArgumentsFromRingaEvent(executor, argNames, executor.ringaEvent);
+      detail = this.detailOrig.apply(undefined, args);
+    } else {
+      detail = this.detailOrig;
+    }
+
+    let newDetail = mergeRingaEventDetails(executor.ringaEvent, detail, executor.controller.options.warnOnDetailOverwrite);
 
     newDetail._executor = executor;
     newDetail.requireCatch = this.requireCatch;

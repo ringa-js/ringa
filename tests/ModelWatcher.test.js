@@ -308,6 +308,36 @@ describe('ModelWatcher', () => {
   }, 50);
 
   //-----------------------------------
+  // Watch by id and path by multiple
+  //-----------------------------------
+  it('Watch by id and path by multiple', (done) => {
+    let count = 0;
+    // This test is weird. Babel's WeakMap treats function that have the same
+    // text output as the same function even if they are technically different instances
+    // of the function with different this values... so we test functions that are
+    // declared separately but actually have the exact same text. Just want to
+    // make sure they are called independently and the ModelWatcher doesn't think
+    // function two and three are the same as function one. See ModelWatcher.js and the
+    // Watchee __watchees marking mechanism.
+    watcher.watch('ModelSimple1', 'prop1', (arg) => {
+      count++;
+    });
+    watcher.watch('ModelSimple1', 'prop1', (arg) => {
+      count++;
+    });
+    watcher.watch('ModelSimple1', 'prop1', (arg) => {
+      count++;
+    });
+
+    model1.prop1 = 'someNewValue';
+
+    setTimeout(() => {
+      expect(count).toEqual(3);
+      done();
+    }, 25);
+  }, 50);
+
+  //-----------------------------------
   // Watch multiple separate handlers (1)
   //-----------------------------------
   it('Watch multiple separate handlers (1)', (done) => {

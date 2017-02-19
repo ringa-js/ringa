@@ -178,6 +178,10 @@ class Controller extends RingaObject {
   addListener(eventType, executor) {
     let threadFactory;
 
+    if (__DEV__ && arguments[2]) {
+      throw Error('Controller::addListener(): you provided a third argument. This does nothing and probably means you forgot to wrap your second executor in an array.');
+    }
+
     if (executor && !(executor instanceof ThreadFactory) && !(executor instanceof Array)) {
       executor = [executor];
     }

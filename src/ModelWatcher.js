@@ -44,7 +44,7 @@ class Watchees {
   //-----------------------------------
   constructor() {
     this.watchees = [];
-    this.watcheesMap = new Map();
+    this.id = Math.random().toString();
   }
 
   //-----------------------------------
@@ -61,7 +61,7 @@ class Watchees {
       watchedValue: objPath(model, watchee.propertyPath)
     };
 
-    if (watcheeObj = this.watcheesMap[watchee.handler]) {
+    if (watchee.handler.__watchees && (watcheeObj = watchee.handler.__watchees[this.id])) {
       watcheeObj.arg.push(arg);
 
       return;
@@ -73,12 +73,15 @@ class Watchees {
     };
 
     this.watchees.push(watcheeObj);
-    this.watcheesMap[watchee.handler] = watcheeObj;
+
+    watcheeObj.handler.__watchees = watcheeObj.handler.__watchees || {};
+    watcheeObj.handler.__watchees[this.id] = watcheeObj;
   }
 
   notify() {
     this.watchees.forEach(watcheeObj => {
       watcheeObj.handler.call(undefined, watcheeObj.arg);
+      delete watcheeObj.handler.__watchees[this.id];
     });
 
     this.clear();
@@ -192,7 +195,7 @@ class ModelWatcher extends RingaObject {
    *
    * @param classOrIdOrName A Ringa.Model extension, id, or name of a model to watch.
    * @param propertyPath A dot-delimiated path into a property.
-   * @param handler Optional function to callback with the initial values.
+   * @param handler Function to callback when the property changes.
    */
   watch(classOrIdOrName, propertyPath, handler = undefined) {
     // If handler is second property...
