@@ -3581,20 +3581,29 @@ var ForEachExecutor = function (_ExecutorAbstract) {
   }
 
   //-----------------------------------
-  // Methods
+  // Properties
   //-----------------------------------
-
   /**
-   * Internal execution method called by Thread only.
+   * No timeout for forEach since we have no idea how long our children are going to take.
    *
-   * @param {function} doneHandler The handler to call when done() is called.
-   * @param {function} failHandler The handler to call when fail() is called;
-   * @private
+   * @returns {number}
    */
 
 
   _createClass(ForEachExecutor, [{
     key: '_execute',
+
+
+    //-----------------------------------
+    // Methods
+    //-----------------------------------
+    /**
+     * Internal execution method called by Thread only.
+     *
+     * @param {function} doneHandler The handler to call when done() is called.
+     * @param {function} failHandler The handler to call when fail() is called;
+     * @private
+     */
     value: function _execute(doneHandler, failHandler) {
       var _this2 = this;
 
@@ -3670,6 +3679,11 @@ var ForEachExecutor = function (_ExecutorAbstract) {
         })();
       }
     }
+  }, {
+    key: 'timeout',
+    get: function get() {
+      return -1;
+    }
   }]);
 
   return ForEachExecutor;
@@ -3744,19 +3758,24 @@ var IifExecutor = function (_ExecutorAbstract) {
   }
 
   //-----------------------------------
-  // Methods
+  // Properties
   //-----------------------------------
-  /**
-   * Internal execution method called by Thread only.
-   *
-   * @param doneHandler The handler to call when done() is called.
-   * @param failHandler The handler to call when fail() is called;
-   * @private
-   */
 
 
   _createClass(IifExecutor, [{
     key: '_execute',
+
+
+    //-----------------------------------
+    // Methods
+    //-----------------------------------
+    /**
+     * Internal execution method called by Thread only.
+     *
+     * @param doneHandler The handler to call when done() is called.
+     * @param failHandler The handler to call when fail() is called;
+     * @private
+     */
     value: function _execute(doneHandler, failHandler) {
       _get(IifExecutor.prototype.__proto__ || Object.getPrototypeOf(IifExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
@@ -3777,6 +3796,11 @@ var IifExecutor = function (_ExecutorAbstract) {
     key: 'toString',
     value: function toString() {
       return this.id + ': ' + this.condition.toString().substring(0, 64);
+    }
+  }, {
+    key: 'timeout',
+    get: function get() {
+      return -1;
     }
   }]);
 
@@ -5811,22 +5835,17 @@ var EventExecutor = function (_ExecutorAbstract) {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  /**
+   * Internal execution method called by CommandThread only.
+   *
+   * @param doneHandler The handler to call when done() is called.
+   * @param failHandler The handler to call when fail() is called;
+   * @private
+   */
 
 
   _createClass(EventExecutor, [{
     key: '_execute',
-
-
-    //-----------------------------------
-    // Methods
-    //-----------------------------------
-    /**
-     * Internal execution method called by CommandThread only.
-     *
-     * @param doneHandler The handler to call when done() is called.
-     * @param failHandler The handler to call when fail() is called;
-     * @private
-     */
     value: function _execute(doneHandler, failHandler) {
       _get(EventExecutor.prototype.__proto__ || Object.getPrototypeOf(EventExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
@@ -5859,16 +5878,9 @@ var EventExecutor = function (_ExecutorAbstract) {
     }
   }, {
     key: '_timeoutHandler',
-    value: function _timeoutHandler() {
-      if (!this.dispatchedRingaEvent.caught) {
-        this.fail(new Error('EventExecutor::_timeoutHandler(): ' + this.toString() + ' dispatched \'' + this.dispatchedRingaEvent.type + '\' but it was never caught by anyone!'), true);
-      }
-      // If 'Event1' triggers 'Event2' and 'Event2' times out, this will automatically force 'Event1' to timeout.
-      // In that case, we do not want to timeout 'Event1' as well.
-      else if (!this.dispatchedRingaEvent._threadTimedOut) {
-          _get(EventExecutor.prototype.__proto__ || Object.getPrototypeOf(EventExecutor.prototype), '_timeoutHandler', this).call(this);
-        }
-    }
+    value: function _timeoutHandler() {}
+    // Noop, we never timeout an EventExecutor because we leave that up to the controller that handles the next event.
+
 
     //-----------------------------------
     // Events
@@ -5895,25 +5907,10 @@ var EventExecutor = function (_ExecutorAbstract) {
       // the error again.
       if (this.dispatchedRingaEvent._threadTimedOut) {
         // Lets clear our own timeout and just neither be done nor fail.
-        this.endTimeoutCheck();
-
         return;
       }
 
       this.fail(error);
-    }
-  }, {
-    key: 'timeout',
-    get: function get() {
-      if (this._timeout === undefined && this.controller.options.timeout === undefined) {
-        return -1;
-      }
-
-      // If 'OrigEvent' triggers EventExecutor which dispatches 'Event' and they have the same timeout length, then 'OrigEvent'
-      // will timeout first and 0 milliseconds later 'Event' will timeout. So we add a small timeout buffer to allow for the lag.
-      var buffer = 50;
-
-      return (this._timeout !== undefined ? this.timeout : this.controller.options.timeout) + 50;
     }
   }]);
 

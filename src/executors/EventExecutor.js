@@ -25,21 +25,6 @@ class EventExecutor extends ExecutorAbstract {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  get timeout() {
-    if (this._timeout === undefined && this.controller.options.timeout === undefined) {
-      return -1;
-    }
-
-    // If 'OrigEvent' triggers EventExecutor which dispatches 'Event' and they have the same timeout length, then 'OrigEvent'
-    // will timeout first and 0 milliseconds later 'Event' will timeout. So we add a small timeout buffer to allow for the lag.
-    let buffer = 50;
-
-    return (this._timeout !== undefined ? this.timeout : this.controller.options.timeout) + 50;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
   /**
    * Internal execution method called by CommandThread only.
    *
@@ -79,14 +64,7 @@ class EventExecutor extends ExecutorAbstract {
   }
 
   _timeoutHandler() {
-    if (!this.dispatchedRingaEvent.caught) {
-      this.fail(new Error(`EventExecutor::_timeoutHandler(): ${this.toString()} dispatched '${this.dispatchedRingaEvent.type}' but it was never caught by anyone!`), true);
-    }
-    // If 'Event1' triggers 'Event2' and 'Event2' times out, this will automatically force 'Event1' to timeout.
-    // In that case, we do not want to timeout 'Event1' as well.
-    else if (!this.dispatchedRingaEvent._threadTimedOut) {
-      super._timeoutHandler();
-    }
+    // Noop, we never timeout an EventExecutor because we leave that up to the controller that handles the next event.
   }
 
   //-----------------------------------
@@ -110,8 +88,6 @@ class EventExecutor extends ExecutorAbstract {
     // the error again.
     if (this.dispatchedRingaEvent._threadTimedOut) {
       // Lets clear our own timeout and just neither be done nor fail.
-      this.endTimeoutCheck();
-
       return;
     }
 
