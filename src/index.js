@@ -12,6 +12,7 @@ import Bus, {busses} from './Bus';
 import IifExecutor from './executors/IifExecutor';
 import ForEachExecutor from './executors/ForEachExecutor';
 import IntervalExecutor from './executors/IntervalExecutor';
+import SpawnExecutor from './executors/SpawnExecutor';
 import {isDOMNode} from './util/type';
 import {injectionNames, constructorNames, uglifyWhitelist} from './util/debug';
 import {injectionInfo} from './util/executors';
@@ -41,6 +42,10 @@ export function iif (condition, trueExecutor, falseExecutor) {
 
 export function interval (condition, executor, milliseconds, options) {
   return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds, options });
+}
+
+export function spawn (executor) {
+  return new ExecutorFactory(SpawnExecutor, executor);
 }
 
 const debugStyle = 'background: #660000; color: white; font-weight: bold;';
@@ -120,6 +125,7 @@ export default {
   forEach,
   forEachParallel,
   interval,
+  spawn,
   event,
   assign,
   notify,
