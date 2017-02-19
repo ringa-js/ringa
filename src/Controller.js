@@ -342,11 +342,21 @@ class Controller extends RingaObject {
       return this.__eventHandler(event);
     }
 
+    let ringaEvent;
+
     // This event might be a something like 'click' which does not have
     // an attached ringaEvent yet!
-    event.detail.ringaEvent = event.detail.ringaEvent || new RingaEvent(event.type, event.detail, event.bubbles, event.cancellable);
+    if (!event.detail.ringaEvent){
+      ringaEvent = new RingaEvent(event.type, typeof event.detail === 'object' ? event.detail : {}, event.bubbles, event.cancellable, event);
 
-    return this.__eventHandler(event.detail.ringaEvent);
+      if (typeof event.detail === 'object') {
+        event.detail.ringaEvent = ringaEvent;
+      }
+    } else {
+      ringaEvent = event.detail.ringaEvent;
+    }
+
+    return this.__eventHandler(ringaEvent);
   }
 
   __eventHandler(ringaEvent) {

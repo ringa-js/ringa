@@ -42,7 +42,7 @@ class RingaEvent extends RingaObject {
    * @param bubbles True if you want the event to bubble (default is true).
    * @param cancelable True if you want the event to be cancellable (default is true).
    */
-  constructor(type, detail = {}, bubbles = true, cancelable = true) {
+  constructor(type, detail = {}, bubbles = true, cancelable = true, event = undefined) {
     // TODO add cancel support and unit tests!
     super(`RingaEvent[${type}, ${eventIx++}]`);
 
@@ -57,6 +57,8 @@ class RingaEvent extends RingaObject {
     this.controller = undefined;
 
     this._errors = undefined;
+
+    this.event = event;
 
     this.listeners = {};
 
