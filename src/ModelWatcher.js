@@ -79,19 +79,22 @@ class Watchees {
   }
 
   notify() {
-    this.watchees.forEach(watcheeObj => {
+    let w = this.watchees;
+    this.clear();
+
+    w.forEach(watcheeObj => {
       watcheeObj.handler.call(undefined, watcheeObj.arg);
       delete watcheeObj.handler.__watchees[this.id];
     });
-
-    this.clear();
   }
 
   clear() {
-    this.watchees = [];
-    this.watcheesMap = new Map();
+    globalWatchee = undefined;
   }
 }
+
+let globalWatchee;
+let timeoutToken;
 
 /**
  * This ModelWatcher watches for a model by id, Class/prototype in heirarchy, or name.
@@ -110,9 +113,6 @@ class ModelWatcher extends RingaObject {
     this.idToModel = new WeakMap();
     this.nameToModel = new WeakMap();
     this.classToModel = new WeakMap();
-
-    // We always notify everyone at once and ensure that nobody gets notified more than once.
-    this.nextWatchees = new Watchees();
   }
 
   //-----------------------------------
@@ -277,8 +277,12 @@ class ModelWatcher extends RingaObject {
    * that if multiple properties get set on a model back to back and notify() is called over and over that the
    * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
    */
-  notify(model, propertyPath, timeout = 0) {
-    let n = this.nextWatchees;
+  notify(model, propertyPath) {
+    if (!globalWatchee) {
+      globalWatchee = new Watchees();
+    }
+
+    let n = globalWatchee;
     let paths, byPathFor = () => {};
 
     let addWatchee = watchee => {
@@ -339,17 +343,14 @@ class ModelWatcher extends RingaObject {
       p = p.__proto__;
     }
 
-    if (timeout !== -1) {
-      if (this.timeoutToken) {
-        return;
-      }
-      this.timeoutToken = setTimeout(() => {
-        this.nextWatchees.notify();
-        this.timeoutToken = undefined;
-      }, timeout);
-    } else {
-      this.nextWatchees.notify();
+    if (timeoutToken) {
+      return;
     }
+
+    timeoutToken = setTimeout(function() {
+      timeoutToken = undefined;
+      globalWatchee.notify();
+    }, 0);
   }
 }
 

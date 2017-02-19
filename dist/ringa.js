@@ -1778,28 +1778,30 @@ var Watchees = function () {
     value: function notify() {
       var _this = this;
 
-      this.watchees.forEach(function (watcheeObj) {
+      var w = this.watchees;
+      this.clear();
+
+      w.forEach(function (watcheeObj) {
         watcheeObj.handler.call(undefined, watcheeObj.arg);
         delete watcheeObj.handler.__watchees[_this.id];
       });
-
-      this.clear();
     }
   }, {
     key: 'clear',
     value: function clear() {
-      this.watchees = [];
-      this.watcheesMap = new Map();
+      globalWatchee = undefined;
     }
   }]);
 
   return Watchees;
 }();
 
+var globalWatchee = void 0;
+var timeoutToken = void 0;
+
 /**
  * This ModelWatcher watches for a model by id, Class/prototype in heirarchy, or name.
  */
-
 
 var ModelWatcher = function (_RingaObject) {
   _inherits(ModelWatcher, _RingaObject);
@@ -1819,9 +1821,6 @@ var ModelWatcher = function (_RingaObject) {
     _this2.idToModel = new WeakMap();
     _this2.nameToModel = new WeakMap();
     _this2.classToModel = new WeakMap();
-
-    // We always notify everyone at once and ensure that nobody gets notified more than once.
-    _this2.nextWatchees = new Watchees();
     return _this2;
   }
 
@@ -2005,11 +2004,11 @@ var ModelWatcher = function (_RingaObject) {
   }, {
     key: 'notify',
     value: function notify(model, propertyPath) {
-      var _this3 = this;
+      if (!globalWatchee) {
+        globalWatchee = new Watchees();
+      }
 
-      var timeout = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-
-      var n = this.nextWatchees;
+      var n = globalWatchee;
       var paths = void 0,
           byPathFor = function byPathFor() {};
 
@@ -2071,17 +2070,14 @@ var ModelWatcher = function (_RingaObject) {
         p = p.__proto__;
       }
 
-      if (timeout !== -1) {
-        if (this.timeoutToken) {
-          return;
-        }
-        this.timeoutToken = setTimeout(function () {
-          _this3.nextWatchees.notify();
-          _this3.timeoutToken = undefined;
-        }, timeout);
-      } else {
-        this.nextWatchees.notify();
+      if (timeoutToken) {
+        return;
       }
+
+      timeoutToken = setTimeout(function () {
+        timeoutToken = undefined;
+        globalWatchee.notify();
+      }, 0);
     }
   }]);
 

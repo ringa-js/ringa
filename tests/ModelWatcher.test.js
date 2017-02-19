@@ -145,7 +145,7 @@ describe('ModelWatcher', () => {
     });
 
     model1.prop1 = 'someNewValue';
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by name and path (1)
@@ -176,7 +176,7 @@ describe('ModelWatcher', () => {
       expect(called).toEqual(false);
       done();
     }, 1);
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by id and path (1)
@@ -207,7 +207,7 @@ describe('ModelWatcher', () => {
       expect(called).toEqual(false);
       done();
     }, 1);
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by name and deep path (1)
@@ -221,7 +221,7 @@ describe('ModelWatcher', () => {
     model1.prop1 = {
       deep: 'someNewValue'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by name and deep path (2)
@@ -238,7 +238,7 @@ describe('ModelWatcher', () => {
     model1.prop1 = {
       deep: 'someNewValue'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by name and deep path (3)
@@ -256,7 +256,7 @@ describe('ModelWatcher', () => {
     model1.prop1 = {
       deep: 'someNewValue'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by id and deep path (1)
@@ -270,7 +270,7 @@ describe('ModelWatcher', () => {
     model1.prop1 = {
       deep: 'someNewValue'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by id and deep path (2)
@@ -287,7 +287,7 @@ describe('ModelWatcher', () => {
     model1.prop1 = {
       deep: 'someNewValue'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by id and deep path (3)
@@ -305,7 +305,7 @@ describe('ModelWatcher', () => {
     model1.prop1 = {
       deep: 'someNewValue'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch by id and path by multiple
@@ -334,8 +334,8 @@ describe('ModelWatcher', () => {
     setTimeout(() => {
       expect(count).toEqual(3);
       done();
-    }, 25);
-  }, 50);
+    }, 0);
+  }, 5);
 
   //-----------------------------------
   // Watch multiple separate handlers (1)
@@ -355,7 +355,7 @@ describe('ModelWatcher', () => {
 
     model1.prop1 = 'prop1val';
     model1.prop2 = 'prop2val';
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch multiple separate handlers (2)
@@ -375,7 +375,7 @@ describe('ModelWatcher', () => {
 
     model1.prop1 = 'prop1val';
     model2.prop2 = 'prop2val';
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Watch multiple combined handlers (1)
@@ -403,7 +403,7 @@ describe('ModelWatcher', () => {
     modelExt3.prop3 = {
       value: 'whatever'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------------
   // Watch multiple combined handlers (2)
@@ -431,7 +431,7 @@ describe('ModelWatcher', () => {
     modelExt3.prop3 = {
       value: 'whatever'
     };
-  }, 50);
+  }, 5);
 
   //--------------------------------------------------------------------------------
   // Watch collision (requesting same type model that exists more than once) (1)
@@ -460,7 +460,7 @@ describe('ModelWatcher', () => {
     modelExt3.prop1 = {
       value: 'whatever'
     };
-  }, 50);
+  }, 5);
 
   //-----------------------------------
   // Has a working find() method (1)
