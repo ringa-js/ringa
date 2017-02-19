@@ -13,15 +13,13 @@ Ringa has all you need to ensure that your asynchronous executor trees, model in
 
 *Note: this project is still in Alpha and will be released February, 2017.*
 
+# Live Demo!
+
+[A live demo of the features of Ringa combined with ReactJs here](http://demo.ringajs.com)
+
 # get started
 
-    npm install ringa
-
-# demo
-
-A full demo with API is under development at [ringa-example-react](https://github.com/jung-digital/ringa-example-react).
-
-It will be deployed end of February, 2017 for you to play around with, and will demonstrate all the features of Ringa in a functioning application in the style of Trello.
+    npm install -S ringa
 
 # nomenclature
 
@@ -29,6 +27,8 @@ It will be deployed end of February, 2017 for you to play around with, and will 
 * Executor: any asynchronous code (callback, Promise, async/await, etc.)
 
 # web example
+
+For a full-featured tour of Ringa, we highly recommend taking a look at the Demo above.
 
 The following example illustrates a few of the important features available in Ringa:
  
@@ -109,7 +109,11 @@ Output counts down every second:
     0
     Blastoff!
 
-# architecture
+# documentation
+
+[Documentation can be found on the wiki.](http://www.github.com/jung-digital/ringa/wiki)
+
+# features
 
 **Controllers**
 
@@ -150,7 +154,7 @@ Output counts down every second:
 
 # tested
 
-* 100% Coverage with Jest (COMING SOON)
+* Coverage with Jest (> 150 unit tests so far and counting)
 
 # development
 
@@ -162,4 +166,4 @@ This project is under active development, along with the following support proje
 
 # license
 
-MIT License (c) 2017 by Joshua Jung
+MIT License (c) 2017 by Joshua Jung and Thomas Yarnall
