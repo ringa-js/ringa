@@ -385,6 +385,7 @@ class Controller extends RingaObject {
       }
 
       ringaEvent._fail(this, error, true);
+      ringaEvent.destroy(true);
     }
 
     if (abort === true) {
@@ -412,6 +413,8 @@ class Controller extends RingaObject {
   }
 
   _threadFinalized(thread) {
+    thread.destroy(true);
+
     this.threads.remove(thread);
 
     if (__DEV__ && !this.__blockRingaEvents) {
@@ -430,7 +433,8 @@ class Controller extends RingaObject {
 
     this.notify(thread.ringaEvent);
 
-    thread.ringaEvent._done(this);
+    thread.ringaEvent._done(this)
+    thread.ringaEvent.destroy(true);
   }
 
   threadFailHandler(thread, error, kill) {
@@ -447,6 +451,7 @@ class Controller extends RingaObject {
     }
 
     thread.ringaEvent._fail(this, error, kill);
+    thread.ringaEvent.destroy();
   }
 
   dispatch(eventType, details, requireCatch = true) {

@@ -5,7 +5,9 @@ import {isDOMNode} from './util/type';
 import {getArgNames} from './util/function';
 import {buildArgumentsFromRingaEvent} from './util/executors';
 
-let eventIx = 0;
+export let eventIx = {
+  count: 0
+};
 
 /**
  * RingaEvent is a generic event type for Ringa that, when dispatched on the DOM, wraps a CustomEvent:
@@ -45,7 +47,7 @@ class RingaEvent extends RingaObject {
    */
   constructor(type, detail = {}, bubbles = true, cancelable = true, event = undefined, requireCatch = true) {
     // TODO add cancel support and unit tests!
-    super(`RingaEvent[${type}, ${eventIx++}]`);
+    super(`RingaEvent[${type}, ${eventIx.count++}]`);
 
     this.detail = detail;
     detail.ringaEvent = this;
@@ -446,7 +448,7 @@ class RingaEvent extends RingaObject {
    * @returns {string}
    */
   toString() {
-    return `RingaEvent['${this.type}' caught by ${this._controllers ? this._controllers.toString() : 'nothing yet.'} ] `;
+    return `${this.id}['${this.type}' caught by ${this._controllers ? this._controllers.toString() : 'nothing yet.'} ] `;
   }
 
   /**

@@ -12,13 +12,15 @@ class InspectorModel extends Model {
   constructor() {
     super();
 
-    this.addProperty('threads', []);
-    this.addProperty('ringaObjects', undefined);
+    if (__DEV__) {
+      this.addProperty('threads', []);
+      this.addProperty('ringaObjects', undefined);
 
-    setTimeout(() => {
-      this.ringaObjects = ids.map;
-      this.notify('ringaObjects');
-    }, 500);
+      setTimeout(() => {
+        this.ringaObjects = ids.map;
+        this.notify('ringaObjects');
+      }, 500);
+    }
   }
 
   //-----------------------------------
@@ -29,18 +31,22 @@ class InspectorModel extends Model {
   // Methods
   //-----------------------------------
   addThread(thread) {
-    this.threads.push(thread);
+    if (__DEV__) {
+      this.threads.push(thread);
 
-    this.notify('threads');
+      this.notify('threads');
+    }
   }
 
   removeThread(thread) {
-    let ix = this.threads.indexOf(thread);
+    if (__DEV__) {
+      let ix = this.threads.indexOf(thread);
 
-    if (ix !== -1) {
-      this.threads.splice(ix, 1);
+      if (ix !== -1) {
+        this.threads.splice(ix, 1);
 
-      this.notify('threads');
+        this.notify('threads');
+      }
     }
   }
 }

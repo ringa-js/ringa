@@ -8,16 +8,18 @@ export default class InspectorController extends Controller {
   constructor(name, bus) {
     super(name, bus);
 
-    this.__blockRingaEvents = true;
+    if (__DEV__) {
+      this.__blockRingaEvents = true;
 
-    this.addModel(new InspectorModel());
+      this.addModel(new InspectorModel());
 
-    this.addListener('ringaThreadStart', (inspectorModel, thread) => {
-      inspectorModel.addThread(thread);
-    });
+      this.addListener('ringaThreadStart', (inspectorModel, thread) => {
+        inspectorModel.addThread(thread);
+      });
 
-    this.addListener('ringaThreadKill', (inspectorModel, thread) => {
-      inspectorModel.removeThread(thread);
-    });
+      this.addListener('ringaThreadKill', (inspectorModel, thread) => {
+        inspectorModel.removeThread(thread);
+      });
+    }
   }
 }

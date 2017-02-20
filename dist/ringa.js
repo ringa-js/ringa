@@ -395,14 +395,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var ids = exports.ids = {
-  __hardReset: function __hardReset() {
+  __hardReset: function __hardReset(debug) {
+    if (true && debug) {
+      console.log('RINGA HARD RESET START (__hardReset(true)) DESTROYING:\n\t' + Object.keys(ids.map._map).sort().join('\n\t'));
+    }
     ids.map._list.concat().forEach(function (obj) {
       obj.destroy();
     });
     ids.counts = new WeakMap();
     ids.constructorNames = {};
+    if (true && debug) {
+      console.log('RINGA HARD FINISHED (' + Object.keys(ids.map._map).length + ' objects still in tact):\n\t' + Object.keys(ids.map._map).sort().join('\n\t'));
+    }
   },
-  map: new _hasharray2.default('id'),
+  map: new _hasharray2.default('id', undefined, { ignoreDuplicates: true }),
   counts: new WeakMap(),
   constructorNames: {}
 };
@@ -451,7 +457,14 @@ var RingaObject = function () {
       var unsafeDestroy = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
       if (unsafeDestroy) {
-        if (ids.map.get(this.id)) {
+        /**
+         * There is the possibility that destroy() was called on an object, the id is cleared, and then another
+         * object takes that id in the interim. While this is highly unusual, it probably means developer error
+         * of some sort (e.g. a developer calls destroy() and then continues to use an object and then calls destroy()
+         * again).
+         */
+        var obj = ids.map.get(this.id);
+        if (obj && obj === this) {
           ids.map.remove(this);
         }
 
@@ -459,8 +472,8 @@ var RingaObject = function () {
       }
 
       if (!ids.map.get(this.id)) {
-        console.error('' + Object.keys(ids.map._map));
-        throw new Error('RingaObject::destroy(): attempting to destroy an item that has not been added to Ringa (\'' + this.id + '\')! Perhaps destroy is called twice?');
+        console.error('RingaObject::destroy(): attempting to destroy a RingaObject that Ringa does not think exists: \'' + this.id + '\'! Perhaps destroy() is called twice?');
+        return;
       }
 
       ids.map.remove(this);
@@ -484,7 +497,7 @@ var RingaObject = function () {
       }
 
       if (ids.map.get(value)) {
-        console.warn('Duplicate Ringa id discovered: ' + JSON.stringify(value) + ' for \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
+        console.warn('Duplicate Ringa id discovered: ' + JSON.stringify(value) + ' of type \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
       }
 
       if (ids.map.get(this._id)) {
@@ -1054,6 +1067,7 @@ exports.default = Model;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.eventIx = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -1081,7 +1095,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var eventIx = 0;
+var eventIx = exports.eventIx = {
+  count: 0
+};
 
 /**
  * RingaEvent is a generic event type for Ringa that, when dispatched on the DOM, wraps a CustomEvent:
@@ -1131,7 +1147,7 @@ var RingaEvent = function (_RingaObject) {
 
     _classCallCheck(this, RingaEvent);
 
-    var _this = _possibleConstructorReturn(this, (RingaEvent.__proto__ || Object.getPrototypeOf(RingaEvent)).call(this, 'RingaEvent[' + type + ', ' + eventIx++ + ']'));
+    var _this = _possibleConstructorReturn(this, (RingaEvent.__proto__ || Object.getPrototypeOf(RingaEvent)).call(this, 'RingaEvent[' + type + ', ' + eventIx.count++ + ']'));
     // TODO add cancel support and unit tests!
 
 
@@ -1509,7 +1525,7 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'toString',
     value: function toString() {
-      return 'RingaEvent[\'' + this.type + '\' caught by ' + (this._controllers ? this._controllers.toString() : 'nothing yet.') + ' ] ';
+      return this.id + '[\'' + this.type + '\' caught by ' + (this._controllers ? this._controllers.toString() : 'nothing yet.') + ' ] ';
     }
 
     /**
@@ -2213,6 +2229,7 @@ var Controller = function (_RingaObject) {
         }
 
         ringaEvent._fail(this, error, true);
+        ringaEvent.destroy(true);
       }
 
       if (abort === true) {
@@ -2243,6 +2260,8 @@ var Controller = function (_RingaObject) {
   }, {
     key: '_threadFinalized',
     value: function _threadFinalized(thread) {
+      thread.destroy(true);
+
       this.threads.remove(thread);
 
       if (true && !this.__blockRingaEvents) {
@@ -2263,6 +2282,7 @@ var Controller = function (_RingaObject) {
       this.notify(thread.ringaEvent);
 
       thread.ringaEvent._done(this);
+      thread.ringaEvent.destroy(true);
     }
   }, {
     key: 'threadFailHandler',
@@ -2280,6 +2300,7 @@ var Controller = function (_RingaObject) {
       }
 
       thread.ringaEvent._fail(this, error, kill);
+      thread.ringaEvent.destroy();
     }
   }, {
     key: 'dispatch',
@@ -3049,13 +3070,15 @@ var InspectorModel = function (_Model) {
 
     var _this = _possibleConstructorReturn(this, (InspectorModel.__proto__ || Object.getPrototypeOf(InspectorModel)).call(this));
 
-    _this.addProperty('threads', []);
-    _this.addProperty('ringaObjects', undefined);
+    if (true) {
+      _this.addProperty('threads', []);
+      _this.addProperty('ringaObjects', undefined);
 
-    setTimeout(function () {
-      _this.ringaObjects = _RingaObject.ids.map;
-      _this.notify('ringaObjects');
-    }, 500);
+      setTimeout(function () {
+        _this.ringaObjects = _RingaObject.ids.map;
+        _this.notify('ringaObjects');
+      }, 500);
+    }
     return _this;
   }
 
@@ -3071,19 +3094,23 @@ var InspectorModel = function (_Model) {
   _createClass(InspectorModel, [{
     key: 'addThread',
     value: function addThread(thread) {
-      this.threads.push(thread);
+      if (true) {
+        this.threads.push(thread);
 
-      this.notify('threads');
+        this.notify('threads');
+      }
     }
   }, {
     key: 'removeThread',
     value: function removeThread(thread) {
-      var ix = this.threads.indexOf(thread);
+      if (true) {
+        var ix = this.threads.indexOf(thread);
 
-      if (ix !== -1) {
-        this.threads.splice(ix, 1);
+        if (ix !== -1) {
+          this.threads.splice(ix, 1);
 
-        this.notify('threads');
+          this.notify('threads');
+        }
       }
     }
   }]);
@@ -3590,17 +3617,19 @@ var InspectorController = function (_Controller) {
 
     var _this = _possibleConstructorReturn(this, (InspectorController.__proto__ || Object.getPrototypeOf(InspectorController)).call(this, name, bus));
 
-    _this.__blockRingaEvents = true;
+    if (true) {
+      _this.__blockRingaEvents = true;
 
-    _this.addModel(new _InspectorModel2.default());
+      _this.addModel(new _InspectorModel2.default());
 
-    _this.addListener('ringaThreadStart', function (inspectorModel, thread) {
-      inspectorModel.addThread(thread);
-    });
+      _this.addListener('ringaThreadStart', function (inspectorModel, thread) {
+        inspectorModel.addThread(thread);
+      });
 
-    _this.addListener('ringaThreadKill', function (inspectorModel, thread) {
-      inspectorModel.removeThread(thread);
-    });
+      _this.addListener('ringaThreadKill', function (inspectorModel, thread) {
+        inspectorModel.removeThread(thread);
+      });
+    }
     return _this;
   }
 
@@ -5069,13 +5098,15 @@ var HashArray = JClass._extend({
         var key = this.objectAt(item, this.keyFields[ix]);
         if (key) {
           var ix = this._map[key].indexOf(item);
-          if (ix != -1) this._map[key].splice(ix, 1);
+          if (ix != -1) this._map[key].splice(ix, 1);else throw new Error('HashArray: attempting to remove an object that was never added!' + key);
 
           if (this._map[key].length == 0) delete this._map[key];
         }
       }
 
-      this._list.splice(this._list.indexOf(item), 1);
+      var ix = this._list.indexOf(item);
+
+      if (ix != -1) this._list.splice(ix, 1);else throw new Error('HashArray: attempting to remove an object that was never added!' + key);
     }
 
     if (this.callback) {
@@ -6692,11 +6723,12 @@ if (typeof window !== 'undefined') {
   window.ringaDebug = debug;
 }
 
-function __hardReset() {
-  _RingaObject.ids.__hardReset();
+function __hardReset(debug) {
+  _RingaObject.ids.__hardReset(debug);
   _ExecutorAbstract.executorCounts.map = new Map();
   _Bus.busses.count = 0;
   _executors.injectionInfo.byName = {};
+  _RingaEvent.eventIx.count = 0;
 }
 
 exports.Command = _Command2.default;

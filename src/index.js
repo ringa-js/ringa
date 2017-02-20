@@ -4,7 +4,7 @@ import Command from './executors/Command';
 import ExecutorFactory from './ExecutorFactory';
 import ThreadFactory from './ThreadFactory';
 import Controller from './Controller';
-import RingaEvent from './RingaEvent';
+import RingaEvent, {eventIx} from './RingaEvent';
 import RingaObject from './RingaObject';
 import RingaEventFactory from './RingaEventFactory';
 import AssignFactory from './factories/AssignFactory';
@@ -105,11 +105,12 @@ if (typeof window !== 'undefined') {
   window.ringaDebug = debug;
 }
 
-export function __hardReset() {
-  ids.__hardReset();
+export function __hardReset(debug) {
+  ids.__hardReset(debug);
   executorCounts.map = new Map();
   busses.count = 0;
   injectionInfo.byName = {};
+  eventIx.count = 0;
 }
 
 export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus, Model, ModelWatcher, InspectorController, InspectorModel };
