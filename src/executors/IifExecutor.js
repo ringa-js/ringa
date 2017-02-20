@@ -51,8 +51,15 @@ class IifExecutor extends ExecutorAbstract {
 
     if (executor) {
       let executorFactory = wrapIfNotInstance(executor, ExecutorFactory);
+      let executorInst = executorFactory.build(this.thread);
 
-      executorFactory.build(this.thread)._execute(this.done, this.fail);
+      executorInst._execute(() => {
+        this.killChildExecutor(executorInst);
+        this.done();
+      }, (event, kill) => {
+        this.killChildExecutor(executorInst);
+        this.fail(event, kill);
+      });
     } else {
       this.done();
     }

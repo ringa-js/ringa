@@ -142,5 +142,5 @@ describe('Command', () => {
     Ringa.dispatch('promiseTest', {
       shouldFail: true
     }, domNode);
-  });
+  }, 500);
 });

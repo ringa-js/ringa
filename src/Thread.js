@@ -72,6 +72,18 @@ class Thread extends RingaHashArray {
     this.running = false;
   }
 
+  removeExecutor(executor) {
+    if (__DEV__ && !this.controller.__blockRingaEvents) {
+      this.controller.dispatch('ringaExecutorEnd', {
+        executor
+      }, false);
+    }
+
+    if (this.has(executor)) {
+      this.remove(executor);
+    }
+  }
+
   //-----------------------------------
   // Events
   //-----------------------------------
@@ -82,6 +94,7 @@ class Thread extends RingaHashArray {
       this._finCouldNotFindError();
     } else {
       executor = this.all[this.index].destroy(true);
+      this.removeExecutor(executor);
     }
 
     this.ringaEvent.addDebug(`Done: ${executor}`);
@@ -120,6 +133,8 @@ class Thread extends RingaHashArray {
 
     if (!kill) {
       this._executorDoneHandler();
+    } else {
+      this.removeExecutor(executor);
     }
   }
 

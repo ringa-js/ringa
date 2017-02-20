@@ -442,16 +442,17 @@ class Controller extends RingaObject {
       console.error(error, `In thread ${thread ? thread.toString() : ''}`);
     }
 
+    thread.ringaEvent._fail(this, error, kill);
+
     if (kill) {
+      thread.ringaEvent.destroy();
+
       if (this.threads.has(thread.id)) {
         this._threadFinalized(thread);
       } else if (__DEV__) {
         throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${thread.id} was not found.`)
       }
     }
-
-    thread.ringaEvent._fail(this, error, kill);
-    thread.ringaEvent.destroy();
   }
 
   dispatch(eventType, details, requireCatch = true) {

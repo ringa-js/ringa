@@ -80,9 +80,12 @@ class ForEachExecutor extends ExecutorAbstract {
           return this.done();
         }
 
-        this.executors[ix]._execute(() => {
+        let executor = this.executors[ix];
+        executor._execute(() => {
+          this.killChildExecutor(executor);
           setTimeout(_next, 0);
         }, (error, kill = false) => {
+          this.killChildExecutor(executor);
           this.fail(error, kill);
 
           if (!kill) {

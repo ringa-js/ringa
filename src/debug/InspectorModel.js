@@ -13,13 +13,15 @@ class InspectorModel extends Model {
     super();
 
     if (__DEV__) {
-      this.addProperty('threads', []);
+      this.threads = [];
+      this.executors = [];
+
       this.addProperty('ringaObjects', undefined);
 
       setTimeout(() => {
         this.ringaObjects = ids.map;
-        this.notify('ringaObjects');
-      }, 500);
+        this.notify('threads');
+      }, 750);
     }
   }
 
@@ -46,6 +48,26 @@ class InspectorModel extends Model {
         this.threads.splice(ix, 1);
 
         this.notify('threads');
+      }
+    }
+  }
+
+  addExecutor(executor) {
+    if (__DEV__) {
+      this.executors.push(executor);
+
+      this.notify('executors');
+    }
+  }
+
+  removeExecutor(executor) {
+    if (__DEV__) {
+      let ix = this.executors.indexOf(executor);
+
+      if (ix !== -1) {
+        this.executors.splice(ix, 1);
+
+        this.notify('executors');
       }
     }
   }

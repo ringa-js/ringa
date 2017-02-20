@@ -88,6 +88,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.executorCounts = undefined;
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _RingaObject2 = __webpack_require__(1);
@@ -193,6 +195,12 @@ var ExecutorAbstract = function (_RingaObject) {
         throw new Error('ExecutorAbstract::_execute(): an executor has been run twice!');
       }
 
+      if (true && !this.controller.__blockRingaEvents) {
+        this.controller.dispatch('ringaExecutorStart', {
+          executor: this
+        }, false);
+      }
+
       this.hasBeenRun = true;
 
       this.doneHandler = doneHandler;
@@ -224,7 +232,7 @@ var ExecutorAbstract = function (_RingaObject) {
         promise.catch(function (error) {
           _this2.ringaEvent.lastPromiseError = error;
 
-          _this2.fail(error);
+          _this2.fail(error, false);
         });
       } else if (true) {
         throw Error('ExecutorAbstract::waitForPromise(): command ' + this.toString() + ' returned something that is not a promise, ' + promise);
@@ -258,13 +266,21 @@ var ExecutorAbstract = function (_RingaObject) {
             min = _controller$options$t.min,
             max = _controller$options$t.max;
 
-        var millis = Math.random() * (max - min) + min - elapsed;
 
-        // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
-        if (millis < 5) {
-          _done();
+        if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
+          var millis = Math.random() * (max - min) + min - elapsed;
+
+          // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
+          if (millis < 5) {
+            _done();
+          } else {
+            setTimeout(_done, millis);
+          }
         } else {
-          setTimeout(_done, millis);
+          if (true && min && max && !isNaN(min) && !isNaN(max)) {
+            console.warn(this + ' invalid throttle settings! ' + min + ' - ' + max + ' ' + (typeof min === 'undefined' ? 'undefined' : _typeof(min)) + ' ' + (typeof max === 'undefined' ? 'undefined' : _typeof(max)));
+          }
+          _done();
         }
       } else {
         _done();
@@ -341,6 +357,16 @@ var ExecutorAbstract = function (_RingaObject) {
       this.error = new Error(message);
 
       this.failHandler(this.error, true);
+    }
+  }, {
+    key: 'killChildExecutor',
+    value: function killChildExecutor(executor) {
+      if (true && !this.controller.__blockRingaEvents) {
+        this.controller.dispatch('ringaExecutorEnd', {
+          executor: executor
+        }, false);
+      }
+      executor.destroy(true);
     }
   }, {
     key: 'ringaEvent',
@@ -468,12 +494,12 @@ var RingaObject = function () {
           ids.map.remove(this);
         }
 
-        return;
+        return this;
       }
 
       if (!ids.map.get(this.id)) {
         console.error('RingaObject::destroy(): attempting to destroy a RingaObject that Ringa does not think exists: \'' + this.id + '\'! Perhaps destroy() is called twice?');
-        return;
+        return this;
       }
 
       ids.map.remove(this);
@@ -3071,13 +3097,15 @@ var InspectorModel = function (_Model) {
     var _this = _possibleConstructorReturn(this, (InspectorModel.__proto__ || Object.getPrototypeOf(InspectorModel)).call(this));
 
     if (true) {
-      _this.addProperty('threads', []);
+      _this.threads = [];
+      _this.executors = [];
+
       _this.addProperty('ringaObjects', undefined);
 
       setTimeout(function () {
         _this.ringaObjects = _RingaObject.ids.map;
-        _this.notify('ringaObjects');
-      }, 500);
+        _this.notify('threads');
+      }, 750);
     }
     return _this;
   }
@@ -3110,6 +3138,28 @@ var InspectorModel = function (_Model) {
           this.threads.splice(ix, 1);
 
           this.notify('threads');
+        }
+      }
+    }
+  }, {
+    key: 'addExecutor',
+    value: function addExecutor(executor) {
+      if (true) {
+        this.executors.push(executor);
+
+        this.notify('executors');
+      }
+    }
+  }, {
+    key: 'removeExecutor',
+    value: function removeExecutor(executor) {
+      if (true) {
+        var ix = this.executors.indexOf(executor);
+
+        if (ix !== -1) {
+          this.executors.splice(ix, 1);
+
+          this.notify('executors');
         }
       }
     }
@@ -3629,6 +3679,14 @@ var InspectorController = function (_Controller) {
       _this.addListener('ringaThreadKill', function (inspectorModel, thread) {
         inspectorModel.removeThread(thread);
       });
+
+      _this.addListener('ringaExecutorStart', function (inspectorModel, executor) {
+        inspectorModel.addExecutor(executor);
+      });
+
+      _this.addListener('ringaExecutorEnd', function (inspectorModel, executor) {
+        inspectorModel.removeExecutor(executor);
+      });
     }
     return _this;
   }
@@ -3767,6 +3825,18 @@ var Command = function (_ExecutorAbstract) {
       var kill = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
       _get(Command.prototype.__proto__ || Object.getPrototypeOf(Command.prototype), 'fail', this).call(this, error, kill);
+    }
+
+    /**
+     * By default is this executors id.
+     *
+     * @returns {string|*}
+     */
+
+  }, {
+    key: 'toString',
+    value: function toString() {
+      return this.id;
     }
   }, {
     key: 'cache',
@@ -3912,11 +3982,14 @@ var ForEachExecutor = function (_ExecutorAbstract) {
               return _this2.done();
             }
 
-            _this2.executors[ix]._execute(function () {
+            var executor = _this2.executors[ix];
+            executor._execute(function () {
+              _this2.killChildExecutor(executor);
               setTimeout(_next, 0);
             }, function (error) {
               var kill = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+              _this2.killChildExecutor(executor);
               _this2.fail(error, kill);
 
               if (!kill) {
@@ -4052,6 +4125,8 @@ var IifExecutor = function (_ExecutorAbstract) {
      * @private
      */
     value: function _execute(doneHandler, failHandler) {
+      var _this2 = this;
+
       _get(IifExecutor.prototype.__proto__ || Object.getPrototypeOf(IifExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
       var argNames = (0, _function.getArgNames)(this.condition);
@@ -4060,9 +4135,18 @@ var IifExecutor = function (_ExecutorAbstract) {
       var executor = !!conditionResult ? this.trueExecutor : this.falseExecutor;
 
       if (executor) {
-        var executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
+        (function () {
+          var executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
+          var executorInst = executorFactory.build(_this2.thread);
 
-        executorFactory.build(this.thread)._execute(this.done, this.fail);
+          executorInst._execute(function () {
+            _this2.killChildExecutor(executorInst);
+            _this2.done();
+          }, function (event, kill) {
+            _this2.killChildExecutor(executorInst);
+            _this2.fail(event, kill);
+          });
+        })();
       } else {
         this.done();
       }
@@ -5979,6 +6063,19 @@ var Thread = function (_RingaHashArray) {
     value: function kill() {
       this.running = false;
     }
+  }, {
+    key: 'removeExecutor',
+    value: function removeExecutor(executor) {
+      if (true && !this.controller.__blockRingaEvents) {
+        this.controller.dispatch('ringaExecutorEnd', {
+          executor: executor
+        }, false);
+      }
+
+      if (this.has(executor)) {
+        this.remove(executor);
+      }
+    }
 
     //-----------------------------------
     // Events
@@ -5993,6 +6090,7 @@ var Thread = function (_RingaHashArray) {
         this._finCouldNotFindError();
       } else {
         executor = this.all[this.index].destroy(true);
+        this.removeExecutor(executor);
       }
 
       this.ringaEvent.addDebug('Done: ' + executor);
@@ -6032,6 +6130,8 @@ var Thread = function (_RingaHashArray) {
 
       if (!kill) {
         this._executorDoneHandler();
+      } else {
+        this.removeExecutor(executor);
       }
     }
   }, {

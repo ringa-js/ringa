@@ -95,12 +95,12 @@ export default class RingaObject {
         ids.map.remove(this);
       }
 
-      return;
+      return this;
     }
 
     if (!ids.map.get(this.id)) {
       console.error(`RingaObject::destroy(): attempting to destroy a RingaObject that Ringa does not think exists: '${this.id}'! Perhaps destroy() is called twice?`);
-      return;
+      return this;
     }
 
     ids.map.remove(this);

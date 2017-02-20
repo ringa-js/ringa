@@ -89,6 +89,12 @@ class ExecutorAbstract extends RingaObject {
       throw new Error('ExecutorAbstract::_execute(): an executor has been run twice!');
     }
 
+    if (__DEV__ && !this.controller.__blockRingaEvents) {
+      this.controller.dispatch('ringaExecutorStart', {
+        executor: this
+      }, false);
+    }
+
     this.hasBeenRun = true;
 
     this.doneHandler = doneHandler;
@@ -115,7 +121,7 @@ class ExecutorAbstract extends RingaObject {
       promise.catch((error) => {
         this.ringaEvent.lastPromiseError = error;
 
-        this.fail(error);
+        this.fail(error, false);
       });
     } else if (__DEV__) {
       throw Error(`ExecutorAbstract::waitForPromise(): command ${this.toString()} returned something that is not a promise, ${promise}`);
@@ -141,13 +147,21 @@ class ExecutorAbstract extends RingaObject {
     if (__DEV__ && this.controller.options.throttle) {
       let elapsed = new Date().getTime() - this.startTime;
       let { min, max } = this.controller.options.throttle;
-      let millis = (Math.random() * (max - min)) + min - elapsed;
 
-      // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
-      if (millis < 5) {
-        _done();
+      if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
+        let millis = (Math.random() * (max - min)) + min - elapsed;
+
+        // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
+        if (millis < 5) {
+          _done();
+        } else {
+          setTimeout(_done, millis);
+        }
       } else {
-        setTimeout(_done, millis);
+        if (__DEV__ && min && max && !isNaN(min) && !isNaN(max)) {
+          console.warn(`${this} invalid throttle settings! ${min} - ${max} ${typeof min} ${typeof max}`);
+        }
+        _done();
       }
     } else {
       _done();
@@ -209,6 +223,15 @@ class ExecutorAbstract extends RingaObject {
     this.error = new Error(message);
 
     this.failHandler(this.error, true);
+  }
+
+  killChildExecutor(executor) {
+    if (__DEV__ && !this.controller.__blockRingaEvents) {
+      this.controller.dispatch('ringaExecutorEnd', {
+        executor
+      }, false);
+    }
+    executor.destroy(true);
   }
 }
 

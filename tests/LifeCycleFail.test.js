@@ -51,7 +51,7 @@ describe('LifeCycleFail', () => {
       expect(event.error.message).toEqual('some error');
       done();
     });
-  }, 50);
+  }, 200);
 
   //----------------------------------------------
   // RingaEvent -> 1 Command Fail Call (kill false)
@@ -76,7 +76,7 @@ describe('LifeCycleFail', () => {
       didFail = true;
       expect(event.error).toEqual('some error');
     });
-  }, 50);
+  }, 200);
 
   //----------------------------------------------
   // RingaEvent -> 1 Command Fail Call (kill true)
@@ -98,5 +98,5 @@ describe('LifeCycleFail', () => {
       expect(ringaEvent.detail.testObject.count).toEqual(undefined);
       done();
     });
-  }, 50);
+  }, 200);
 });

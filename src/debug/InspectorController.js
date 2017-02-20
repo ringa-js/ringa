@@ -20,6 +20,14 @@ export default class InspectorController extends Controller {
       this.addListener('ringaThreadKill', (inspectorModel, thread) => {
         inspectorModel.removeThread(thread);
       });
+
+      this.addListener('ringaExecutorStart', (inspectorModel, executor) => {
+        inspectorModel.addExecutor(executor);
+      });
+
+      this.addListener('ringaExecutorEnd', (inspectorModel, executor) => {
+        inspectorModel.removeExecutor(executor);
+    })
     }
   }
 }
