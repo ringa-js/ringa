@@ -41,8 +41,9 @@ class RingaEvent extends RingaObject {
    *               into any executors this triggers, making passing values super simple.
    * @param bubbles True if you want the event to bubble (default is true).
    * @param cancelable True if you want the event to be cancellable (default is true).
+   * @param event If an event triggered this one, then this will be set (e.g. a DOM Event like 'click' or 'resize')
    */
-  constructor(type, detail = {}, bubbles = true, cancelable = true, event = undefined) {
+  constructor(type, detail = {}, bubbles = true, cancelable = true, event = undefined, requireCatch = true) {
     // TODO add cancel support and unit tests!
     super(`RingaEvent[${type}, ${eventIx++}]`);
 
@@ -57,6 +58,8 @@ class RingaEvent extends RingaObject {
     this.controller = undefined;
 
     this._errors = undefined;
+
+    this.requireCatch = requireCatch;
 
     this.event = event;
 
@@ -176,11 +179,13 @@ class RingaEvent extends RingaObject {
    */
   dispatch(bus = document) {
     if (__DEV__ || this.detail.debug) {
-      setTimeout(() => {
-        if (!this.caught) {
-          console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
-        }
-      }, 50);
+      if (this.requireCatch) {
+        setTimeout(() => {
+          if (!this.caught) {
+            console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
+          }
+        }, 50);
+      }
 
       this.dispatchStack = ErrorStackParser.parse(new Error());
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()

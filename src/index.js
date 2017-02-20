@@ -1,3 +1,5 @@
+import InspectorController from './debug/InspectorController';
+import InspectorModel from './debug/InspectorModel';
 import Command from './executors/Command';
 import ExecutorFactory from './ExecutorFactory';
 import ThreadFactory from './ThreadFactory';
@@ -81,8 +83,8 @@ export function assign (executor, detail) {
   return new AssignFactory(executor, detail);
 }
 
-export function event (eventType, detail, bus, requireCatch = false, bubbles = true, cancellable = true) {
-  return new RingaEventFactory(eventType, detail, bus, requireCatch, bubbles, cancellable);
+export function event (eventType, detail, bus, requireCatch = false, bubbles = true, cancellable = true, event = undefined) {
+  return new RingaEventFactory(eventType, detail, bus, requireCatch, bubbles, cancellable, event);
 }
 
 export function notify(eventType) {
@@ -104,16 +106,17 @@ if (typeof window !== 'undefined') {
 }
 
 export function __hardReset() {
-  ids.map = {};
-  ids.counts = new WeakMap();
+  ids.__hardReset();
   executorCounts.map = new Map();
   busses.count = 0;
   injectionInfo.byName = {};
 }
 
-export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus, Model, ModelWatcher };
+export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus, Model, ModelWatcher, InspectorController, InspectorModel };
 
 export default {
+  InspectorController,
+  InspectorModel,
   Controller,
   Command,
   ExecutorFactory,

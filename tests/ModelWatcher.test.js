@@ -117,7 +117,7 @@ describe('ModelWatcher', () => {
     });
 
     model1.prop1 = 'someNewValue';
-  }, 5);
+  }, 50);
 
   //-----------------------------------
   // Watch by Class (1.5)

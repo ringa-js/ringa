@@ -329,6 +329,12 @@ class Controller extends RingaObject {
 
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
+    if (__DEV__ && !this.__blockRingaEvents) {
+      this.dispatch('ringaThreadStart', {
+        thread
+      }, false);
+    }
+
     // TODO PREHOOK should allow the handler to cancel running of the thread.
     thread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
@@ -405,12 +411,22 @@ class Controller extends RingaObject {
     // Can be extended by a subclass
   }
 
+  _threadFinalized(thread) {
+    this.threads.remove(thread);
+
+    if (__DEV__ && !this.__blockRingaEvents) {
+      this.dispatch('ringaThreadKill', {
+        thread
+      }, false);
+    }
+  }
+
   threadDoneHandler(thread) {
     if (__DEV__ && !this.threads.has(thread.id)) {
       throw Error(`Controller::threadDoneHandler(): could not find thread with id ${thread.id}`);
     }
 
-    this.threads.remove(thread);
+    this._threadFinalized(thread);
 
     this.notify(thread.ringaEvent);
 
@@ -424,7 +440,7 @@ class Controller extends RingaObject {
 
     if (kill) {
       if (this.threads.has(thread.id)) {
-        this.threads.remove(thread);
+        this._threadFinalized(thread);
       } else if (__DEV__) {
         throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${thread.id} was not found.`)
       }
@@ -433,12 +449,12 @@ class Controller extends RingaObject {
     thread.ringaEvent._fail(this, error, kill);
   }
 
-  dispatch(eventType, details) {
+  dispatch(eventType, details, requireCatch = true) {
     if (!this.bus) {
       throw new Error(`Controller::dispatch(): bus has not yet been set so you cannot dispatch ('${eventType}')! Wait for Controller::busMounted().`);
     }
 
-    return new RingaEvent(eventType, details).dispatch(this.bus);
+    return new RingaEvent(eventType, details, true, true, undefined, requireCatch).dispatch(this.bus);
   }
 
   toString() {

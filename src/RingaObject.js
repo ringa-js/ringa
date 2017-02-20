@@ -1,7 +1,15 @@
 import camelCase from 'camelcase';
+import HashArray from 'hasharray';
 
 export const ids = {
-  map: {},
+  __hardReset: () => {
+    ids.map._list.concat().forEach(obj => {
+      obj.destroy();
+    });
+    ids.counts = new WeakMap();
+    ids.constructorNames = {};
+  },
+  map: new HashArray('id'),
   counts: new WeakMap(),
   constructorNames: {}
 };
@@ -16,7 +24,7 @@ export default class RingaObject {
     if (id) {
       this.id = id;
     } else {
-      this._id = this.constructor.name + ids.counts[this.constructor];
+      this.id = this.constructor.name + ids.counts[this.constructor];
     }
 
     ids.counts[this.constructor]++;
@@ -36,17 +44,25 @@ export default class RingaObject {
   // Properties
   //-----------------------------------
   set id(value) {
+    if (value === this._id) {
+      return;
+    }
+
     if (typeof value !== 'string') {
       throw new Error(`RingaObject::id: must be a string! Was ${JSON.stringify(value)}`);
     }
 
-    if (ids.map[value]) {
+    if (ids.map.get(value)) {
       console.warn(`Duplicate Ringa id discovered: ${JSON.stringify(value)} for '${this.constructor.name}'. Call RingaObject::destroy() to clear up the id.`);
     }
 
-    ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.
+    if (ids.map.get(this._id)) {
+      ids.map.remove(this);
+    }
 
     this._id = value;
+
+    ids.map.add(this);
   }
 
   get id() {
@@ -60,8 +76,21 @@ export default class RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  destroy() {
-    delete ids.map[this.id];
+  destroy(unsafeDestroy = false) {
+    if (unsafeDestroy) {
+      if (ids.map.get(this.id)) {
+        ids.map.remove(this);
+      }
+
+      return;
+    }
+
+    if (!ids.map.get(this.id)) {
+      console.error(`${Object.keys(ids.map._map)}`);
+      throw new Error(`RingaObject::destroy(): attempting to destroy an item that has not been added to Ringa ('${this.id}')! Perhaps destroy is called twice?`);
+    }
+
+    ids.map.remove(this);
 
     return this;
   }

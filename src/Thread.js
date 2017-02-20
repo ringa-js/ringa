@@ -81,7 +81,7 @@ class Thread extends RingaHashArray {
     if (!this.all[this.index]) {
       this._finCouldNotFindError();
     } else {
-      executor = this.all[this.index].destroy();
+      executor = this.all[this.index].destroy(true);
     }
 
     this.ringaEvent.addDebug(`Done: ${executor}`);
@@ -105,7 +105,7 @@ class Thread extends RingaHashArray {
     if (!this.all[this.index]) {
       this._finCouldNotFindError(error);
     } else {
-      executor = this.all[this.index].destroy();
+      executor = this.all[this.index].destroy(true);
     }
 
     this.ringaEvent.addDebug(`Fail: ${executor}`);
