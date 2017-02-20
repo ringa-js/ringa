@@ -61,7 +61,8 @@ class IntervalExecutor extends ExecutorAbstract {
       this.done();
     } else {
       this.resetTimeout();
-      this.executorFactory.build(this.thread)._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
+      this.childExecutor = this.executorFactory.build(this.thread);
+      this.childExecutor._execute(this._intervalDone.bind(this), this._intervalFail.bind(this))
       setTimeout(this._interval.bind(this), this.milliseconds);
     }
   }
@@ -77,10 +78,11 @@ class IntervalExecutor extends ExecutorAbstract {
   }
 
   _intervalDone() {
-    // TODO: remove or add useful functionality (discuss)
+    this.killChildExecutor(this.childExecutor);
   }
 
   _intervalFail(error, kill) {
+    this.killChildExecutor(this.childExecutor);
     this.fail(error, kill);
   }
 

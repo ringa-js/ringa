@@ -1,4 +1,5 @@
 import RingaHashArray from './RingaHashArray';
+import {inspectorDispatch} from './debug/InspectorController';
 
 class Thread extends RingaHashArray {
   //-----------------------------------
@@ -59,6 +60,10 @@ class Thread extends RingaHashArray {
   executeNext() {
     let executor = this.all[this.index];
 
+    if (this.index > 0) {
+      let previousExecutor = this.all[this.index-1];
+      this.removeExecutor(previousExecutor);
+    }
     try {
       this.ringaEvent.addDebug(`Executing: ${executor}`);
 
@@ -74,9 +79,9 @@ class Thread extends RingaHashArray {
 
   removeExecutor(executor) {
     if (__DEV__ && !this.controller.__blockRingaEvents) {
-      this.controller.dispatch('ringaExecutorEnd', {
+      inspectorDispatch('ringaExecutorEnd', {
         executor
-      }, false);
+      });
     }
 
     if (this.has(executor)) {
@@ -94,7 +99,6 @@ class Thread extends RingaHashArray {
       this._finCouldNotFindError();
     } else {
       executor = this.all[this.index].destroy(true);
-      this.removeExecutor(executor);
     }
 
     this.ringaEvent.addDebug(`Done: ${executor}`);
@@ -109,6 +113,7 @@ class Thread extends RingaHashArray {
       setTimeout(this.executeNext.bind(this), 0);
     } else {
       this.doneHandler(this);
+      this.removeExecutor(executor);
     }
   }
 
@@ -139,6 +144,16 @@ class Thread extends RingaHashArray {
   }
 
   _finCouldNotFindError(error) {
+    /**
+     * During unit tests, __hardReset() is called at the end of the test. After that point, its possible
+     * for some of the executors to finish up and then because all the threads have been destroyed this
+     * object is going to try to kill the executor that Ringa already cleaned up during a __hardReset. Since
+     * we are moving onto the next unit test, we can just ignore that issue.
+     */
+    if (this.destroyed) {
+      return;
+    }
+
     let e = (this.all && this.all.length) ? this.all.map(e => {
         return e.toString();
       }).join(', ') : `No executors found on thread ${this.toString()}`;

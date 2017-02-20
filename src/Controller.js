@@ -3,6 +3,8 @@ import RingaObject from './RingaObject';
 import HashArray from 'hasharray';
 import RingaEvent from './RingaEvent';
 import ModelWatcher from './ModelWatcher';
+import {inspectorDispatch} from './debug/InspectorController';
+import {ringaGlobalBus} from './Bus';
 import snakeCase from 'snake-case';
 import {buildArgumentsFromRingaEvent} from './util/executors';
 import {getArgNames} from './util/function';
@@ -330,9 +332,9 @@ class Controller extends RingaObject {
     ringaEvent._dispatchEvent(RingaEvent.PREHOOK);
 
     if (__DEV__ && !this.__blockRingaEvents) {
-      this.dispatch('ringaThreadStart', {
+      inspectorDispatch('ringaThreadStart', {
         thread
-      }, false);
+      });
     }
 
     // TODO PREHOOK should allow the handler to cancel running of the thread.
@@ -418,9 +420,9 @@ class Controller extends RingaObject {
     this.threads.remove(thread);
 
     if (__DEV__ && !this.__blockRingaEvents) {
-      this.dispatch('ringaThreadKill', {
+      inspectorDispatch('ringaThreadKill', {
         thread
-      }, false);
+      });
     }
   }
 

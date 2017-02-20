@@ -31,9 +31,8 @@ export default class RingaObject {
       this.id = id;
     } else {
       this.id = this.constructor.name + ids.counts[this.constructor];
+      ids.counts[this.constructor]++;
     }
-
-    ids.counts[this.constructor]++;
 
     if (!name) {
       name = camelCase(this.constructor.name);
@@ -83,6 +82,8 @@ export default class RingaObject {
   // Methods
   //-----------------------------------
   destroy(unsafeDestroy = false) {
+    this.destroyed = true;
+
     if (unsafeDestroy) {
       /**
        * There is the possibility that destroy() was called on an object, the id is cleared, and then another

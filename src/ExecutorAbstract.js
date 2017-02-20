@@ -1,4 +1,5 @@
 import RingaObject from './RingaObject';
+import {inspectorDispatch} from './debug/InspectorController';
 import {now} from './util/debug';
 import {isPromise} from './util/type';
 
@@ -90,9 +91,9 @@ class ExecutorAbstract extends RingaObject {
     }
 
     if (__DEV__ && !this.controller.__blockRingaEvents) {
-      this.controller.dispatch('ringaExecutorStart', {
+      inspectorDispatch('ringaExecutorStart', {
         executor: this
-      }, false);
+      });
     }
 
     this.hasBeenRun = true;
@@ -113,12 +114,12 @@ class ExecutorAbstract extends RingaObject {
     if (isPromise(promise)) {
       this.ringaEvent.detail._promise = promise;
 
-      promise.then((result) => {
+      promise.then(result => {
         this.ringaEvent.lastPromiseResult = result;
 
         this.done();
       });
-      promise.catch((error) => {
+      promise.catch(error => {
         this.ringaEvent.lastPromiseError = error;
 
         this.fail(error, false);
@@ -133,7 +134,7 @@ class ExecutorAbstract extends RingaObject {
    */
   done() {
     if (__DEV__ && this.error) {
-      throw new Error('ExecutorAbstract::done(): called done on a executor that has already errored!');
+      console.error('ExecutorAbstract::done(): called done on a executor that has already failed! Original error:', this.error);
     }
 
     let _done = () => {
@@ -145,26 +146,30 @@ class ExecutorAbstract extends RingaObject {
     };
 
     if (__DEV__ && this.controller.options.throttle) {
-      let elapsed = new Date().getTime() - this.startTime;
-      let { min, max } = this.controller.options.throttle;
-
-      if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
-        let millis = (Math.random() * (max - min)) + min - elapsed;
-
-        // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
-        if (millis < 5) {
-          _done();
-        } else {
-          setTimeout(_done, millis);
-        }
-      } else {
-        if (__DEV__ && min && max && !isNaN(min) && !isNaN(max)) {
-          console.warn(`${this} invalid throttle settings! ${min} - ${max} ${typeof min} ${typeof max}`);
-        }
-        _done();
-      }
+      this.doneThrottled(_done);
     } else {
       _done();
+    }
+  }
+
+  doneThrottled(done) {
+    let elapsed = new Date().getTime() - this.startTime;
+    let { min, max } = this.controller.options.throttle;
+
+    if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
+      let millis = (Math.random() * (max - min)) + min - elapsed;
+
+      // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
+      if (millis < 5) {
+        done();
+      } else {
+        setTimeout(done, millis);
+      }
+    } else {
+      if (__DEV__ && min && max && !isNaN(min) && !isNaN(max)) {
+        console.warn(`${this} invalid throttle settings! ${min} - ${max} ${typeof min} ${typeof max}`);
+      }
+      done();
     }
   }
 
@@ -225,13 +230,19 @@ class ExecutorAbstract extends RingaObject {
     this.failHandler(this.error, true);
   }
 
-  killChildExecutor(executor) {
+  /**
+   * This method is used to destroy a child executor that is *not* attached to the original thread. For example,
+   * the IifExecutor runs a child executor and manages its done and fail.
+   *
+   * @param childExecutor
+   */
+  killChildExecutor(childExecutor) {
     if (__DEV__ && !this.controller.__blockRingaEvents) {
-      this.controller.dispatch('ringaExecutorEnd', {
-        executor
-      }, false);
+      inspectorDispatch('ringaExecutorEnd', {
+        executor: childExecutor
+      });
     }
-    executor.destroy(true);
+    childExecutor.destroy(true);
   }
 }
 

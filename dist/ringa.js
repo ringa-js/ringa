@@ -96,7 +96,9 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _debug = __webpack_require__(8);
+var _InspectorController = __webpack_require__(7);
+
+var _debug = __webpack_require__(10);
 
 var _type = __webpack_require__(3);
 
@@ -196,9 +198,9 @@ var ExecutorAbstract = function (_RingaObject) {
       }
 
       if (true && !this.controller.__blockRingaEvents) {
-        this.controller.dispatch('ringaExecutorStart', {
+        (0, _InspectorController.inspectorDispatch)('ringaExecutorStart', {
           executor: this
-        }, false);
+        });
       }
 
       this.hasBeenRun = true;
@@ -249,7 +251,7 @@ var ExecutorAbstract = function (_RingaObject) {
       var _this3 = this;
 
       if (true && this.error) {
-        throw new Error('ExecutorAbstract::done(): called done on a executor that has already errored!');
+        console.error('ExecutorAbstract::done(): called done on a executor that has already failed! Original error:', this.error);
       }
 
       var _done = function _done() {
@@ -261,29 +263,34 @@ var ExecutorAbstract = function (_RingaObject) {
       };
 
       if (true && this.controller.options.throttle) {
-        var elapsed = new Date().getTime() - this.startTime;
-        var _controller$options$t = this.controller.options.throttle,
-            min = _controller$options$t.min,
-            max = _controller$options$t.max;
-
-
-        if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
-          var millis = Math.random() * (max - min) + min - elapsed;
-
-          // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
-          if (millis < 5) {
-            _done();
-          } else {
-            setTimeout(_done, millis);
-          }
-        } else {
-          if (true && min && max && !isNaN(min) && !isNaN(max)) {
-            console.warn(this + ' invalid throttle settings! ' + min + ' - ' + max + ' ' + (typeof min === 'undefined' ? 'undefined' : _typeof(min)) + ' ' + (typeof max === 'undefined' ? 'undefined' : _typeof(max)));
-          }
-          _done();
-        }
+        this.doneThrottled(_done);
       } else {
         _done();
+      }
+    }
+  }, {
+    key: 'doneThrottled',
+    value: function doneThrottled(done) {
+      var elapsed = new Date().getTime() - this.startTime;
+      var _controller$options$t = this.controller.options.throttle,
+          min = _controller$options$t.min,
+          max = _controller$options$t.max;
+
+
+      if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
+        var millis = Math.random() * (max - min) + min - elapsed;
+
+        // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
+        if (millis < 5) {
+          done();
+        } else {
+          setTimeout(done, millis);
+        }
+      } else {
+        if (true && min && max && !isNaN(min) && !isNaN(max)) {
+          console.warn(this + ' invalid throttle settings! ' + min + ' - ' + max + ' ' + (typeof min === 'undefined' ? 'undefined' : _typeof(min)) + ' ' + (typeof max === 'undefined' ? 'undefined' : _typeof(max)));
+        }
+        done();
       }
     }
 
@@ -358,15 +365,23 @@ var ExecutorAbstract = function (_RingaObject) {
 
       this.failHandler(this.error, true);
     }
+
+    /**
+     * This method is used to destroy a child executor that is *not* attached to the original thread. For example,
+     * the IifExecutor runs a child executor and manages its done and fail.
+     *
+     * @param childExecutor
+     */
+
   }, {
     key: 'killChildExecutor',
-    value: function killChildExecutor(executor) {
+    value: function killChildExecutor(childExecutor) {
       if (true && !this.controller.__blockRingaEvents) {
-        this.controller.dispatch('ringaExecutorEnd', {
-          executor: executor
-        }, false);
+        (0, _InspectorController.inspectorDispatch)('ringaExecutorEnd', {
+          executor: childExecutor
+        });
       }
-      executor.destroy(true);
+      childExecutor.destroy(true);
     }
   }, {
     key: 'ringaEvent',
@@ -412,7 +427,7 @@ var _camelcase = __webpack_require__(25);
 
 var _camelcase2 = _interopRequireDefault(_camelcase);
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(11);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -452,9 +467,8 @@ var RingaObject = function () {
       this.id = id;
     } else {
       this.id = this.constructor.name + ids.counts[this.constructor];
+      ids.counts[this.constructor]++;
     }
-
-    ids.counts[this.constructor]++;
 
     if (!name) {
       name = (0, _camelcase2.default)(this.constructor.name);
@@ -481,6 +495,8 @@ var RingaObject = function () {
     //-----------------------------------
     value: function destroy() {
       var unsafeDestroy = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      this.destroyed = true;
 
       if (unsafeDestroy) {
         /**
@@ -824,7 +840,7 @@ var _SleepExecutor = __webpack_require__(42);
 
 var _SleepExecutor2 = _interopRequireDefault(_SleepExecutor);
 
-var _RingaEventFactory = __webpack_require__(12);
+var _RingaEventFactory = __webpack_require__(14);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -911,188 +927,6 @@ exports.default = ExecutorFactory;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _RingaObject2 = __webpack_require__(1);
-
-var _RingaObject3 = _interopRequireDefault(_RingaObject2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
- * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
- */
-var Model = function (_RingaObject) {
-  _inherits(Model, _RingaObject);
-
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  /**
-   * Constructs a new model.
-   *
-   * @param name The name of this model for injection.
-   * @param values A POJO of default values to assign to the properties in this Model.
-   */
-  function Model(name, values) {
-    _classCallCheck(this, Model);
-
-    if (typeof name !== 'string' && values === undefined) {
-      values = name;
-      name = undefined;
-    }
-
-    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
-
-    _this._values = values;
-    _this._modelWatchers = [];
-    _this.watchers = [];
-    return _this;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-  /**
-   * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
-   *
-   * @param modelWatcher The ModelWatcher to add.
-   */
-
-
-  _createClass(Model, [{
-    key: 'addInjector',
-    value: function addInjector(modelWatcher) {
-      if (true && this._modelWatchers.indexOf(modelWatcher) !== -1) {
-        throw new Error('Model::addInjector(): tried to add the same injector to a model twice! ' + this.id);
-      }
-
-      this._modelWatchers.push(modelWatcher);
-    }
-
-    /**
-     * Send a signal to all watchers.
-     *
-     * @param signal Generally a path to a property that has changed in the model.
-     */
-
-  }, {
-    key: 'notify',
-    value: function notify(signal) {
-      var _this2 = this;
-
-      // Notify all view objects through all injectors
-      this._modelWatchers.forEach(function (mi) {
-        mi.notify(_this2, signal);
-      });
-
-      this.watchers.forEach(function (handler) {
-        handler(signal);
-      });
-    }
-
-    /**
-     * Watch this model for any notify signals.
-     *
-     * @param handler The function to call when a notify signal is sent.
-     */
-
-  }, {
-    key: 'watch',
-    value: function watch(handler) {
-      this.watchers.push(handler);
-    }
-
-    /**
-     * Add a property to this model that by default does its own notifications to ModelWatcher and verifies that if the
-     * value has not changed (strict reference compare A === B) then it won't notify and spam the ModelWatcher.
-     *
-     * If you want to do a custom shallow or deep compare on changes, you should provide your own custom setter.
-     *
-     * For reference, the default setter template is:
-     *
-     *  set ${name} (value) {
-     *    if (this._${name} === value) {
-     *      return;
-     *    }
-     *
-     *    this._${name} = value;
-     *
-     *    this.notify('${name}');
-     *  }
-     *
-     * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
-     * @param defaultValue The default value of the property.
-     * @param options Options can be:
-     *
-     *   -get: a getter function
-     *   -set: a setter function
-     *
-     *   Anything else will be saved as metadata to the value `_${name}Options`.
-     */
-
-  }, {
-    key: 'addProperty',
-    value: function addProperty(name, defaultValue) {
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-      this['_' + name] = defaultValue;
-
-      var defaultGet = function defaultGet() {
-        return this['_' + name];
-      };
-
-      var defaultSet = function defaultSet(value) {
-        // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
-        // bubble up to this model and notify its watchers too.
-        if (this['_' + name] === value) {
-          return;
-        }
-
-        this['_' + name] = value;
-
-        this.notify(name);
-      };
-
-      Object.defineProperty(this, name, {
-        get: options.get || defaultGet,
-        set: options.set || defaultSet
-      });
-
-      delete options.get;
-      delete options.set;
-
-      this['_' + name + 'Options'] = options;
-
-      if (this._values && this._values[name]) {
-        this['_' + name] = this._values[name];
-      }
-    }
-  }]);
-
-  return Model;
-}(_RingaObject3.default);
-
-exports.default = Model;
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.eventIx = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1105,7 +939,7 @@ var _errorStackParser = __webpack_require__(27);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
-var _debug = __webpack_require__(8);
+var _debug = __webpack_require__(10);
 
 var _type = __webpack_require__(3);
 
@@ -1720,7 +1554,511 @@ RingaEvent.PREHOOK = 'prehook';
 exports.default = RingaEvent;
 
 /***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+exports.inspectorDispatch = inspectorDispatch;
+
+var _Controller2 = __webpack_require__(12);
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _InspectorModel = __webpack_require__(16);
+
+var _InspectorModel2 = _interopRequireDefault(_InspectorModel);
+
+var _Bus = __webpack_require__(8);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function inspectorDispatch(eventType, detail) {
+  /**
+   * do NOT require catch, in case the user is not using the Inspector
+   */
+  _Bus.ringaGlobalBus.dispatch(eventType, detail, false);
+}
+
+var InspectorController = function (_Controller) {
+  _inherits(InspectorController, _Controller);
+
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function InspectorController(name) {
+    _classCallCheck(this, InspectorController);
+
+    var _this = _possibleConstructorReturn(this, (InspectorController.__proto__ || Object.getPrototypeOf(InspectorController)).call(this, name, _Bus.ringaGlobalBus));
+
+    console.log('Ringa Inspector is turned on because you have attached the InspectorController in your application. THIS WILL GREATLY REDUCE PERFORMANCE. Make sure to remove the InspectorController in your final production build! Using the global bus: ', _this.bus);
+
+    if (true) {
+      /**
+       * We don't want this controller to also dispatch the events or else we will end up with an infinite loop of dispatches
+       * which will entirely crash the browser. This MUST be set to true in the InspectorController!
+       */
+      _this.__blockRingaEvents = true;
+
+      _this.addModel(new _InspectorModel2.default());
+
+      _this.addListener('ringaThreadStart', function (inspectorModel, thread) {
+        inspectorModel.addThread(thread);
+      });
+
+      _this.addListener('ringaThreadKill', function (inspectorModel, thread) {
+        inspectorModel.removeThread(thread);
+      });
+
+      _this.addListener('ringaExecutorStart', function (inspectorModel, executor) {
+        inspectorModel.addExecutor(executor);
+      });
+
+      _this.addListener('ringaExecutorEnd', function (inspectorModel, executor) {
+        inspectorModel.removeExecutor(executor);
+      });
+    }
+    return _this;
+  }
+
+  _createClass(InspectorController, [{
+    key: 'bus',
+    get: function get() {
+      return _get(InspectorController.prototype.__proto__ || Object.getPrototypeOf(InspectorController.prototype), 'bus', this);
+    },
+    set: function set(value) {
+      if (value !== _Bus.ringaGlobalBus) {
+        return;
+      }
+
+      _set(InspectorController.prototype.__proto__ || Object.getPrototypeOf(InspectorController.prototype), 'bus', value, this);
+    }
+  }]);
+
+  return InspectorController;
+}(_Controller3.default);
+
+exports.default = InspectorController;
+
+/***/ }),
 /* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ringaGlobalBus = exports.busses = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _RingaObject2 = __webpack_require__(1);
+
+var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+var _RingaEvent = __webpack_require__(6);
+
+var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Used to auto-generate non-conflicting Bus ids as the application runs.
+ *
+ * @type {{count: number}}
+ */
+var busses = exports.busses = {
+  count: 0
+};
+
+/**
+ * Basic event bus implementation that works with Ringa.
+ *
+ * Due to the ability to structure Busses in a tree, this can handle bubbling and capture phases.
+ *
+ * Note: the methods of this Class are designed to match the spec for EventTarget in the DOM.
+ */
+
+var Bus = function (_RingaObject) {
+  _inherits(Bus, _RingaObject);
+
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function Bus(name, id) {
+    _classCallCheck(this, Bus);
+
+    var _this = _possibleConstructorReturn(this, (Bus.__proto__ || Object.getPrototypeOf(Bus)).call(this, name || 'bus' + busses.count++, id));
+
+    _this._map = {};
+    _this._captureMap = {};
+
+    _this.children = [];
+    _this.parent = undefined;
+    return _this;
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * Adds a child to this Bus.
+   *
+   * @param bus The bus to add as a child.
+   */
+
+
+  _createClass(Bus, [{
+    key: 'addChild',
+    value: function addChild(bus) {
+      if (bus.parent) {
+        throw new Error('Cannot add a Bus that has a child that already has a parent: \'' + bus.id + '\'');
+      }
+
+      bus.parent = this;
+      this.children.push(bus);
+    }
+  }, {
+    key: 'removeChild',
+    value: function removeChild(bus) {
+      var ix = void 0;
+      if ((ix = this.children.indexOf(bus)) !== -1) {
+        var child = this.children[ix];
+        this.children.splice(ix, 1);
+        child.parent = undefined;
+      }
+    }
+  }, {
+    key: 'getChildAt',
+    value: function getChildAt(index) {
+      return this.children[index];
+    }
+
+    /**
+     * Adds an event listener handler for a particular event type.
+     *
+     * @param type The type of event
+     * @param handler The handling function
+     */
+
+  }, {
+    key: 'addEventListener',
+    value: function addEventListener(type, handler) {
+      var isCapture = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+      var map = isCapture ? this._captureMap : this._map;
+
+      map[type] = map[type] || [];
+      map[type].push(handler);
+    }
+
+    /**
+     * Returns true if there is at least one handler for the provided type.
+     *
+     * @param type Event type.
+     * @returns {*} True if the event type has an associated handler.
+     */
+
+  }, {
+    key: 'hasListener',
+    value: function hasListener(type) {
+      return !!this._map[type];
+    }
+
+    /**
+     * Removes the specific handler associated with the provided event type.
+     *
+     * @param type Event type.
+     * @param handler The handling function to remove.
+     */
+
+  }, {
+    key: 'removeEventListener',
+    value: function removeEventListener(type, handler) {
+      if (this._map[type]) {
+        var ix = this._map[type].indexOf(handler);
+        if (ix !== -1) {
+          console.log('REMOVING HANDLER');
+          this._map[type].splice(ix, 1);
+        }
+      }
+    }
+
+    /**
+     * Dispatches an event on this bus.
+     *
+     * @param event A RingaEvent or similar.
+     */
+
+  }, {
+    key: 'dispatchEvent',
+    value: function dispatchEvent(event) {
+      // Capture Phase
+      if (this.parent) {
+        var pStack = [this.parent];
+
+        while (pStack[0].parent) {
+          pStack.unshift(pStack[0].parent);
+        }
+
+        pStack.forEach(function (p) {
+          p._dispatch(event, true);
+        });
+      }
+
+      // Local
+      this._dispatch(event);
+
+      // Bubble Phase
+      var p = this.parent;
+
+      while (p) {
+        p._dispatch(event);
+        p = p.parent;
+      }
+    }
+
+    /**
+     * Internal dispatch that handles propagating an event to this Bus's immediate listeners.
+     *
+     * @param event The event to dispatch
+     * @private
+     */
+
+  }, {
+    key: '_dispatch',
+    value: function _dispatch(event, capturePhase) {
+      var map = capturePhase ? this._captureMap : this._map;
+
+      if (map[event.type]) {
+        map[event.type].forEach(function (handler) {
+          handler(event);
+        });
+      }
+    }
+  }, {
+    key: 'dispatch',
+    value: function dispatch(type, detail, requireCatch) {
+      this._dispatch(new _RingaEvent2.default(type, detail, true, true, undefined, requireCatch));
+    }
+  }]);
+
+  return Bus;
+}(_RingaObject3.default);
+
+var ringaGlobalBus = exports.ringaGlobalBus = new Bus('GLOBALBUS', 'GLOBALBUS');
+
+exports.default = Bus;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _RingaObject2 = __webpack_require__(1);
+
+var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
+ * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
+ */
+var Model = function (_RingaObject) {
+  _inherits(Model, _RingaObject);
+
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructs a new model.
+   *
+   * @param name The name of this model for injection.
+   * @param values A POJO of default values to assign to the properties in this Model.
+   */
+  function Model(name, values) {
+    _classCallCheck(this, Model);
+
+    if (typeof name !== 'string' && values === undefined) {
+      values = name;
+      name = undefined;
+    }
+
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
+
+    _this._values = values;
+    _this._modelWatchers = [];
+    _this.watchers = [];
+    return _this;
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
+   *
+   * @param modelWatcher The ModelWatcher to add.
+   */
+
+
+  _createClass(Model, [{
+    key: 'addInjector',
+    value: function addInjector(modelWatcher) {
+      if (true && this._modelWatchers.indexOf(modelWatcher) !== -1) {
+        throw new Error('Model::addInjector(): tried to add the same injector to a model twice! ' + this.id);
+      }
+
+      this._modelWatchers.push(modelWatcher);
+    }
+
+    /**
+     * Send a signal to all watchers.
+     *
+     * @param signal Generally a path to a property that has changed in the model.
+     */
+
+  }, {
+    key: 'notify',
+    value: function notify(signal) {
+      var _this2 = this;
+
+      // Notify all view objects through all injectors
+      this._modelWatchers.forEach(function (mi) {
+        mi.notify(_this2, signal);
+      });
+
+      this.watchers.forEach(function (handler) {
+        handler(signal);
+      });
+    }
+
+    /**
+     * Watch this model for any notify signals.
+     *
+     * @param handler The function to call when a notify signal is sent.
+     */
+
+  }, {
+    key: 'watch',
+    value: function watch(handler) {
+      this.watchers.push(handler);
+    }
+
+    /**
+     * Add a property to this model that by default does its own notifications to ModelWatcher and verifies that if the
+     * value has not changed (strict reference compare A === B) then it won't notify and spam the ModelWatcher.
+     *
+     * If you want to do a custom shallow or deep compare on changes, you should provide your own custom setter.
+     *
+     * For reference, the default setter template is:
+     *
+     *  set ${name} (value) {
+     *    if (this._${name} === value) {
+     *      return;
+     *    }
+     *
+     *    this._${name} = value;
+     *
+     *    this.notify('${name}');
+     *  }
+     *
+     * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
+     * @param defaultValue The default value of the property.
+     * @param options Options can be:
+     *
+     *   -get: a getter function
+     *   -set: a setter function
+     *
+     *   Anything else will be saved as metadata to the value `_${name}Options`.
+     */
+
+  }, {
+    key: 'addProperty',
+    value: function addProperty(name, defaultValue) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      this['_' + name] = defaultValue;
+
+      var defaultGet = function defaultGet() {
+        return this['_' + name];
+      };
+
+      var defaultSet = function defaultSet(value) {
+        // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
+        // bubble up to this model and notify its watchers too.
+        if (this['_' + name] === value) {
+          return;
+        }
+
+        this['_' + name] = value;
+
+        this.notify(name);
+      };
+
+      Object.defineProperty(this, name, {
+        get: options.get || defaultGet,
+        set: options.set || defaultSet
+      });
+
+      delete options.get;
+      delete options.set;
+
+      this['_' + name + 'Options'] = options;
+
+      if (this._values && this._values[name]) {
+        this['_' + name] = this._values[name];
+      }
+    }
+  }]);
+
+  return Model;
+}(_RingaObject3.default);
+
+exports.default = Model;
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1807,7 +2145,7 @@ function uglifyWhitelist() {
 }
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1816,7 +2154,7 @@ function uglifyWhitelist() {
 module.exports = __webpack_require__(28);
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1830,7 +2168,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ThreadFactory = __webpack_require__(13);
+var _ThreadFactory = __webpack_require__(15);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
@@ -1838,17 +2176,21 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(11);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
-var _RingaEvent = __webpack_require__(7);
+var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _ModelWatcher = __webpack_require__(11);
+var _ModelWatcher = __webpack_require__(13);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
+
+var _InspectorController = __webpack_require__(7);
+
+var _Bus = __webpack_require__(8);
 
 var _snakeCase = __webpack_require__(35);
 
@@ -2196,9 +2538,9 @@ var Controller = function (_RingaObject) {
       ringaEvent._dispatchEvent(_RingaEvent2.default.PREHOOK);
 
       if (true && !this.__blockRingaEvents) {
-        this.dispatch('ringaThreadStart', {
+        (0, _InspectorController.inspectorDispatch)('ringaThreadStart', {
           thread: thread
-        }, false);
+        });
       }
 
       // TODO PREHOOK should allow the handler to cancel running of the thread.
@@ -2291,9 +2633,9 @@ var Controller = function (_RingaObject) {
       this.threads.remove(thread);
 
       if (true && !this.__blockRingaEvents) {
-        this.dispatch('ringaThreadKill', {
+        (0, _InspectorController.inspectorDispatch)('ringaThreadKill', {
           thread: thread
-        }, false);
+        });
       }
     }
   }, {
@@ -2317,16 +2659,17 @@ var Controller = function (_RingaObject) {
         console.error(error, 'In thread ' + (thread ? thread.toString() : ''));
       }
 
+      thread.ringaEvent._fail(this, error, kill);
+
       if (kill) {
+        thread.ringaEvent.destroy();
+
         if (this.threads.has(thread.id)) {
           this._threadFinalized(thread);
         } else if (true) {
           throw Error('Controller:threadFailHandler(): the CommandThread with the id ' + thread.id + ' was not found.');
         }
       }
-
-      thread.ringaEvent._fail(this, error, kill);
-      thread.ringaEvent.destroy();
     }
   }, {
     key: 'dispatch',
@@ -2449,7 +2792,7 @@ var Controller = function (_RingaObject) {
 exports.default = Controller;
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2465,7 +2808,7 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _Model = __webpack_require__(6);
+var _Model = __webpack_require__(9);
 
 var _Model2 = _interopRequireDefault(_Model);
 
@@ -2878,7 +3221,7 @@ var ModelWatcher = function (_RingaObject) {
 exports.default = ModelWatcher;
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2890,11 +3233,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaEvent = __webpack_require__(7);
+var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _ringaEvent = __webpack_require__(16);
+var _ringaEvent = __webpack_require__(18);
 
 var _function = __webpack_require__(4);
 
@@ -2962,7 +3305,7 @@ var RingaEventFactory = function () {
 exports.default = RingaEventFactory;
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2974,7 +3317,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(15);
+var _RingaHashArray2 = __webpack_require__(17);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -3055,7 +3398,7 @@ var ThreadFactory = function (_RingaHashArray) {
 exports.default = ThreadFactory;
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3067,7 +3410,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Model2 = __webpack_require__(6);
+var _Model2 = __webpack_require__(9);
 
 var _Model3 = _interopRequireDefault(_Model2);
 
@@ -3171,7 +3514,7 @@ var InspectorModel = function (_Model) {
 exports.default = InspectorModel;
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3183,7 +3526,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(11);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -3393,7 +3736,7 @@ var RingaHashArray = function (_RingaObject) {
 exports.default = RingaHashArray;
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3422,279 +3765,6 @@ function mergeRingaEventDetails(ringaEvent, detail) {
   ringaEvent.detail = nextDetail;
   return nextDetail;
 };
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.busses = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _RingaObject2 = __webpack_require__(1);
-
-var _RingaObject3 = _interopRequireDefault(_RingaObject2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * Used to auto-generate non-conflicting Bus ids as the application runs.
- *
- * @type {{count: number}}
- */
-var busses = exports.busses = {
-  count: 0
-};
-
-/**
- * Basic event bus implementation that works with Ringa.
- *
- * Due to the ability to structure Busses in a tree, this can handle bubbling and capture phases.
- *
- * Note: the methods of this Class are designed to match the spec for EventTarget in the DOM.
- */
-
-var Bus = function (_RingaObject) {
-  _inherits(Bus, _RingaObject);
-
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function Bus(id) {
-    _classCallCheck(this, Bus);
-
-    var _this = _possibleConstructorReturn(this, (Bus.__proto__ || Object.getPrototypeOf(Bus)).call(this, id || 'bus' + busses.count++));
-
-    _this._map = {};
-    _this._captureMap = {};
-
-    _this.children = [];
-    _this.parent = undefined;
-    return _this;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-  /**
-   * Adds a child to this Bus.
-   *
-   * @param bus The bus to add as a child.
-   */
-
-
-  _createClass(Bus, [{
-    key: 'addChild',
-    value: function addChild(bus) {
-      if (bus.parent) {
-        throw new Error('Cannot add a Bus that has a child that already has a parent: \'' + bus.id + '\'');
-      }
-
-      bus.parent = this;
-      this.children.push(bus);
-    }
-  }, {
-    key: 'removeChild',
-    value: function removeChild(bus) {
-      var ix = void 0;
-      if ((ix = this.children.indexOf(bus)) !== -1) {
-        var child = this.children[ix];
-        this.children.splice(ix, 1);
-        child.parent = undefined;
-      }
-    }
-  }, {
-    key: 'getChildAt',
-    value: function getChildAt(index) {
-      return this.children[index];
-    }
-
-    /**
-     * Adds an event listener handler for a particular event type.
-     *
-     * @param type The type of event
-     * @param handler The handling function
-     */
-
-  }, {
-    key: 'addEventListener',
-    value: function addEventListener(type, handler) {
-      var isCapture = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-
-      var map = isCapture ? this._captureMap : this._map;
-
-      map[type] = map[type] || [];
-      map[type].push(handler);
-    }
-
-    /**
-     * Returns true if there is at least one handler for the provided type.
-     *
-     * @param type Event type.
-     * @returns {*} True if the event type has an associated handler.
-     */
-
-  }, {
-    key: 'hasListener',
-    value: function hasListener(type) {
-      return !!this._map[type];
-    }
-
-    /**
-     * Removes the specific handler associated with the provided event type.
-     *
-     * @param type Event type.
-     * @param handler The handling function to remove.
-     */
-
-  }, {
-    key: 'removeEventListener',
-    value: function removeEventListener(type, handler) {
-      if (this._map[type]) {
-        var ix = this._map[type].indexOf(handler);
-        if (ix !== -1) {
-          this._map[type].splice(ix, 1);
-        }
-      }
-    }
-
-    /**
-     * Dispatches an event on this bus.
-     *
-     * @param event A RingaEvent or similar.
-     */
-
-  }, {
-    key: 'dispatchEvent',
-    value: function dispatchEvent(event) {
-      // Capture Phase
-      if (this.parent) {
-        var pStack = [this.parent];
-
-        while (pStack[0].parent) {
-          pStack.unshift(pStack[0].parent);
-        }
-
-        pStack.forEach(function (p) {
-          p._dispatch(event, true);
-        });
-      }
-
-      // Local
-      this._dispatch(event);
-
-      // Bubble Phase
-      var p = this.parent;
-
-      while (p) {
-        p._dispatch(event);
-        p = p.parent;
-      }
-    }
-
-    /**
-     * Internal dispatch that handles propagating an event to this Bus's immediate listeners.
-     *
-     * @param event The event to dispatch
-     * @private
-     */
-
-  }, {
-    key: '_dispatch',
-    value: function _dispatch(event, capturePhase) {
-      var map = capturePhase ? this._captureMap : this._map;
-
-      if (map[event.type]) {
-        map[event.type].forEach(function (handler) {
-          handler(event);
-        });
-      }
-    }
-  }]);
-
-  return Bus;
-}(_RingaObject3.default);
-
-exports.default = Bus;
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Controller2 = __webpack_require__(10);
-
-var _Controller3 = _interopRequireDefault(_Controller2);
-
-var _InspectorModel = __webpack_require__(14);
-
-var _InspectorModel2 = _interopRequireDefault(_InspectorModel);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var InspectorController = function (_Controller) {
-  _inherits(InspectorController, _Controller);
-
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function InspectorController(name, bus) {
-    _classCallCheck(this, InspectorController);
-
-    var _this = _possibleConstructorReturn(this, (InspectorController.__proto__ || Object.getPrototypeOf(InspectorController)).call(this, name, bus));
-
-    if (true) {
-      _this.__blockRingaEvents = true;
-
-      _this.addModel(new _InspectorModel2.default());
-
-      _this.addListener('ringaThreadStart', function (inspectorModel, thread) {
-        inspectorModel.addThread(thread);
-      });
-
-      _this.addListener('ringaThreadKill', function (inspectorModel, thread) {
-        inspectorModel.removeThread(thread);
-      });
-
-      _this.addListener('ringaExecutorStart', function (inspectorModel, executor) {
-        inspectorModel.addExecutor(executor);
-      });
-
-      _this.addListener('ringaExecutorEnd', function (inspectorModel, executor) {
-        inspectorModel.removeExecutor(executor);
-      });
-    }
-    return _this;
-  }
-
-  return InspectorController;
-}(_Controller3.default);
-
-exports.default = InspectorController;
 
 /***/ }),
 /* 19 */
@@ -4280,7 +4350,8 @@ var IntervalExecutor = function (_ExecutorAbstract) {
         this.done();
       } else {
         this.resetTimeout();
-        this.executorFactory.build(this.thread)._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
+        this.childExecutor = this.executorFactory.build(this.thread);
+        this.childExecutor._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
         setTimeout(this._interval.bind(this), this.milliseconds);
       }
     }
@@ -4299,11 +4370,12 @@ var IntervalExecutor = function (_ExecutorAbstract) {
   }, {
     key: '_intervalDone',
     value: function _intervalDone() {
-      // TODO: remove or add useful functionality (discuss)
+      this.killChildExecutor(this.childExecutor);
     }
   }, {
     key: '_intervalFail',
     value: function _intervalFail(error, kill) {
+      this.killChildExecutor(this.childExecutor);
       this.fail(error, kill);
     }
   }, {
@@ -4428,7 +4500,7 @@ var _ExecutorFactory2 = __webpack_require__(5);
 
 var _ExecutorFactory3 = _interopRequireDefault(_ExecutorFactory2);
 
-var _ringaEvent = __webpack_require__(16);
+var _ringaEvent = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5970,9 +6042,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(15);
+var _RingaHashArray2 = __webpack_require__(17);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
+
+var _InspectorController = __webpack_require__(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -6050,6 +6124,10 @@ var Thread = function (_RingaHashArray) {
     value: function executeNext() {
       var executor = this.all[this.index];
 
+      if (this.index > 0) {
+        var previousExecutor = this.all[this.index - 1];
+        this.removeExecutor(previousExecutor);
+      }
       try {
         this.ringaEvent.addDebug('Executing: ' + executor);
 
@@ -6067,9 +6145,9 @@ var Thread = function (_RingaHashArray) {
     key: 'removeExecutor',
     value: function removeExecutor(executor) {
       if (true && !this.controller.__blockRingaEvents) {
-        this.controller.dispatch('ringaExecutorEnd', {
+        (0, _InspectorController.inspectorDispatch)('ringaExecutorEnd', {
           executor: executor
-        }, false);
+        });
       }
 
       if (this.has(executor)) {
@@ -6090,7 +6168,6 @@ var Thread = function (_RingaHashArray) {
         this._finCouldNotFindError();
       } else {
         executor = this.all[this.index].destroy(true);
-        this.removeExecutor(executor);
       }
 
       this.ringaEvent.addDebug('Done: ' + executor);
@@ -6105,6 +6182,7 @@ var Thread = function (_RingaHashArray) {
         setTimeout(this.executeNext.bind(this), 0);
       } else {
         this.doneHandler(this);
+        this.removeExecutor(executor);
       }
     }
   }, {
@@ -6137,6 +6215,16 @@ var Thread = function (_RingaHashArray) {
   }, {
     key: '_finCouldNotFindError',
     value: function _finCouldNotFindError(error) {
+      /**
+       * During unit tests, __hardReset() is called at the end of the test. After that point, its possible
+       * for some of the executors to finish up and then because all the threads have been destroyed this
+       * object is going to try to kill the executor that Ringa already cleaned up during a __hardReset. Since
+       * we are moving onto the next unit test, we can just ignore that issue.
+       */
+      if (this.destroyed) {
+        return;
+      }
+
       var e = this.all && this.all.length ? this.all.map(function (e) {
         return e.toString();
       }).join(', ') : 'No executors found on thread ' + this.toString();
@@ -6655,11 +6743,11 @@ exports.notify = notify;
 exports.debug = debug;
 exports.__hardReset = __hardReset;
 
-var _InspectorController = __webpack_require__(18);
+var _InspectorController = __webpack_require__(7);
 
 var _InspectorController2 = _interopRequireDefault(_InspectorController);
 
-var _InspectorModel = __webpack_require__(14);
+var _InspectorModel = __webpack_require__(16);
 
 var _InspectorModel2 = _interopRequireDefault(_InspectorModel);
 
@@ -6671,15 +6759,15 @@ var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _ThreadFactory = __webpack_require__(13);
+var _ThreadFactory = __webpack_require__(15);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
-var _Controller = __webpack_require__(10);
+var _Controller = __webpack_require__(12);
 
 var _Controller2 = _interopRequireDefault(_Controller);
 
-var _RingaEvent = __webpack_require__(7);
+var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
@@ -6687,7 +6775,7 @@ var _RingaObject = __webpack_require__(1);
 
 var _RingaObject2 = _interopRequireDefault(_RingaObject);
 
-var _RingaEventFactory = __webpack_require__(12);
+var _RingaEventFactory = __webpack_require__(14);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -6695,15 +6783,15 @@ var _AssignFactory = __webpack_require__(24);
 
 var _AssignFactory2 = _interopRequireDefault(_AssignFactory);
 
-var _Model = __webpack_require__(6);
+var _Model = __webpack_require__(9);
 
 var _Model2 = _interopRequireDefault(_Model);
 
-var _ModelWatcher = __webpack_require__(11);
+var _ModelWatcher = __webpack_require__(13);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
-var _Bus = __webpack_require__(17);
+var _Bus = __webpack_require__(8);
 
 var _Bus2 = _interopRequireDefault(_Bus);
 
@@ -6725,7 +6813,7 @@ var _SpawnExecutor2 = _interopRequireDefault(_SpawnExecutor);
 
 var _type = __webpack_require__(3);
 
-var _debug = __webpack_require__(8);
+var _debug = __webpack_require__(10);
 
 var _executors = __webpack_require__(2);
 
