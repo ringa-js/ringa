@@ -1567,9 +1567,22 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+/**
+ * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
+ * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
+ */
 var Model = function (_RingaObject) {
   _inherits(Model, _RingaObject);
 
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructs a new model.
+   *
+   * @param name The name of this model for injection.
+   * @param values A POJO of default values to assign to the properties in this Model.
+   */
   function Model(name, values) {
     _classCallCheck(this, Model);
 
@@ -1581,34 +1594,58 @@ var Model = function (_RingaObject) {
     var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
 
     _this._values = values;
-    _this._modelInjectors = [];
+    _this._modelWatchers = [];
     _this.watchers = [];
     return _this;
   }
 
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
+   *
+   * @param modelWatcher The ModelWatcher to add.
+   */
+
+
   _createClass(Model, [{
     key: 'addInjector',
-    value: function addInjector(modelInjector) {
-      if (true && this._modelInjectors.indexOf(modelInjector) !== -1) {
+    value: function addInjector(modelWatcher) {
+      if (true && this._modelWatchers.indexOf(modelWatcher) !== -1) {
         throw new Error('Model::addInjector(): tried to add the same injector to a model twice! ' + this.id);
       }
 
-      this._modelInjectors.push(modelInjector);
+      this._modelWatchers.push(modelWatcher);
     }
+
+    /**
+     * Send a signal to all watchers.
+     *
+     * @param signal Generally a path to a property that has changed in the model.
+     */
+
   }, {
     key: 'notify',
-    value: function notify(propertyPath) {
+    value: function notify(signal) {
       var _this2 = this;
 
       // Notify all view objects through all injectors
-      this._modelInjectors.forEach(function (mi) {
-        mi.notify(_this2, propertyPath);
+      this._modelWatchers.forEach(function (mi) {
+        mi.notify(_this2, signal);
       });
 
       this.watchers.forEach(function (handler) {
-        handler(propertyPath);
+        handler(signal);
       });
     }
+
+    /**
+     * Watch this model for any notify signals.
+     *
+     * @param handler The function to call when a notify signal is sent.
+     */
+
   }, {
     key: 'watch',
     value: function watch(handler) {
@@ -1653,6 +1690,7 @@ var Model = function (_RingaObject) {
       var defaultGet = function defaultGet() {
         return this['_' + name];
       };
+
       var defaultSet = function defaultSet(value) {
         // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
         // bubble up to this model and notify its watchers too.
@@ -1840,7 +1878,7 @@ var ModelWatcher = function (_RingaObject) {
     var _this2 = _possibleConstructorReturn(this, (ModelWatcher.__proto__ || Object.getPrototypeOf(ModelWatcher)).call(this, name, id));
 
     _this2.idNameToWatchees = {};
-    _this2.classToWatchees = new WeakMap();
+    _this2.classToWatchees = new Map();
 
     _this2.models = [];
     _this2.idToModel = new WeakMap();
@@ -2029,6 +2067,8 @@ var ModelWatcher = function (_RingaObject) {
   }, {
     key: 'notify',
     value: function notify(model, propertyPath) {
+      var foundAtLeastOneWatchee = false;
+
       if (!globalWatchee) {
         globalWatchee = new Watchees();
       }
@@ -2038,6 +2078,8 @@ var ModelWatcher = function (_RingaObject) {
           byPathFor = function byPathFor() {};
 
       var addWatchee = function addWatchee(watchee) {
+        foundAtLeastOneWatchee = true;
+
         n.add(model, propertyPath, watchee);
       };
 
@@ -2095,7 +2137,7 @@ var ModelWatcher = function (_RingaObject) {
         p = p.__proto__;
       }
 
-      if (timeoutToken) {
+      if (timeoutToken || !foundAtLeastOneWatchee) {
         return;
       }
 

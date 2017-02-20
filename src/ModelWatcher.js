@@ -107,7 +107,7 @@ class ModelWatcher extends RingaObject {
     super(name, id);
 
     this.idNameToWatchees = {};
-    this.classToWatchees = new WeakMap();
+    this.classToWatchees = new Map();
 
     this.models = [];
     this.idToModel = new WeakMap();
@@ -278,6 +278,8 @@ class ModelWatcher extends RingaObject {
    * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
    */
   notify(model, propertyPath) {
+    let foundAtLeastOneWatchee = false;
+
     if (!globalWatchee) {
       globalWatchee = new Watchees();
     }
@@ -286,6 +288,8 @@ class ModelWatcher extends RingaObject {
     let paths, byPathFor = () => {};
 
     let addWatchee = watchee => {
+      foundAtLeastOneWatchee = true;
+
       n.add(model, propertyPath, watchee);
     };
 
@@ -343,7 +347,7 @@ class ModelWatcher extends RingaObject {
       p = p.__proto__;
     }
 
-    if (timeoutToken) {
+    if (timeoutToken || !foundAtLeastOneWatchee) {
       return;
     }
 

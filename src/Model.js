@@ -1,6 +1,19 @@
 import RingaObject from './RingaObject';
 
+/**
+ * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
+ * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
+ */
 class Model extends RingaObject {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructs a new model.
+   *
+   * @param name The name of this model for injection.
+   * @param values A POJO of default values to assign to the properties in this Model.
+   */
   constructor(name, values) {
     if (typeof name !== 'string' && values === undefined) {
       values = name;
@@ -10,29 +23,47 @@ class Model extends RingaObject {
     super(name, (values && values.id) ? values.id : undefined);
 
     this._values = values;
-    this._modelInjectors = [];
+    this._modelWatchers = [];
     this.watchers = [];
   }
 
-  addInjector(modelInjector) {
-    if (__DEV__ && this._modelInjectors.indexOf(modelInjector) !== -1) {
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
+   *
+   * @param modelWatcher The ModelWatcher to add.
+   */
+  addInjector(modelWatcher) {
+    if (__DEV__ && this._modelWatchers.indexOf(modelWatcher) !== -1) {
       throw new Error(`Model::addInjector(): tried to add the same injector to a model twice! ${this.id}`)
     }
 
-    this._modelInjectors.push(modelInjector);
+    this._modelWatchers.push(modelWatcher);
   }
 
-  notify(propertyPath) {
+  /**
+   * Send a signal to all watchers.
+   *
+   * @param signal Generally a path to a property that has changed in the model.
+   */
+  notify(signal) {
     // Notify all view objects through all injectors
-    this._modelInjectors.forEach(mi => {
-      mi.notify(this, propertyPath);
+    this._modelWatchers.forEach(mi => {
+      mi.notify(this, signal);
     });
 
     this.watchers.forEach(handler => {
-      handler(propertyPath);
+      handler(signal);
     });
   }
 
+  /**
+   * Watch this model for any notify signals.
+   *
+   * @param handler The function to call when a notify signal is sent.
+   */
   watch(handler) {
     this.watchers.push(handler);
   }
@@ -70,6 +101,7 @@ class Model extends RingaObject {
     let defaultGet = function() {
       return this[`_${name}`];
     }
+
     let defaultSet = function(value) {
       // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
       // bubble up to this model and notify its watchers too.
