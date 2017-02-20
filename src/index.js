@@ -44,6 +44,10 @@ export function interval (condition, executor, milliseconds, options) {
   return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds, options });
 }
 
+export function loop (condition, executor, options) {
+  return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds:0, options });
+}
+
 export function spawn (executor) {
   return new ExecutorFactory(SpawnExecutor, executor);
 }
@@ -125,6 +129,7 @@ export default {
   forEach,
   forEachParallel,
   interval,
+  loop,
   spawn,
   event,
   assign,

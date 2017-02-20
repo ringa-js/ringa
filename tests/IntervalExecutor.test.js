@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa, {interval, event, __hardReset} from '../src/index';
+import Ringa, {interval, loop, event, __hardReset} from '../src/index';
 import TestController from './shared/TestController';
 import CommandSimple from './shared/CommandSimple';
 
@@ -55,7 +55,7 @@ describe('intervalExecutor', () => {
       interval(() => { return a < 1; },
         () => {
           a += 1;
-        }, 50)
+        }, 5)
       ]);
 
     let event = Ringa.dispatch('myEvent', domNode);
@@ -64,7 +64,28 @@ describe('intervalExecutor', () => {
       done();
     });
 
-  }, 500);
+  }, 50);
+
+  //-----------------------------
+  // Loop syntax works
+  //-----------------------------
+  it('Loop syntax works', (done) => {
+    let a = 0;
+
+    controller.addListener('myEvent', [
+      loop(() => { return a < 1; },
+        () => {
+          a += 1;
+        })
+      ]);
+
+    let event = Ringa.dispatch('myEvent', domNode);
+    event.addDoneListener(() => {
+      expect(a).toBe(1);
+      done();
+    });
+
+  }, 50);
 
   //--------------------------------------
   // Calls the provided executor 10 times
