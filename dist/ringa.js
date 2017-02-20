@@ -6306,6 +6306,7 @@ exports.forEach = forEach;
 exports.forEachParallel = forEachParallel;
 exports.iif = iif;
 exports.interval = interval;
+exports.loop = loop;
 exports.spawn = spawn;
 exports.stop = stop;
 exports.assign = assign;
@@ -6410,6 +6411,10 @@ function interval(condition, executor, milliseconds, options) {
   return new _ExecutorFactory2.default(_IntervalExecutor2.default, { condition: condition, executor: executor, milliseconds: milliseconds, options: options });
 }
 
+function loop(condition, executor, options) {
+  return new _ExecutorFactory2.default(_IntervalExecutor2.default, { condition: condition, executor: executor, milliseconds: 0, options: options });
+}
+
 function spawn(executor) {
   return new _ExecutorFactory2.default(_SpawnExecutor2.default, executor);
 }
@@ -6502,6 +6507,7 @@ exports.default = {
   forEach: forEach,
   forEachParallel: forEachParallel,
   interval: interval,
+  loop: loop,
   spawn: spawn,
   event: event,
   assign: assign,
