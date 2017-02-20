@@ -45,7 +45,7 @@ export function interval (condition, executor, milliseconds, options) {
 }
 
 export function loop (condition, executor, options) {
-  return new ExecutorFactory(IntervalExecutor, { condition, executor, 0, options });
+  return new ExecutorFactory(IntervalExecutor, { condition, executor, milliseconds:0, options });
 }
 
 export function spawn (executor) {
