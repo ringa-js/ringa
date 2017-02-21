@@ -1,7 +1,5 @@
 /* eslint-disable no-unused-vars */
 
-window.__DEV__ = true;
-
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -271,11 +269,9 @@ describe('Controller', () => {
   });
 
   it('should allow you to override the preInvokeHandler', (done) => {
-    let _ringaEvent;
-
     class TC extends Ringa.Controller {
       preInvokeHandler(ringaEvent) {
-        expect(ringaEvent).toEqual(_ringaEvent);
+        expect(ringaEvent.type).toEqual('test');
         this.preinvokeRan = true;
       }
     };
@@ -287,7 +283,7 @@ describe('Controller', () => {
       ran = true;
     }]);
 
-    _ringaEvent = Ringa.dispatch('test', undefined, domNode).addDoneListener(() => {
+    Ringa.dispatch('test', undefined, domNode).addDoneListener(() => {
       expect(ran).toEqual(true);
       expect(tc.preinvokeRan).toEqual(true);
       done();
@@ -295,8 +291,6 @@ describe('Controller', () => {
   });
 
   it('should properly handle errors in preInvokeHandler', (done) => {
-    let _ringaEvent;
-
     class TC extends Ringa.Controller {
       preInvokeHandler(ringaEvent) {
         throw Error('whatever');
@@ -311,7 +305,7 @@ describe('Controller', () => {
       ran = true;
     }]);
 
-    _ringaEvent = Ringa.dispatch('test', undefined, domNode).addFailListener((event) => {
+    Ringa.dispatch('test', undefined, domNode).addFailListener((event) => {
       expect(event.error.message).toEqual('whatever');
       expect(ran).toEqual(false);
       done();
@@ -319,11 +313,10 @@ describe('Controller', () => {
   });
 
   it('should allow you to override the postInvokeHandler', (done) => {
-    let _ringaEvent;
     let ran = false;
     class TC extends Ringa.Controller {
       postInvokeHandler(ringaEvent, commandThread) {
-        expect(ringaEvent).toEqual(_ringaEvent);
+        expect(ringaEvent.type).toEqual('test');
         expect(commandThread).toBeDefined();
         expect(ran).toEqual(true);
         done();
@@ -336,7 +329,7 @@ describe('Controller', () => {
       ran = true;
     }]);
 
-    _ringaEvent = Ringa.dispatch('test', undefined, domNode);
+    Ringa.dispatch('test', undefined, domNode);
   });
 
   it('should have a dispatch method that dispatches directly on the domNode for the controller', (done) => {

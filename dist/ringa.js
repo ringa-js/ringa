@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 41);
+/******/ 	return __webpack_require__(__webpack_require__.s = 43);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -88,13 +88,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.executorCounts = undefined;
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _debug = __webpack_require__(7);
+var _InspectorController = __webpack_require__(7);
+
+var _debug = __webpack_require__(10);
 
 var _type = __webpack_require__(3);
 
@@ -193,6 +197,12 @@ var ExecutorAbstract = function (_RingaObject) {
         throw new Error('ExecutorAbstract::_execute(): an executor has been run twice!');
       }
 
+      if (true && !this.controller.__blockRingaEvents) {
+        (0, _InspectorController.inspectorDispatch)('ringaExecutorStart', {
+          executor: this
+        });
+      }
+
       this.hasBeenRun = true;
 
       this.doneHandler = doneHandler;
@@ -224,7 +234,7 @@ var ExecutorAbstract = function (_RingaObject) {
         promise.catch(function (error) {
           _this2.ringaEvent.lastPromiseError = error;
 
-          _this2.fail(error);
+          _this2.fail(error, false);
         });
       } else if (true) {
         throw Error('ExecutorAbstract::waitForPromise(): command ' + this.toString() + ' returned something that is not a promise, ' + promise);
@@ -241,7 +251,7 @@ var ExecutorAbstract = function (_RingaObject) {
       var _this3 = this;
 
       if (true && this.error) {
-        throw new Error('ExecutorAbstract::done(): called done on a executor that has already errored!');
+        console.error('ExecutorAbstract::done(): called done on a executor that has already failed! Original error:', this.error);
       }
 
       var _done = function _done() {
@@ -253,21 +263,34 @@ var ExecutorAbstract = function (_RingaObject) {
       };
 
       if (true && this.controller.options.throttle) {
-        var elapsed = new Date().getTime() - this.startTime;
-        var _controller$options$t = this.controller.options.throttle,
-            min = _controller$options$t.min,
-            max = _controller$options$t.max;
+        this.doneThrottled(_done);
+      } else {
+        _done();
+      }
+    }
+  }, {
+    key: 'doneThrottled',
+    value: function doneThrottled(done) {
+      var elapsed = new Date().getTime() - this.startTime;
+      var _controller$options$t = this.controller.options.throttle,
+          min = _controller$options$t.min,
+          max = _controller$options$t.max;
 
+
+      if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
         var millis = Math.random() * (max - min) + min - elapsed;
 
         // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
         if (millis < 5) {
-          _done();
+          done();
         } else {
-          setTimeout(_done, millis);
+          setTimeout(done, millis);
         }
       } else {
-        _done();
+        if (true && min && max && !isNaN(min) && !isNaN(max)) {
+          console.warn(this + ' invalid throttle settings! ' + min + ' - ' + max + ' ' + (typeof min === 'undefined' ? 'undefined' : _typeof(min)) + ' ' + (typeof max === 'undefined' ? 'undefined' : _typeof(max)));
+        }
+        done();
       }
     }
 
@@ -342,6 +365,24 @@ var ExecutorAbstract = function (_RingaObject) {
 
       this.failHandler(this.error, true);
     }
+
+    /**
+     * This method is used to destroy a child executor that is *not* attached to the original thread. For example,
+     * the IifExecutor runs a child executor and manages its done and fail.
+     *
+     * @param childExecutor
+     */
+
+  }, {
+    key: 'killChildExecutor',
+    value: function killChildExecutor(childExecutor) {
+      if (true && !this.controller.__blockRingaEvents) {
+        (0, _InspectorController.inspectorDispatch)('ringaExecutorEnd', {
+          executor: childExecutor
+        });
+      }
+      childExecutor.destroy(true);
+    }
   }, {
     key: 'ringaEvent',
     get: function get() {
@@ -370,6 +411,161 @@ exports.default = ExecutorAbstract;
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ids = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _camelcase = __webpack_require__(25);
+
+var _camelcase2 = _interopRequireDefault(_camelcase);
+
+var _hasharray = __webpack_require__(11);
+
+var _hasharray2 = _interopRequireDefault(_hasharray);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ids = exports.ids = {
+  __hardReset: function __hardReset(debug) {
+    if (true && debug) {
+      console.log('RINGA HARD RESET START (__hardReset(true)) DESTROYING:\n\t' + Object.keys(ids.map._map).sort().join('\n\t'));
+    }
+    ids.map._list.concat().forEach(function (obj) {
+      obj.destroy();
+    });
+    ids.counts = new WeakMap();
+    ids.constructorNames = {};
+    if (true && debug) {
+      console.log('RINGA HARD FINISHED (' + Object.keys(ids.map._map).length + ' objects still in tact):\n\t' + Object.keys(ids.map._map).sort().join('\n\t'));
+    }
+  },
+  map: new _hasharray2.default('id', undefined, { ignoreDuplicates: true }),
+  counts: new WeakMap(),
+  constructorNames: {}
+};
+
+var RingaObject = function () {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function RingaObject(name, id) {
+    _classCallCheck(this, RingaObject);
+
+    ids.counts[this.constructor] = ids.counts[this.constructor] || 1;
+
+    if (id) {
+      this.id = id;
+    } else {
+      this.id = this.constructor.name + ids.counts[this.constructor];
+      ids.counts[this.constructor]++;
+    }
+
+    name = name || (0, _camelcase2.default)(this.constructor.name);
+
+    if (true) {
+      ids.constructorNames[this.constructor.name] = this.constructor.name;
+    }
+
+    this._name = name;
+  }
+
+  //-----------------------------------
+  // Properties
+  //-----------------------------------
+
+
+  _createClass(RingaObject, [{
+    key: 'destroy',
+
+
+    //-----------------------------------
+    // Methods
+    //-----------------------------------
+    value: function destroy() {
+      var unsafeDestroy = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      this.destroyed = true;
+
+      if (unsafeDestroy) {
+        /**
+         * There is the possibility that destroy() was called on an object, the id is cleared, and then another
+         * object takes that id in the interim. While this is highly unusual, it probably means developer error
+         * of some sort (e.g. a developer calls destroy() and then continues to use an object and then calls destroy()
+         * again).
+         */
+        var obj = ids.map.get(this.id);
+        if (obj && obj === this) {
+          ids.map.remove(this);
+        }
+
+        return this;
+      }
+
+      if (!ids.map.get(this.id)) {
+        console.error('RingaObject::destroy(): attempting to destroy a RingaObject that Ringa does not think exists: \'' + this.id + '\'! Perhaps destroy() is called twice?');
+        return this;
+      }
+
+      ids.map.remove(this);
+
+      return this;
+    }
+  }, {
+    key: 'toString',
+    value: function toString(value) {
+      return this.name + '_' + (value || '');
+    }
+  }, {
+    key: 'id',
+    set: function set(value) {
+      if (value === this._id) {
+        return;
+      }
+
+      if (typeof value !== 'string') {
+        throw new Error('RingaObject::id: must be a string! Was ' + JSON.stringify(value));
+      }
+
+      if (ids.map.get(value)) {
+        console.warn('Duplicate Ringa id discovered: ' + JSON.stringify(value) + ' of type \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
+      }
+
+      if (ids.map.get(this._id)) {
+        ids.map.remove(this);
+      }
+
+      this._id = value;
+
+      ids.map.add(this);
+    },
+    get: function get() {
+      return this._id;
+    }
+  }, {
+    key: 'name',
+    get: function get() {
+      return this._name;
+    }
+  }]);
+
+  return RingaObject;
+}();
+
+exports.default = RingaObject;
+;
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -530,115 +726,6 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
 };
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ids = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _camelcase = __webpack_require__(23);
-
-var _camelcase2 = _interopRequireDefault(_camelcase);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var ids = exports.ids = {
-  map: {},
-  counts: new WeakMap(),
-  constructorNames: {}
-};
-
-var RingaObject = function () {
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function RingaObject(name, id) {
-    _classCallCheck(this, RingaObject);
-
-    ids.counts[this.constructor] = ids.counts[this.constructor] || 1;
-
-    if (id) {
-      this.id = id;
-    } else {
-      this._id = this.constructor.name + ids.counts[this.constructor];
-    }
-
-    ids.counts[this.constructor]++;
-
-    if (!name) {
-      name = (0, _camelcase2.default)(this.constructor.name);
-    }
-
-    if (true) {
-      ids.constructorNames[this.constructor.name] = this.constructor.name;
-    }
-
-    this._name = name;
-  }
-
-  //-----------------------------------
-  // Properties
-  //-----------------------------------
-
-
-  _createClass(RingaObject, [{
-    key: 'destroy',
-
-
-    //-----------------------------------
-    // Methods
-    //-----------------------------------
-    value: function destroy() {
-      delete ids.map[this.id];
-
-      return this;
-    }
-  }, {
-    key: 'toString',
-    value: function toString(value) {
-      return this.name + '_' + (value || '');
-    }
-  }, {
-    key: 'id',
-    set: function set(value) {
-      if (typeof value !== 'string') {
-        throw new Error('RingaObject::id: must be a string! Was ' + JSON.stringify(value));
-      }
-
-      if (ids.map[value]) {
-        console.warn('Duplicate Ringa id discovered: ' + JSON.stringify(value) + ' for \'' + this.constructor.name + '\'. Call RingaObject::destroy() to clear up the id.');
-      }
-
-      ids.map[value] = true; // We do not create a reference to the object because this would create a memory leak.
-
-      this._id = value;
-    },
-    get: function get() {
-      return this._id;
-    }
-  }, {
-    key: 'name',
-    get: function get() {
-      return this._name;
-    }
-  }]);
-
-  return RingaObject;
-}();
-
-exports.default = RingaObject;
-;
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -731,27 +818,27 @@ var _ExecutorAbstract = __webpack_require__(0);
 
 var _ExecutorAbstract2 = _interopRequireDefault(_ExecutorAbstract);
 
-var _FunctionExecutor = __webpack_require__(37);
+var _FunctionExecutor = __webpack_require__(39);
 
 var _FunctionExecutor2 = _interopRequireDefault(_FunctionExecutor);
 
-var _PromiseExecutor = __webpack_require__(39);
+var _PromiseExecutor = __webpack_require__(41);
 
 var _PromiseExecutor2 = _interopRequireDefault(_PromiseExecutor);
 
-var _EventExecutor = __webpack_require__(36);
+var _EventExecutor = __webpack_require__(38);
 
 var _EventExecutor2 = _interopRequireDefault(_EventExecutor);
 
-var _ParallelExecutor = __webpack_require__(38);
+var _ParallelExecutor = __webpack_require__(40);
 
 var _ParallelExecutor2 = _interopRequireDefault(_ParallelExecutor);
 
-var _SleepExecutor = __webpack_require__(40);
+var _SleepExecutor = __webpack_require__(42);
 
 var _SleepExecutor2 = _interopRequireDefault(_SleepExecutor);
 
-var _RingaEventFactory = __webpack_require__(10);
+var _RingaEventFactory = __webpack_require__(14);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
@@ -838,24 +925,25 @@ exports.default = ExecutorFactory;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.eventIx = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _errorStackParser = __webpack_require__(25);
+var _errorStackParser = __webpack_require__(27);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
-var _debug = __webpack_require__(7);
+var _debug = __webpack_require__(10);
 
 var _type = __webpack_require__(3);
 
 var _function = __webpack_require__(4);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -865,7 +953,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var eventIx = 0;
+var eventIx = exports.eventIx = {
+  count: 0
+};
 
 /**
  * RingaEvent is a generic event type for Ringa that, when dispatched on the DOM, wraps a CustomEvent:
@@ -904,16 +994,18 @@ var RingaEvent = function (_RingaObject) {
    *               into any executors this triggers, making passing values super simple.
    * @param bubbles True if you want the event to bubble (default is true).
    * @param cancelable True if you want the event to be cancellable (default is true).
+   * @param event If an event triggered this one, then this will be set (e.g. a DOM Event like 'click' or 'resize')
    */
   function RingaEvent(type) {
     var detail = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var bubbles = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
     var cancelable = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
     var event = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : undefined;
+    var requireCatch = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
 
     _classCallCheck(this, RingaEvent);
 
-    var _this = _possibleConstructorReturn(this, (RingaEvent.__proto__ || Object.getPrototypeOf(RingaEvent)).call(this, 'RingaEvent[' + type + ', ' + eventIx++ + ']'));
+    var _this = _possibleConstructorReturn(this, (RingaEvent.__proto__ || Object.getPrototypeOf(RingaEvent)).call(this, 'RingaEvent[' + type + ', ' + eventIx.count++ + ']'));
     // TODO add cancel support and unit tests!
 
 
@@ -929,9 +1021,12 @@ var RingaEvent = function (_RingaObject) {
 
     _this._errors = undefined;
 
+    _this.requireCatch = requireCatch;
+
     _this.event = event;
 
     _this.listeners = {};
+    _this.dispatchedEvents = [];
 
     // Controllers that are currently handling the event
     _this.catchers = [];
@@ -964,23 +1059,16 @@ var RingaEvent = function (_RingaObject) {
     /**
      * Dispatch the event on the provided bus.
      *
-     * Note: this method is always delayed so you must not access its properties
-     * until a frame later.
-     *
      * @param bus
      */
     value: function dispatch() {
-      var _this2 = this;
-
       var bus = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
-      if (true) {
-        setTimeout(function () {
-          if (!_this2.caught) {
-            console.warn('RingaEvent::dispatch(): the RingaEvent \'' + _this2.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
-          }
-        }, 50);
+      if (true && this.dispatched) {
+        throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
+      }
 
+      if (true) {
         this.dispatchStack = _errorStackParser2.default.parse(new Error());
         this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
@@ -989,26 +1077,6 @@ var RingaEvent = function (_RingaObject) {
         }
       } else {
         this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
-      }
-
-      setTimeout(this._dispatch.bind(this, bus), 0);
-
-      return this;
-    }
-
-    /**
-     * Internal dispatch function. This is called after a timeout of 0 milliseconds to clear the stack from
-     * dispatch().
-     *
-     * @param bus The bus to dispatch on.
-     * @private
-     */
-
-  }, {
-    key: '_dispatch',
-    value: function _dispatch(bus) {
-      if (true && this.dispatched) {
-        throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
       }
 
       if ((0, _type.isDOMNode)(bus)) {
@@ -1024,6 +1092,12 @@ var RingaEvent = function (_RingaObject) {
       this.addDebug('Dispatching on ' + bus + ' ' + (this.customEvent ? 'as custom event.' : 'as RingaEvent.') + ' (' + (this.bubbles ? 'bubbling' : 'does not bubble') + ')');
 
       bus.dispatchEvent(this.customEvent ? this.customEvent : this);
+
+      if ((true || this.detail.debug) && this.requireCatch && !this.caught) {
+        console.warn('RingaEvent::dispatch(): the RingaEvent \'' + this.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
+      }
+
+      return this;
     }
 
     /**
@@ -1163,6 +1237,12 @@ var RingaEvent = function (_RingaObject) {
     value: function _dispatchEvent(type, detail, error) {
       var listeners = this.listeners[type];
 
+      this.dispatchedEvents.push({
+        type: type,
+        detail: detail,
+        error: error
+      });
+
       if (listeners) {
         listeners.forEach(function (listener) {
           listener({
@@ -1197,6 +1277,12 @@ var RingaEvent = function (_RingaObject) {
 
       this.listeners[eventType].push(handler);
 
+      this.dispatchedEvents.forEach(function (_dispatched) {
+        if (_dispatched.type === eventType) {
+          handler(_dispatched);
+        }
+      });
+
       return this;
     }
 
@@ -1210,12 +1296,12 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'addDoneListener',
     value: function addDoneListener(handler) {
-      var _this3 = this;
+      var _this2 = this;
 
       // TODO add unit tests for multiple controllers handling a thread
       return this.addListener(RingaEvent.DONE, function () {
         var argNames = (0, _function.getArgNames)(handler);
-        var args = (0, _executors.buildArgumentsFromRingaEvent)(undefined, argNames, _this3);
+        var args = (0, _executors.buildArgumentsFromRingaEvent)(undefined, argNames, _this2);
         handler.apply(undefined, args);
       });
     }
@@ -1287,7 +1373,7 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'toString',
     value: function toString() {
-      return 'RingaEvent[\'' + this.type + '\' caught by ' + (this._controllers ? this._controllers.toString() : 'nothing yet.') + ' ] ';
+      return this.id + '[\'' + this.type + '\' caught by ' + (this._controllers ? this._controllers.toString() : 'nothing yet.') + ' ] ';
     }
 
     /**
@@ -1465,82 +1551,99 @@ exports.default = RingaEvent;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.now = now;
-exports.format = format;
-exports.ringaEventToDebugString = ringaEventToDebugString;
-exports.injectionNames = injectionNames;
-exports.constructorNames = constructorNames;
-exports.uglifyWhitelist = uglifyWhitelist;
 
-var _dateformat = __webpack_require__(24);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _dateformat2 = _interopRequireDefault(_dateformat);
+var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
 
-var _executors = __webpack_require__(1);
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _RingaObject = __webpack_require__(2);
+exports.inspectorDispatch = inspectorDispatch;
+
+var _Controller2 = __webpack_require__(12);
+
+var _Controller3 = _interopRequireDefault(_Controller2);
+
+var _InspectorModel = __webpack_require__(16);
+
+var _InspectorModel2 = _interopRequireDefault(_InspectorModel);
+
+var _Bus = __webpack_require__(8);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function now() {
-  return new Date();
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function inspectorDispatch(eventType, detail) {
+  /**
+   * do NOT require catch, in case the user is not using the Inspector
+   */
+  _Bus.ringaGlobalBus.dispatch(eventType, detail, false);
 }
 
-function format(date) {
-  if (!date) {
-    return '?';
-  }
+var InspectorController = function (_Controller) {
+  _inherits(InspectorController, _Controller);
 
-  return (0, _dateformat2.default)(date, 'hh:mm:ss');
-}
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function InspectorController(name) {
+    _classCallCheck(this, InspectorController);
 
-/**
- * Generates a state tree of the process tree that this event has invoked at the state of this being called.
- *
- * Type: 1 [Event]
- *       2 [Controller]
- *       3 [Thread]
- *       4 [Executor]
- *       0 [Metadata]
- * @private
- */
-function ringaEventToDebugString(ringaEvent) {
-  var thread = ringaEvent.thread;
-  var controller = ringaEvent.controller;
-  var out = '';
+    var _this = _possibleConstructorReturn(this, (InspectorController.__proto__ || Object.getPrototypeOf(InspectorController)).call(this, name, _Bus.ringaGlobalBus));
 
-  // Unfortunately because the state is not a "tree" we cannot generate this using
-  // recursion, which would be much more elegant
-  out += ringaEvent.id + ' ' + (ringaEvent.dispatched ? 'dispatched' : '') + '\n';
+    console.log('Ringa Inspector is turned on because you have attached the InspectorController in your application. THIS WILL GREATLY REDUCE PERFORMANCE. Make sure to remove the InspectorController in your final production build! Using the global bus: ', _this.bus);
 
-  if (controller) {
-    out += '  ' + controller.id;
+    if (true) {
+      /**
+       * We don't want this controller to also dispatch the events or else we will end up with an infinite loop of dispatches
+       * which will entirely crash the browser. This MUST be set to true in the InspectorController!
+       */
+      _this.__blockRingaEvents = true;
 
-    if (thread) {
-      out += '    ' + thread.id;
+      _this.addModel(new _InspectorModel2.default());
 
-      thread._list.forEach(function (command) {
-        out += '      ' + command.id + ' [' + format(command.startTime) + ' - ' + format(command.endTime) + ']\n';
+      _this.addListener('ringaThreadStart', function (inspectorModel, thread) {
+        inspectorModel.addThread(thread);
+      });
+
+      _this.addListener('ringaThreadKill', function (inspectorModel, thread) {
+        inspectorModel.removeThread(thread);
+      });
+
+      _this.addListener('ringaExecutorStart', function (inspectorModel, executor) {
+        inspectorModel.addExecutor(executor);
+      });
+
+      _this.addListener('ringaExecutorEnd', function (inspectorModel, executor) {
+        inspectorModel.removeExecutor(executor);
       });
     }
-  } else {
-    out += '  not yet caught.\n';
+    return _this;
   }
 
-  return out;
-}
+  _createClass(InspectorController, [{
+    key: 'bus',
+    get: function get() {
+      return _get(InspectorController.prototype.__proto__ || Object.getPrototypeOf(InspectorController.prototype), 'bus', this);
+    },
+    set: function set(value) {
+      if (value !== _Bus.ringaGlobalBus) {
+        return;
+      }
 
-function injectionNames() {
-  return Object.keys(_executors.injectionInfo.byName);
-}
+      _set(InspectorController.prototype.__proto__ || Object.getPrototypeOf(InspectorController.prototype), 'bus', value, this);
+    }
+  }]);
 
-function constructorNames() {
-  return Object.keys(_RingaObject.ids.constructorNames);
-}
+  return InspectorController;
+}(_Controller3.default);
 
-function uglifyWhitelist() {
-  return JSON.stringify(injectionNames().concat(constructorNames()).sort());
-}
+exports.default = InspectorController;
 
 /***/ }),
 /* 8 */
@@ -1552,1062 +1655,17 @@ function uglifyWhitelist() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.ringaGlobalBus = exports.busses = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
- * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
- */
-var Model = function (_RingaObject) {
-  _inherits(Model, _RingaObject);
-
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  /**
-   * Constructs a new model.
-   *
-   * @param name The name of this model for injection.
-   * @param values A POJO of default values to assign to the properties in this Model.
-   */
-  function Model(name, values) {
-    _classCallCheck(this, Model);
-
-    if (typeof name !== 'string' && values === undefined) {
-      values = name;
-      name = undefined;
-    }
-
-    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
-
-    _this._values = values;
-    _this._modelWatchers = [];
-    _this.watchers = [];
-    return _this;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-  /**
-   * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
-   *
-   * @param modelWatcher The ModelWatcher to add.
-   */
-
-
-  _createClass(Model, [{
-    key: 'addInjector',
-    value: function addInjector(modelWatcher) {
-      if (true && this._modelWatchers.indexOf(modelWatcher) !== -1) {
-        throw new Error('Model::addInjector(): tried to add the same injector to a model twice! ' + this.id);
-      }
-
-      this._modelWatchers.push(modelWatcher);
-    }
-
-    /**
-     * Send a signal to all watchers.
-     *
-     * @param signal Generally a path to a property that has changed in the model.
-     */
-
-  }, {
-    key: 'notify',
-    value: function notify(signal) {
-      var _this2 = this;
-
-      // Notify all view objects through all injectors
-      this._modelWatchers.forEach(function (mi) {
-        mi.notify(_this2, signal);
-      });
-
-      this.watchers.forEach(function (handler) {
-        handler(signal);
-      });
-    }
-
-    /**
-     * Watch this model for any notify signals.
-     *
-     * @param handler The function to call when a notify signal is sent.
-     */
-
-  }, {
-    key: 'watch',
-    value: function watch(handler) {
-      this.watchers.push(handler);
-    }
-
-    /**
-     * Add a property to this model that by default does its own notifications to ModelWatcher and verifies that if the
-     * value has not changed (strict reference compare A === B) then it won't notify and spam the ModelWatcher.
-     *
-     * If you want to do a custom shallow or deep compare on changes, you should provide your own custom setter.
-     *
-     * For reference, the default setter template is:
-     *
-     *  set ${name} (value) {
-     *    if (this._${name} === value) {
-     *      return;
-     *    }
-     *
-     *    this._${name} = value;
-     *
-     *    this.notify('${name}');
-     *  }
-     *
-     * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
-     * @param defaultValue The default value of the property.
-     * @param options Options can be:
-     *
-     *   -get: a getter function
-     *   -set: a setter function
-     *
-     *   Anything else will be saved as metadata to the value `_${name}Options`.
-     */
-
-  }, {
-    key: 'addProperty',
-    value: function addProperty(name, defaultValue) {
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-      this['_' + name] = defaultValue;
-
-      var defaultGet = function defaultGet() {
-        return this['_' + name];
-      };
-
-      var defaultSet = function defaultSet(value) {
-        // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
-        // bubble up to this model and notify its watchers too.
-        if (this['_' + name] === value) {
-          return;
-        }
-
-        this['_' + name] = value;
-
-        this.notify(name);
-      };
-
-      Object.defineProperty(this, name, {
-        get: options.get || defaultGet,
-        set: options.set || defaultSet
-      });
-
-      delete options.get;
-      delete options.set;
-
-      this['_' + name + 'Options'] = options;
-
-      if (this._values && this._values[name]) {
-        this['_' + name] = this._values[name];
-      }
-    }
-  }]);
-
-  return Model;
-}(_RingaObject3.default);
-
-exports.default = Model;
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _RingaObject2 = __webpack_require__(2);
-
-var _RingaObject3 = _interopRequireDefault(_RingaObject2);
-
-var _Model = __webpack_require__(8);
-
-var _Model2 = _interopRequireDefault(_Model);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Retrieves a property by a dot-delimited path on a provided object.
- *
- * @param obj The object to search.
- * @param path A dot-delimited path like 'prop1.prop2.prop3'
- * @returns {*}
- */
-function objPath(obj, path) {
-  if (!path) {
-    return obj;
-  }
-  path = path.split('.');
-  var i = 0;
-  while (obj && i < path.length) {
-    obj = obj[path[i++]];
-  }
-  return obj;
-}
-
-/**
- * For a single dot-delimited path like 'when.harry.met.sally', returns:
- *
- * ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
- *
- * @param propertyPath A full dot-delimited path.
- * @returns {*}
- */
-function pathAll(propertyPath) {
-  return propertyPath.split('.').reduce(function (a, v, i) {
-    a[i] = i === 0 ? v : a[i - 1] + '.' + v;
-    return a;
-  }, []);
-}
-
-/**
- * A collection of watches that will be updated in one shot.
- */
-
-var Watchees = function () {
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function Watchees() {
-    _classCallCheck(this, Watchees);
-
-    this.watchees = [];
-    this.id = Math.random().toString();
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-
-
-  _createClass(Watchees, [{
-    key: 'add',
-    value: function add(model, propertyPath, watchee) {
-      var watcheeObj = void 0;
-
-      var arg = {
-        model: model,
-        path: propertyPath,
-        value: objPath(model, propertyPath),
-        watchedPath: watchee.propertyPath,
-        watchedValue: objPath(model, watchee.propertyPath)
-      };
-
-      if (watchee.handler.__watchees && (watcheeObj = watchee.handler.__watchees[this.id])) {
-        watcheeObj.arg.push(arg);
-
-        return;
-      }
-
-      watcheeObj = {
-        arg: [arg],
-        handler: watchee.handler
-      };
-
-      this.watchees.push(watcheeObj);
-
-      watcheeObj.handler.__watchees = watcheeObj.handler.__watchees || {};
-      watcheeObj.handler.__watchees[this.id] = watcheeObj;
-    }
-  }, {
-    key: 'notify',
-    value: function notify() {
-      var _this = this;
-
-      var w = this.watchees;
-      this.clear();
-
-      w.forEach(function (watcheeObj) {
-        watcheeObj.handler.call(undefined, watcheeObj.arg);
-        delete watcheeObj.handler.__watchees[_this.id];
-      });
-    }
-  }, {
-    key: 'clear',
-    value: function clear() {
-      globalWatchee = undefined;
-    }
-  }]);
-
-  return Watchees;
-}();
-
-var globalWatchee = void 0;
-var timeoutToken = void 0;
-
-/**
- * This ModelWatcher watches for a model by id, Class/prototype in heirarchy, or name.
- */
-
-var ModelWatcher = function (_RingaObject) {
-  _inherits(ModelWatcher, _RingaObject);
-
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function ModelWatcher(name, id) {
-    _classCallCheck(this, ModelWatcher);
-
-    var _this2 = _possibleConstructorReturn(this, (ModelWatcher.__proto__ || Object.getPrototypeOf(ModelWatcher)).call(this, name, id));
-
-    _this2.idNameToWatchees = {};
-    _this2.classToWatchees = new Map();
-
-    _this2.models = [];
-    _this2.idToModel = new WeakMap();
-    _this2.nameToModel = new WeakMap();
-    _this2.classToModel = new WeakMap();
-    return _this2;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-  /**
-   * A model to be watched.
-   *
-   * @param model Assumed to be an extension of Ringa.Model.
-   * @param id A custom id to assign if you so desire.
-   */
-
-
-  _createClass(ModelWatcher, [{
-    key: 'addModel',
-    value: function addModel(model) {
-      if (!(model instanceof _Model2.default)) {
-        throw new Error('ModelWatcher::addModel(): the provided model ' + model.constructor.name + ' was not a valid Ringa Model!');
-      }
-
-      if (this.nameToModel[model.name]) {
-        throw new Error('ModelWatcher::addModel(): a Model with the name ' + model.name + ' has already been watched!');
-      }
-
-      this.models.push(model);
-
-      this.idToModel[model.id] = model;
-      this.nameToModel[model.name] = model;
-
-      var p = model.constructor;
-
-      while (p) {
-        // First come first serve for looking up by type!
-        if (!this.classToModel[p]) {
-          this.classToModel[p] = model;
-        }
-
-        p = p.__proto__;
-      }
-
-      if (typeof model.addInjector == 'function') {
-        model.addInjector(this);
-      }
-    }
-
-    /**
-     * See if a Model exists in this ModelWatcher and find a property on it (optional).
-     *
-     * @param classOrIdOrName A Class that extends Ringa.Model or an id or a name to lookup.
-     * @param propertyPath A dot-delimited path deep into a property.
-     * @returns {*} The model (if not propertyPath provided) or the property on the model.
-     */
-
-  }, {
-    key: 'find',
-    value: function find(classOrIdOrName) {
-      var propertyPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-
-      var model = void 0;
-
-      // By ID (e.g. 'myModel' or 'constructor_whatever')
-      if (typeof classOrIdOrName === 'string' && this.idToModel[classOrIdOrName]) {
-        model = this.idToModel[classOrIdOrName];
-      }if (typeof classOrIdOrName === 'string' && this.nameToModel[classOrIdOrName]) {
-        model = this.nameToModel[classOrIdOrName];
-      } else {
-        // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
-        var p = classOrIdOrName;
-
-        while (p) {
-          if (this.classToModel[p]) {
-            model = this.classToModel[p];
-            break;
-          }
-
-          p = p.prototype;
-        }
-      }
-
-      if (model) {
-        return propertyPath ? objPath(model, propertyPath) : model;
-      }
-
-      return null;
-    }
-
-    /**
-     * Watch a model or specific property on a model for changes.
-     *
-     * @param classOrIdOrName A Ringa.Model extension, id, or name of a model to watch.
-     * @param propertyPath A dot-delimiated path into a property.
-     * @param handler Function to callback when the property changes.
-     */
-
-  }, {
-    key: 'watch',
-    value: function watch(classOrIdOrName, propertyPath) {
-      var handler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
-
-      // If handler is second property...
-      if (typeof propertyPath === 'function') {
-        handler = propertyPath;
-        propertyPath = undefined;
-      }
-
-      var group = void 0;
-      var defaultGroup = {
-        all: [],
-        byPath: {}
-      };
-
-      if (typeof classOrIdOrName === 'function') {
-        group = this.classToWatchees[classOrIdOrName] = this.classToWatchees[classOrIdOrName] || defaultGroup;
-      } else if (typeof classOrIdOrName === 'string') {
-        group = this.idNameToWatchees[classOrIdOrName] = this.idNameToWatchees[classOrIdOrName] || defaultGroup;
-      } else if (true) {
-        throw new Error('ModelWatcher::watch(): can only watch by Class or id');
-      }
-
-      var watchee = {
-        handler: handler,
-        propertyPath: propertyPath
-      };
-
-      if (!propertyPath) {
-        group.all.push(watchee);
-      } else {
-        var paths = pathAll(propertyPath);
-
-        paths.forEach(function (path) {
-          group.byPath[path] = group.byPath[path] || [];
-          group.byPath[path].push(watchee);
-        });
-      }
-    }
-
-    /**
-     * The notify method is rather complex. We need to intelligently create a Set of watchees (functions to notify)
-     * about changes on each model based upon what they wanted to be notified about and also ordered by the priority
-     * in which they asked to be notified.
-     *
-     * Another reason this algorithm is complicated is because handlers can request to be notified based on specific
-     * paths, so that the handlers do not get hammered with lots of notifications for every change in the model.
-     *
-     * Path scoping into the model plays a large part in determining which watchers get notified of changes to the model.
-     *
-     * For example:
-     *
-     *    // 1) Notify MyComponent of *any* changes to MyModel
-     *    watcher.watch(MyModel, myHandlerFunction);
-     *    watcher.watch('myModel', myHandlerFunction);
-     *
-     *    // 2) Notify MyComponent only if 'prop' changes or any of its children
-     *    watcher.watch(MyModel, 'prop', myHandlerFunction);
-     *    watcher.watch('myModel', 'prop', myHandlerFunction);
-     *
-     *    // 3) Notify MyComponent only if 'prop.value' changes or any of its children
-     *    watcher.watch(MyModel, 'prop.value', myHandlerFunction);
-     *    watcher.watch('myModel', 'prop.value', myHandlerFunction);
-     *
-     *    // 4) Notify MyComponent only if 'otherProp' changes or any of its children
-     *    watcher.watch(MyModel, 'otherProp', myHandlerFunction);
-     *    watcher.watch('myModel', 'otherProp', myHandlerFunction);
-     *
-     * For `watcher.notify(myModel, 'prop.value')` then (1), (2), and (3) are called.
-     * For `watcher.notify(myModel, 'prop')` then (1), (2), and (3) are called.
-     * For `watcher.notify(myModel)` then all are called.
-     * For `watcher.notify(myModel, 'otherProp')` only (1) and (4) are called.
-     *
-     * To increase the performance of your application, decrease the number of things being watched but be as precise as
-     * possible as to both what you are watching and on what you call notify().
-     *
-     * @param model The model that has changed
-     * @param propertyPath The property path (dot-delimited) into a property on the model that has changed.
-     * @param timeout A timeout to clear the stack frame and unify all the notifications at once. This makes make sure
-     * that if multiple properties get set on a model back to back and notify() is called over and over that the
-     * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
-     */
-
-  }, {
-    key: 'notify',
-    value: function notify(model, propertyPath) {
-      var foundAtLeastOneWatchee = false;
-
-      if (!globalWatchee) {
-        globalWatchee = new Watchees();
-      }
-
-      var n = globalWatchee;
-      var paths = void 0,
-          byPathFor = function byPathFor() {};
-
-      var addWatchee = function addWatchee(watchee) {
-        foundAtLeastOneWatchee = true;
-
-        n.add(model, propertyPath, watchee);
-      };
-
-      var watcheeGroup = function watcheeGroup(watchees) {
-        watchees.all.forEach(addWatchee);
-        byPathFor(watchees.byPath);
-      };
-
-      if (propertyPath) {
-        paths = pathAll(propertyPath);
-
-        byPathFor = function byPathFor(watcheesByPath) {
-          // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
-          // or 'when'. So we go backwards through the array. I would do paths.reverse() but, well, performance and all.
-          for (var i = paths.length - 1; i >= 0; i--) {
-            var path = paths[i];
-            if (watcheesByPath[path]) {
-              watcheesByPath[path].forEach(addWatchee);
-              break;
-            }
-          }
-        };
-      } else {
-        // Well, its a little insane, but if a propertyPath isn't specified, we just notify everyone.
-        // TODO: This is where we should do some performance metrics so developers don't write code that has massive
-        // performance hits because every handler gets notified at once.
-        byPathFor = function byPathFor(watcheesByPath) {
-          for (var key in watcheesByPath) {
-            watcheesByPath[key].forEach(addWatchee);
-          }
-        };
-      }
-
-      // By ID (e.g. 'MyModel1' or 'MyController10')
-      if (this.idNameToWatchees[model.id]) {
-        watcheeGroup(this.idNameToWatchees[model.id]);
-      }
-
-      // By ID (e.g. 'MyModel1' or 'MyController10')
-      if (this.idNameToWatchees[model.name]) {
-        watcheeGroup(this.idNameToWatchees[model.name]);
-      }
-
-      // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
-      // Note: we have to account for everything the model has extended in the prototype chain because a watcher
-      // may have requested to watch a base class and someone might have extended that... kindof a PITA but gotta
-      // cover all bases (no pun intended).
-      var p = model.constructor;
-
-      while (p) {
-        if (this.classToWatchees[p]) {
-          watcheeGroup(this.classToWatchees[p]);
-        }
-
-        p = p.__proto__;
-      }
-
-      if (timeoutToken || !foundAtLeastOneWatchee) {
-        return;
-      }
-
-      timeoutToken = setTimeout(function () {
-        timeoutToken = undefined;
-        globalWatchee.notify();
-      }, 0);
-    }
-  }]);
-
-  return ModelWatcher;
-}(_RingaObject3.default);
-
-exports.default = ModelWatcher;
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
-
-var _ringaEvent = __webpack_require__(14);
-
-var _function = __webpack_require__(4);
-
-var _executors = __webpack_require__(1);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var RingaEventFactory = function () {
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function RingaEventFactory(eventType, detail, domNode) {
-    var requireCatch = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-    var bubbles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
-    var cancellable = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
-
-    _classCallCheck(this, RingaEventFactory);
-
-    this.eventType = eventType;
-    this.detailOrig = detail;
-    this.domNode = domNode;
-    this.bubbles = true;
-    this.cancellable = true;
-    this.requireCatch = requireCatch;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-
-
-  _createClass(RingaEventFactory, [{
-    key: 'build',
-    value: function build(executor) {
-      var detail = void 0;
-
-      if (typeof this.detailOrig === 'function') {
-        var argNames = (0, _function.getArgNames)(this.detailOrig);
-        var args = (0, _executors.buildArgumentsFromRingaEvent)(executor, argNames, executor.ringaEvent);
-        detail = this.detailOrig.apply(undefined, args);
-      } else {
-        detail = this.detailOrig;
-      }
-
-      var newDetail = (0, _ringaEvent.mergeRingaEventDetails)(executor.ringaEvent, detail, executor.controller.options.warnOnDetailOverwrite);
-
-      newDetail._executor = executor;
-      newDetail.requireCatch = this.requireCatch;
-
-      return new _RingaEvent2.default(this.eventType, newDetail, this.bubbles, this.cancellable);
-    }
-  }, {
-    key: 'toString',
-    value: function toString() {
-      return 'RingaEventFactory_' + this.eventType;
-    }
-  }]);
-
-  return RingaEventFactory;
-}();
-
-exports.default = RingaEventFactory;
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _RingaHashArray2 = __webpack_require__(13);
-
-var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
-
-var _Thread = __webpack_require__(35);
-
-var _Thread2 = _interopRequireDefault(_Thread);
-
-var _ExecutorFactory = __webpack_require__(5);
-
-var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
-
-var _type = __webpack_require__(3);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var ThreadFactory = function (_RingaHashArray) {
-  _inherits(ThreadFactory, _RingaHashArray);
-
-  //-----------------------------------
-  // Constructor
-  //-----------------------------------
-  function ThreadFactory(name, executorFactories, options) {
-    _classCallCheck(this, ThreadFactory);
-
-    var _this = _possibleConstructorReturn(this, (ThreadFactory.__proto__ || Object.getPrototypeOf(ThreadFactory)).call(this, name || 'commandFactory'));
-
-    options = options || {};
-    options.synchronous = options.synchronous === undefined ? false : options.synchronous;
-
-    var addOne = _this._hashArray.addOne;
-    _this._hashArray.addOne = function (obj) {
-      if (!obj) {
-        console.error('ThreadFactory():: Attempting to add an empty executee to \'' + name + '\'! This probably happened because you attempted to add an event (e.g. SomeController.MY_EVENT) before SomeController::addListener(\'myEvent\') was called. Or the event just does not exist. Or you passed in undefined in a moment of intellectual struggle.', executorFactories);
-      }
-
-      obj = (0, _type.wrapIfNotInstance)(obj, _ExecutorFactory2.default);
-
-      addOne.call(this, obj);
-    };
-
-    if (executorFactories) {
-      _this.addAll(executorFactories);
-    }
-
-    _this.threadId = 0;
-    return _this;
-  }
-
-  //-----------------------------------
-  // Methods
-  //-----------------------------------
-
-
-  _createClass(ThreadFactory, [{
-    key: 'build',
-    value: function build(ringaEvent) {
-      if (true && !this.controller) {
-        throw Error('ThreadFactory::build(): controller was not set before the build method was called.');
-      }
-
-      var commandThread = new _Thread2.default(this.id + '_Thread' + this.threadId, this);
-
-      this.threadId++;
-
-      return commandThread;
-    }
-  }]);
-
-  return ThreadFactory;
-}(_RingaHashArray3.default);
-
-exports.default = ThreadFactory;
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = __webpack_require__(26);
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _hasharray = __webpack_require__(12);
-
-var _hasharray2 = _interopRequireDefault(_hasharray);
-
-var _RingaObject2 = __webpack_require__(2);
-
-var _RingaObject3 = _interopRequireDefault(_RingaObject2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * This is a proxy class for HashArray that extends RingaObject.
- */
-var RingaHashArray = function (_RingaObject) {
-  _inherits(RingaHashArray, _RingaObject);
-
-  function RingaHashArray() {
-    var name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '[name]';
-    var key = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'id';
-    var changeHandler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
-    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
-
-    _classCallCheck(this, RingaHashArray);
-
-    var _this = _possibleConstructorReturn(this, (RingaHashArray.__proto__ || Object.getPrototypeOf(RingaHashArray)).call(this, name));
-
-    _this._hashArray = new _hasharray2.default(key, changeHandler, options);
-    return _this;
-  }
-
-  _createClass(RingaHashArray, [{
-    key: 'add',
-    value: function add() {
-      var _hashArray;
-
-      return (_hashArray = this._hashArray).add.apply(_hashArray, arguments);
-    }
-  }, {
-    key: 'addAll',
-    value: function addAll() {
-      var _hashArray2;
-
-      return (_hashArray2 = this._hashArray).addAll.apply(_hashArray2, arguments);
-    }
-  }, {
-    key: 'addMap',
-    value: function addMap() {
-      var _hashArray3;
-
-      return (_hashArray3 = this._hashArray).addMap.apply(_hashArray3, arguments);
-    }
-  }, {
-    key: 'addOne',
-    value: function addOne() {
-      var _hashArray4;
-
-      return (_hashArray4 = this._hashArray).addOne.apply(_hashArray4, arguments);
-    }
-  }, {
-    key: 'get',
-    value: function get() {
-      var _hashArray5;
-
-      return (_hashArray5 = this._hashArray).get.apply(_hashArray5, arguments);
-    }
-  }, {
-    key: 'getAll',
-    value: function getAll() {
-      var _hashArray6;
-
-      return (_hashArray6 = this._hashArray).getAll.apply(_hashArray6, arguments);
-    }
-  }, {
-    key: 'getAsArray',
-    value: function getAsArray() {
-      var _hashArray7;
-
-      return (_hashArray7 = this._hashArray).getAsArray.apply(_hashArray7, arguments);
-    }
-  }, {
-    key: 'sample',
-    value: function sample() {
-      var _hashArray8;
-
-      return (_hashArray8 = this._hashArray).sample.apply(_hashArray8, arguments);
-    }
-  }, {
-    key: 'remove',
-    value: function remove() {
-      var _hashArray9;
-
-      return (_hashArray9 = this._hashArray).remove.apply(_hashArray9, arguments);
-    }
-  }, {
-    key: 'removeByKey',
-    value: function removeByKey() {
-      var _hashArray10;
-
-      return (_hashArray10 = this._hashArray).removeByKey.apply(_hashArray10, arguments);
-    }
-  }, {
-    key: 'removeAll',
-    value: function removeAll() {
-      var _hashArray11;
-
-      return (_hashArray11 = this._hashArray).removeAll.apply(_hashArray11, arguments);
-    }
-  }, {
-    key: 'intersection',
-    value: function intersection() {
-      var _hashArray12;
-
-      return (_hashArray12 = this._hashArray).intersection.apply(_hashArray12, arguments);
-    }
-  }, {
-    key: 'complement',
-    value: function complement() {
-      var _hashArray13;
-
-      return (_hashArray13 = this._hashArray).complement.apply(_hashArray13, arguments);
-    }
-  }, {
-    key: 'has',
-    value: function has() {
-      var _hashArray14;
-
-      return (_hashArray14 = this._hashArray).has.apply(_hashArray14, arguments);
-    }
-  }, {
-    key: 'hasMultiple',
-    value: function hasMultiple() {
-      var _hashArray15;
-
-      return (_hashArray15 = this._hashArray).hasMultiple.apply(_hashArray15, arguments);
-    }
-  }, {
-    key: 'collides',
-    value: function collides() {
-      var _hashArray16;
-
-      return (_hashArray16 = this._hashArray).collides.apply(_hashArray16, arguments);
-    }
-  }, {
-    key: 'forEach',
-    value: function forEach() {
-      var _hashArray17;
-
-      return (_hashArray17 = this._hashArray).forEach.apply(_hashArray17, arguments);
-    }
-  }, {
-    key: 'forEachDeep',
-    value: function forEachDeep() {
-      var _hashArray18;
-
-      return (_hashArray18 = this._hashArray).forEachDeep.apply(_hashArray18, arguments);
-    }
-  }, {
-    key: 'sum',
-    value: function sum() {
-      var _hashArray19;
-
-      return (_hashArray19 = this._hashArray).sum.apply(_hashArray19, arguments);
-    }
-  }, {
-    key: 'average',
-    value: function average() {
-      var _hashArray20;
-
-      return (_hashArray20 = this._hashArray).average.apply(_hashArray20, arguments);
-    }
-  }, {
-    key: 'filter',
-    value: function filter() {
-      var _hashArray21;
-
-      return (_hashArray21 = this._hashArray).filter.apply(_hashArray21, arguments);
-    }
-  }, {
-    key: 'objectAt',
-    value: function objectAt() {
-      var _hashArray22;
-
-      return (_hashArray22 = this._hashArray).objectAt.apply(_hashArray22, arguments);
-    }
-  }, {
-    key: 'clone',
-    value: function clone() {
-      var _hashArray23;
-
-      return (_hashArray23 = this._hashArray).clone.apply(_hashArray23, arguments);
-    }
-  }, {
-    key: 'all',
-    get: function get() {
-      return this._hashArray._list;
-    }
-  }]);
-
-  return RingaHashArray;
-}(_RingaObject3.default);
-
-exports.default = RingaHashArray;
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.mergeRingaEventDetails = mergeRingaEventDetails;
-function mergeRingaEventDetails(ringaEvent, detail) {
-  var warnOnOverwrite = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-
-  var nextDetail = Object.assign({}, detail); // Make sure we clone!!
-  var prevDetail = ringaEvent.detail || {};
-
-  for (var key in prevDetail) {
-    if (prevDetail.hasOwnProperty(key)) {
-      if (true && nextDetail[key] !== undefined && (warnOnOverwrite || ringaEvent.debug)) {
-        console.warn("mergeRingaEventDetails(): overwriting property '" + key + "' on " + ringaEvent + ".\n" + ("Old value: " + prevDetail[key] + "\n") + ("New value: " + nextDetail[key] + "\n"));
-      }
-      if (nextDetail[key] === undefined) {
-        nextDetail[key] = prevDetail[key];
-      }
-    }
-  }
-  ringaEvent.detail = nextDetail;
-  return nextDetail;
-};
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.busses = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _RingaObject2 = __webpack_require__(2);
-
-var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2640,10 +1698,10 @@ var Bus = function (_RingaObject) {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  function Bus(id) {
+  function Bus(name, id) {
     _classCallCheck(this, Bus);
 
-    var _this = _possibleConstructorReturn(this, (Bus.__proto__ || Object.getPrototypeOf(Bus)).call(this, id || 'bus' + busses.count++));
+    var _this = _possibleConstructorReturn(this, (Bus.__proto__ || Object.getPrototypeOf(Bus)).call(this, name || 'bus' + busses.count++, id));
 
     _this._map = {};
     _this._captureMap = {};
@@ -2790,15 +1848,335 @@ var Bus = function (_RingaObject) {
         });
       }
     }
+  }, {
+    key: 'dispatch',
+    value: function dispatch(type, detail, requireCatch) {
+      this._dispatch(new _RingaEvent2.default(type, detail, true, true, undefined, requireCatch));
+    }
   }]);
 
   return Bus;
 }(_RingaObject3.default);
 
+var ringaGlobalBus = exports.ringaGlobalBus = new Bus('GLOBALBUS', 'GLOBALBUS');
+
 exports.default = Bus;
 
 /***/ }),
-/* 16 */
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _RingaObject2 = __webpack_require__(1);
+
+var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
+ * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
+ */
+var Model = function (_RingaObject) {
+  _inherits(Model, _RingaObject);
+
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructs a new model.
+   *
+   * @param name The name of this model for injection.
+   * @param values A POJO of default values to assign to the properties in this Model.
+   */
+  function Model(name, values) {
+    _classCallCheck(this, Model);
+
+    if (typeof name !== 'string' && values === undefined) {
+      values = name;
+      name = undefined;
+    }
+
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
+
+    _this.properties = [];
+    _this._values = values;
+    _this._modelWatchers = [];
+    _this.watchers = [];
+    return _this;
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * Deserializes this object from a POJO only updating properties added with addProperty.
+   *
+   * @param values
+   */
+
+
+  _createClass(Model, [{
+    key: 'deserialize',
+    value: function deserialize(values) {
+      var _this2 = this;
+
+      this.properties.forEach(function (key) {
+        _this2[key] = values[key];
+      });
+    }
+
+    /**
+     * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
+     *
+     * @param modelWatcher The ModelWatcher to add.
+     */
+
+  }, {
+    key: 'addInjector',
+    value: function addInjector(modelWatcher) {
+      if (true && this._modelWatchers.indexOf(modelWatcher) !== -1) {
+        throw new Error('Model::addInjector(): tried to add the same injector to a model twice! ' + this.id);
+      }
+
+      this._modelWatchers.push(modelWatcher);
+    }
+
+    /**
+     * Send a signal to all watchers.
+     *
+     * @param signal Generally a path to a property that has changed in the model.
+     */
+
+  }, {
+    key: 'notify',
+    value: function notify(signal) {
+      var _this3 = this;
+
+      // Notify all view objects through all injectors
+      this._modelWatchers.forEach(function (mi) {
+        mi.notify(_this3, signal);
+      });
+
+      this.watchers.forEach(function (handler) {
+        handler(signal);
+      });
+    }
+
+    /**
+     * Watch this model for any notify signals.
+     *
+     * @param handler The function to call when a notify signal is sent.
+     */
+
+  }, {
+    key: 'watch',
+    value: function watch(handler) {
+      this.watchers.push(handler);
+    }
+
+    /**
+     * Unwatch from the specified handler
+     *
+     * @param handler
+     */
+
+  }, {
+    key: 'unwatch',
+    value: function unwatch(handler) {
+      var ix = this.watchers.indexOf(handler);
+
+      if (ix !== -1) {
+        this.watchers.splice(ix, 1);
+      }
+    }
+
+    /**
+     * Add a property to this model that by default does its own notifications to ModelWatcher and verifies that if the
+     * value has not changed (strict reference compare A === B) then it won't notify and spam the ModelWatcher.
+     *
+     * If you want to do a custom shallow or deep compare on changes, you should provide your own custom setter.
+     *
+     * For reference, the default setter template is:
+     *
+     *  set ${name} (value) {
+     *    if (this._${name} === value) {
+     *      return;
+     *    }
+     *
+     *    this._${name} = value;
+     *
+     *    this.notify('${name}');
+     *  }
+     *
+     * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
+     * @param defaultValue The default value of the property.
+     * @param options Options can be:
+     *
+     *   -get: a getter function
+     *   -set: a setter function
+     *
+     *   Anything else will be saved as metadata to the value `_${name}Options`.
+     */
+
+  }, {
+    key: 'addProperty',
+    value: function addProperty(name, defaultValue) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      this['_' + name] = defaultValue;
+
+      var defaultGet = function defaultGet() {
+        return this['_' + name];
+      };
+
+      var defaultSet = function defaultSet(value) {
+        // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
+        // bubble up to this model and notify its watchers too.
+        if (this['_' + name] === value) {
+          return;
+        }
+
+        this['_' + name] = value;
+
+        this.notify(name);
+      };
+
+      Object.defineProperty(this, name, {
+        get: options.get || defaultGet,
+        set: options.set || defaultSet
+      });
+
+      delete options.get;
+      delete options.set;
+
+      this['_' + name + 'Options'] = options;
+
+      if (this._values && this._values[name]) {
+        this['_' + name] = this._values[name];
+      }
+
+      this.properties.push(name);
+    }
+  }]);
+
+  return Model;
+}(_RingaObject3.default);
+
+exports.default = Model;
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.now = now;
+exports.format = format;
+exports.ringaEventToDebugString = ringaEventToDebugString;
+exports.injectionNames = injectionNames;
+exports.constructorNames = constructorNames;
+exports.uglifyWhitelist = uglifyWhitelist;
+
+var _dateformat = __webpack_require__(26);
+
+var _dateformat2 = _interopRequireDefault(_dateformat);
+
+var _executors = __webpack_require__(2);
+
+var _RingaObject = __webpack_require__(1);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function now() {
+  return new Date();
+}
+
+function format(date) {
+  if (!date) {
+    return '?';
+  }
+
+  return (0, _dateformat2.default)(date, 'hh:mm:ss');
+}
+
+/**
+ * Generates a state tree of the process tree that this event has invoked at the state of this being called.
+ *
+ * Type: 1 [Event]
+ *       2 [Controller]
+ *       3 [Thread]
+ *       4 [Executor]
+ *       0 [Metadata]
+ * @private
+ */
+function ringaEventToDebugString(ringaEvent) {
+  var thread = ringaEvent.thread;
+  var controller = ringaEvent.controller;
+  var out = '';
+
+  // Unfortunately because the state is not a "tree" we cannot generate this using
+  // recursion, which would be much more elegant
+  out += ringaEvent.id + ' ' + (ringaEvent.dispatched ? 'dispatched' : '') + '\n';
+
+  if (controller) {
+    out += '  ' + controller.id;
+
+    if (thread) {
+      out += '    ' + thread.id;
+
+      thread._list.forEach(function (command) {
+        out += '      ' + command.id + ' [' + format(command.startTime) + ' - ' + format(command.endTime) + ']\n';
+      });
+    }
+  } else {
+    out += '  not yet caught.\n';
+  }
+
+  return out;
+}
+
+function injectionNames() {
+  return Object.keys(_executors.injectionInfo.byName);
+}
+
+function constructorNames() {
+  return Object.keys(_RingaObject.ids.constructorNames);
+}
+
+function uglifyWhitelist() {
+  return JSON.stringify(injectionNames().concat(constructorNames()).sort());
+}
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(28);
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2812,15 +2190,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ThreadFactory = __webpack_require__(11);
+var _ThreadFactory = __webpack_require__(15);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
-var _RingaObject2 = __webpack_require__(2);
+var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _hasharray = __webpack_require__(12);
+var _hasharray = __webpack_require__(11);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -2828,15 +2206,19 @@ var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _ModelWatcher = __webpack_require__(9);
+var _ModelWatcher = __webpack_require__(13);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
-var _snakeCase = __webpack_require__(33);
+var _InspectorController = __webpack_require__(7);
+
+var _Bus = __webpack_require__(8);
+
+var _snakeCase = __webpack_require__(35);
 
 var _snakeCase2 = _interopRequireDefault(_snakeCase);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 var _function = __webpack_require__(4);
 
@@ -3177,6 +2559,12 @@ var Controller = function (_RingaObject) {
 
       ringaEvent._dispatchEvent(_RingaEvent2.default.PREHOOK);
 
+      if (true && !this.__blockRingaEvents) {
+        (0, _InspectorController.inspectorDispatch)('ringaThreadStart', {
+          thread: thread
+        });
+      }
+
       // TODO PREHOOK should allow the handler to cancel running of the thread.
       thread.run(ringaEvent, this.threadDoneHandler.bind(this), this.threadFailHandler.bind(this));
 
@@ -3231,6 +2619,8 @@ var Controller = function (_RingaObject) {
         }
 
         ringaEvent._fail(this, error, true);
+        ringaEvent.destroy(true);
+        return;
       }
 
       if (abort === true) {
@@ -3259,17 +2649,31 @@ var Controller = function (_RingaObject) {
       // Can be extended by a subclass
     }
   }, {
+    key: '_threadFinalized',
+    value: function _threadFinalized(thread) {
+      thread.destroy(true);
+
+      this.threads.remove(thread);
+
+      if (true && !this.__blockRingaEvents) {
+        (0, _InspectorController.inspectorDispatch)('ringaThreadKill', {
+          thread: thread
+        });
+      }
+    }
+  }, {
     key: 'threadDoneHandler',
     value: function threadDoneHandler(thread) {
       if (true && !this.threads.has(thread.id)) {
         throw Error('Controller::threadDoneHandler(): could not find thread with id ' + thread.id);
       }
 
-      this.threads.remove(thread);
+      this._threadFinalized(thread);
 
       this.notify(thread.ringaEvent);
 
       thread.ringaEvent._done(this);
+      thread.ringaEvent.destroy(true);
     }
   }, {
     key: 'threadFailHandler',
@@ -3278,24 +2682,28 @@ var Controller = function (_RingaObject) {
         console.error(error, 'In thread ' + (thread ? thread.toString() : ''));
       }
 
+      thread.ringaEvent._fail(this, error, kill);
+
       if (kill) {
+        thread.ringaEvent.destroy();
+
         if (this.threads.has(thread.id)) {
-          this.threads.remove(thread);
+          this._threadFinalized(thread);
         } else if (true) {
           throw Error('Controller:threadFailHandler(): the CommandThread with the id ' + thread.id + ' was not found.');
         }
       }
-
-      thread.ringaEvent._fail(this, error, kill);
     }
   }, {
     key: 'dispatch',
     value: function dispatch(eventType, details) {
+      var requireCatch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+
       if (!this.bus) {
         throw new Error('Controller::dispatch(): bus has not yet been set so you cannot dispatch (\'' + eventType + '\')! Wait for Controller::busMounted().');
       }
 
-      return new _RingaEvent2.default(eventType, details).dispatch(this.bus);
+      return new _RingaEvent2.default(eventType, details, true, true, undefined, requireCatch).dispatch(this.bus);
     }
   }, {
     key: 'toString',
@@ -3407,7 +2815,1033 @@ var Controller = function (_RingaObject) {
 exports.default = Controller;
 
 /***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _RingaObject2 = __webpack_require__(1);
+
+var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+var _Model = __webpack_require__(9);
+
+var _Model2 = _interopRequireDefault(_Model);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Retrieves a property by a dot-delimited path on a provided object.
+ *
+ * @param obj The object to search.
+ * @param path A dot-delimited path like 'prop1.prop2.prop3'
+ * @returns {*}
+ */
+function objPath(obj, path) {
+  if (!path) {
+    return obj;
+  }
+  path = path.split('.');
+  var i = 0;
+  while (obj && i < path.length) {
+    obj = obj[path[i++]];
+  }
+  return obj;
+}
+
+/**
+ * For a single dot-delimited path like 'when.harry.met.sally', returns:
+ *
+ * ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
+ *
+ * @param propertyPath A full dot-delimited path.
+ * @returns {*}
+ */
+function pathAll(propertyPath) {
+  return propertyPath.split('.').reduce(function (a, v, i) {
+    a[i] = i === 0 ? v : a[i - 1] + '.' + v;
+    return a;
+  }, []);
+}
+
+/**
+ * A collection of watches that will be updated in one shot.
+ */
+
+var Watchees = function () {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function Watchees() {
+    _classCallCheck(this, Watchees);
+
+    this.watchees = [];
+    this.id = Math.random().toString();
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
+
+  _createClass(Watchees, [{
+    key: 'add',
+    value: function add(model, propertyPath, watchee) {
+      var watcheeObj = void 0;
+
+      var arg = {
+        model: model,
+        path: propertyPath,
+        value: objPath(model, propertyPath),
+        watchedPath: watchee.propertyPath,
+        watchedValue: objPath(model, watchee.propertyPath)
+      };
+
+      if (watchee.handler.__watchees && (watcheeObj = watchee.handler.__watchees[this.id])) {
+        watcheeObj.arg.push(arg);
+
+        return;
+      }
+
+      watcheeObj = {
+        arg: [arg],
+        handler: watchee.handler
+      };
+
+      this.watchees.push(watcheeObj);
+
+      watcheeObj.handler.__watchees = watcheeObj.handler.__watchees || {};
+      watcheeObj.handler.__watchees[this.id] = watcheeObj;
+    }
+  }, {
+    key: 'notify',
+    value: function notify() {
+      var _this = this;
+
+      var w = this.watchees;
+      this.clear();
+
+      w.forEach(function (watcheeObj) {
+        watcheeObj.handler.call(undefined, watcheeObj.arg);
+        delete watcheeObj.handler.__watchees[_this.id];
+      });
+    }
+  }, {
+    key: 'clear',
+    value: function clear() {
+      globalWatchee = undefined;
+    }
+  }]);
+
+  return Watchees;
+}();
+
+var globalWatchee = void 0;
+var timeoutToken = void 0;
+
+/**
+ * This ModelWatcher watches for a model by id, Class/prototype in heirarchy, or name.
+ */
+
+var ModelWatcher = function (_RingaObject) {
+  _inherits(ModelWatcher, _RingaObject);
+
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function ModelWatcher(name, id) {
+    _classCallCheck(this, ModelWatcher);
+
+    var _this2 = _possibleConstructorReturn(this, (ModelWatcher.__proto__ || Object.getPrototypeOf(ModelWatcher)).call(this, name, id));
+
+    _this2.idNameToWatchees = {};
+    _this2.classToWatchees = new Map();
+
+    _this2.models = [];
+    _this2.idToModel = new WeakMap();
+    _this2.nameToModel = new WeakMap();
+    _this2.classToModel = new WeakMap();
+    return _this2;
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * A model to be watched.
+   *
+   * @param model Assumed to be an extension of Ringa.Model.
+   * @param id A custom id to assign if you so desire.
+   */
+
+
+  _createClass(ModelWatcher, [{
+    key: 'addModel',
+    value: function addModel(model) {
+      if (!(model instanceof _Model2.default)) {
+        throw new Error('ModelWatcher::addModel(): the provided model ' + model.constructor.name + ' was not a valid Ringa Model!');
+      }
+
+      if (this.nameToModel[model.name]) {
+        throw new Error('ModelWatcher::addModel(): a Model with the name ' + model.name + ' has already been watched!');
+      }
+
+      this.models.push(model);
+
+      this.idToModel[model.id] = model;
+      this.nameToModel[model.name] = model;
+
+      var p = model.constructor;
+
+      while (p) {
+        // First come first serve for looking up by type!
+        if (!this.classToModel[p]) {
+          this.classToModel[p] = model;
+        }
+
+        p = p.__proto__;
+      }
+
+      if (typeof model.addInjector == 'function') {
+        model.addInjector(this);
+      }
+    }
+
+    /**
+     * See if a Model exists in this ModelWatcher and find a property on it (optional).
+     *
+     * @param classOrIdOrName A Class that extends Ringa.Model or an id or a name to lookup.
+     * @param propertyPath A dot-delimited path deep into a property.
+     * @returns {*} The model (if not propertyPath provided) or the property on the model.
+     */
+
+  }, {
+    key: 'find',
+    value: function find(classOrIdOrName) {
+      var propertyPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+      var model = void 0;
+
+      // By ID (e.g. 'myModel' or 'constructor_whatever')
+      if (typeof classOrIdOrName === 'string' && this.idToModel[classOrIdOrName]) {
+        model = this.idToModel[classOrIdOrName];
+      }if (typeof classOrIdOrName === 'string' && this.nameToModel[classOrIdOrName]) {
+        model = this.nameToModel[classOrIdOrName];
+      } else {
+        // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
+        var p = classOrIdOrName;
+
+        while (p) {
+          if (this.classToModel[p]) {
+            model = this.classToModel[p];
+            break;
+          }
+
+          p = p.prototype;
+        }
+      }
+
+      if (model) {
+        return propertyPath ? objPath(model, propertyPath) : model;
+      }
+
+      return null;
+    }
+
+    /**
+     * Watch a model or specific property on a model for changes.
+     *
+     * @param classOrIdOrName A Ringa.Model extension, id, or name of a model to watch.
+     * @param propertyPath A dot-delimiated path into a property.
+     * @param handler Function to callback when the property changes.
+     */
+
+  }, {
+    key: 'watch',
+    value: function watch(classOrIdOrName, propertyPath) {
+      var handler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+
+      // If handler is second property...
+      if (typeof propertyPath === 'function') {
+        handler = propertyPath;
+        propertyPath = undefined;
+      }
+
+      var group = void 0;
+      var defaultGroup = {
+        all: [],
+        byPath: {}
+      };
+
+      if (typeof classOrIdOrName === 'function') {
+        group = this.classToWatchees[classOrIdOrName] = this.classToWatchees[classOrIdOrName] || defaultGroup;
+      } else if (typeof classOrIdOrName === 'string') {
+        group = this.idNameToWatchees[classOrIdOrName] = this.idNameToWatchees[classOrIdOrName] || defaultGroup;
+      } else if (true) {
+        throw new Error('ModelWatcher::watch(): can only watch by Class or id');
+      }
+
+      var watchee = {
+        handler: handler,
+        propertyPath: propertyPath
+      };
+
+      if (!propertyPath) {
+        group.all.push(watchee);
+      } else {
+        var paths = pathAll(propertyPath);
+
+        paths.forEach(function (path) {
+          group.byPath[path] = group.byPath[path] || [];
+          group.byPath[path].push(watchee);
+        });
+      }
+    }
+  }, {
+    key: 'unwatch',
+    value: function unwatch(classOrIdOrName, propertyPath, handler) {
+      // If handler is second property...
+      if (typeof propertyPath === 'function') {
+        handler = propertyPath;
+        propertyPath = undefined;
+      }
+
+      var group = void 0;
+
+      if (typeof classOrIdOrName === 'function') {
+        group = this.classToWatchees[classOrIdOrName];
+      } else if (typeof classOrIdOrName === 'string') {
+        group = this.idNameToWatchees[classOrIdOrName];
+      } else if (true) {
+        throw new Error('ModelWatcher::unwatch(): can only unwatch by Class or id');
+      }
+
+      if (!group) {
+        console.warn('ModelWatcher::unwatch(): could not unwatch because reference was not found: ' + classOrIdOrName);
+        return;
+      }
+
+      if (!propertyPath) {
+        for (var i = 0; i < group.all.length; i++) {
+          var watchee = group.all[i];
+
+          if (watchee.handler === handler) {
+            group.all.splice(i, 1);
+            return;
+          }
+        }
+      } else {
+        var paths = pathAll(propertyPath);
+
+        paths.forEach(function (path) {
+          var groupByPath = group.byPath[path];
+          if (groupByPath) {
+            for (var i = 0; i < groupByPath.length; i++) {
+              var _watchee = groupByPath[i];
+
+              if (_watchee.handler === handler) {
+                groupByPath.splice(i, 1);
+                return;
+              }
+            }
+          }
+        });
+      }
+    }
+
+    /**
+     * The notify method is rather complex. We need to intelligently create a Set of watchees (functions to notify)
+     * about changes on each model based upon what they wanted to be notified about and also ordered by the priority
+     * in which they asked to be notified.
+     *
+     * Another reason this algorithm is complicated is because handlers can request to be notified based on specific
+     * paths, so that the handlers do not get hammered with lots of notifications for every change in the model.
+     *
+     * Path scoping into the model plays a large part in determining which watchers get notified of changes to the model.
+     *
+     * For example:
+     *
+     *    // 1) Notify MyComponent of *any* changes to MyModel
+     *    watcher.watch(MyModel, myHandlerFunction);
+     *    watcher.watch('myModel', myHandlerFunction);
+     *
+     *    // 2) Notify MyComponent only if 'prop' changes or any of its children
+     *    watcher.watch(MyModel, 'prop', myHandlerFunction);
+     *    watcher.watch('myModel', 'prop', myHandlerFunction);
+     *
+     *    // 3) Notify MyComponent only if 'prop.value' changes or any of its children
+     *    watcher.watch(MyModel, 'prop.value', myHandlerFunction);
+     *    watcher.watch('myModel', 'prop.value', myHandlerFunction);
+     *
+     *    // 4) Notify MyComponent only if 'otherProp' changes or any of its children
+     *    watcher.watch(MyModel, 'otherProp', myHandlerFunction);
+     *    watcher.watch('myModel', 'otherProp', myHandlerFunction);
+     *
+     * For `watcher.notify(myModel, 'prop.value')` then (1), (2), and (3) are called.
+     * For `watcher.notify(myModel, 'prop')` then (1), (2), and (3) are called.
+     * For `watcher.notify(myModel)` then all are called.
+     * For `watcher.notify(myModel, 'otherProp')` only (1) and (4) are called.
+     *
+     * To increase the performance of your application, decrease the number of things being watched but be as precise as
+     * possible as to both what you are watching and on what you call notify().
+     *
+     * @param model The model that has changed
+     * @param propertyPath The property path (dot-delimited) into a property on the model that has changed.
+     * @param timeout A timeout to clear the stack frame and unify all the notifications at once. This makes make sure
+     * that if multiple properties get set on a model back to back and notify() is called over and over that the
+     * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
+     */
+
+  }, {
+    key: 'notify',
+    value: function notify(model, propertyPath) {
+      var foundAtLeastOneWatchee = false;
+
+      if (!globalWatchee) {
+        globalWatchee = new Watchees();
+      }
+
+      var n = globalWatchee;
+      var paths = void 0,
+          byPathFor = function byPathFor() {};
+
+      var addWatchee = function addWatchee(watchee) {
+        foundAtLeastOneWatchee = true;
+
+        n.add(model, propertyPath, watchee);
+      };
+
+      var watcheeGroup = function watcheeGroup(watchees) {
+        watchees.all.forEach(addWatchee);
+        byPathFor(watchees.byPath);
+      };
+
+      if (propertyPath) {
+        paths = pathAll(propertyPath);
+
+        byPathFor = function byPathFor(watcheesByPath) {
+          // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
+          // or 'when'. So we go backwards through the array. I would do paths.reverse() but, well, performance and all.
+          for (var i = paths.length - 1; i >= 0; i--) {
+            var path = paths[i];
+            if (watcheesByPath[path]) {
+              watcheesByPath[path].forEach(addWatchee);
+              break;
+            }
+          }
+        };
+      } else {
+        // Well, its a little insane, but if a propertyPath isn't specified, we just notify everyone.
+        // TODO: This is where we should do some performance metrics so developers don't write code that has massive
+        // performance hits because every handler gets notified at once.
+        byPathFor = function byPathFor(watcheesByPath) {
+          for (var key in watcheesByPath) {
+            watcheesByPath[key].forEach(addWatchee);
+          }
+        };
+      }
+
+      // By ID (e.g. 'MyModel1' or 'MyController10')
+      if (this.idNameToWatchees[model.id]) {
+        watcheeGroup(this.idNameToWatchees[model.id]);
+      }
+
+      // By ID (e.g. 'MyModel1' or 'MyController10')
+      if (this.idNameToWatchees[model.name]) {
+        watcheeGroup(this.idNameToWatchees[model.name]);
+      }
+
+      // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
+      // Note: we have to account for everything the model has extended in the prototype chain because a watcher
+      // may have requested to watch a base class and someone might have extended that... kindof a PITA but gotta
+      // cover all bases (no pun intended).
+      var p = model.constructor;
+
+      while (p) {
+        if (this.classToWatchees[p]) {
+          watcheeGroup(this.classToWatchees[p]);
+        }
+
+        p = p.__proto__;
+      }
+
+      if (timeoutToken || !foundAtLeastOneWatchee) {
+        return;
+      }
+
+      timeoutToken = setTimeout(function () {
+        timeoutToken = undefined;
+        globalWatchee.notify();
+      }, 0);
+    }
+  }]);
+
+  return ModelWatcher;
+}(_RingaObject3.default);
+
+exports.default = ModelWatcher;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _RingaEvent = __webpack_require__(6);
+
+var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
+
+var _ringaEvent = __webpack_require__(18);
+
+var _function = __webpack_require__(4);
+
+var _executors = __webpack_require__(2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var RingaEventFactory = function () {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function RingaEventFactory(eventType, detail, domNode) {
+    var requireCatch = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+    var bubbles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+    var cancellable = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
+    var event = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : undefined;
+
+    _classCallCheck(this, RingaEventFactory);
+
+    this.eventType = eventType;
+    this.detailOrig = detail;
+    this.domNode = domNode;
+    this.bubbles = true;
+    this.cancellable = true;
+    this.requireCatch = requireCatch;
+    this.event = event;
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
+
+  _createClass(RingaEventFactory, [{
+    key: 'build',
+    value: function build(executor) {
+      var detail = void 0;
+
+      if (typeof this.detailOrig === 'function') {
+        var argNames = (0, _function.getArgNames)(this.detailOrig);
+        var args = (0, _executors.buildArgumentsFromRingaEvent)(executor, argNames, executor.ringaEvent);
+        detail = this.detailOrig.apply(undefined, args);
+      } else {
+        detail = this.detailOrig;
+      }
+
+      var newDetail = (0, _ringaEvent.mergeRingaEventDetails)(executor.ringaEvent, detail, executor.controller.options.warnOnDetailOverwrite);
+
+      newDetail._executor = executor;
+
+      return new _RingaEvent2.default(this.eventType, newDetail, this.bubbles, this.cancellable, this.event, this.requireCatch);
+    }
+  }, {
+    key: 'toString',
+    value: function toString() {
+      return 'RingaEventFactory_' + this.eventType;
+    }
+  }]);
+
+  return RingaEventFactory;
+}();
+
+exports.default = RingaEventFactory;
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _RingaHashArray2 = __webpack_require__(17);
+
+var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
+
+var _Thread = __webpack_require__(37);
+
+var _Thread2 = _interopRequireDefault(_Thread);
+
+var _ExecutorFactory = __webpack_require__(5);
+
+var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
+
+var _type = __webpack_require__(3);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ThreadFactory = function (_RingaHashArray) {
+  _inherits(ThreadFactory, _RingaHashArray);
+
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function ThreadFactory(name, executorFactories, options) {
+    _classCallCheck(this, ThreadFactory);
+
+    var _this = _possibleConstructorReturn(this, (ThreadFactory.__proto__ || Object.getPrototypeOf(ThreadFactory)).call(this, name || 'commandFactory'));
+
+    options = options || {};
+    options.synchronous = options.synchronous === undefined ? false : options.synchronous;
+
+    var addOne = _this._hashArray.addOne;
+    _this._hashArray.addOne = function (obj) {
+      if (!obj) {
+        console.error('ThreadFactory():: Attempting to add an empty executee to \'' + name + '\'! This probably happened because you attempted to add an event (e.g. SomeController.MY_EVENT) before SomeController::addListener(\'myEvent\') was called. Or the event just does not exist. Or you passed in undefined in a moment of intellectual struggle.', executorFactories);
+      }
+
+      obj = (0, _type.wrapIfNotInstance)(obj, _ExecutorFactory2.default);
+
+      addOne.call(this, obj);
+    };
+
+    if (executorFactories) {
+      _this.addAll(executorFactories);
+    }
+
+    _this.threadId = 0;
+    return _this;
+  }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
+
+  _createClass(ThreadFactory, [{
+    key: 'build',
+    value: function build(ringaEvent) {
+      if (true && !this.controller) {
+        throw Error('ThreadFactory::build(): controller was not set before the build method was called.');
+      }
+
+      var commandThread = new _Thread2.default(this.id + '_Thread' + this.threadId, this);
+
+      this.threadId++;
+
+      return commandThread;
+    }
+  }]);
+
+  return ThreadFactory;
+}(_RingaHashArray3.default);
+
+exports.default = ThreadFactory;
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Model2 = __webpack_require__(9);
+
+var _Model3 = _interopRequireDefault(_Model2);
+
+var _RingaObject = __webpack_require__(1);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * The InspectorModel contains data that can monitor the inner activities of Ringa so you can build custom debugging utilities in your
+ * display.
+ */
+var InspectorModel = function (_Model) {
+  _inherits(InspectorModel, _Model);
+
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  function InspectorModel() {
+    _classCallCheck(this, InspectorModel);
+
+    var _this = _possibleConstructorReturn(this, (InspectorModel.__proto__ || Object.getPrototypeOf(InspectorModel)).call(this));
+
+    if (true) {
+      _this.threads = [];
+      _this.executors = [];
+
+      _this.addProperty('ringaObjects', undefined);
+
+      setTimeout(function () {
+        _this.ringaObjects = _RingaObject.ids.map;
+        _this.notify('threads');
+      }, 750);
+    }
+    return _this;
+  }
+
+  //-----------------------------------
+  // Properties
+  //-----------------------------------
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+
+
+  _createClass(InspectorModel, [{
+    key: 'addThread',
+    value: function addThread(thread) {
+      if (true) {
+        this.threads.push(thread);
+
+        this.notify('threads');
+      }
+    }
+  }, {
+    key: 'removeThread',
+    value: function removeThread(thread) {
+      if (true) {
+        var ix = this.threads.indexOf(thread);
+
+        if (ix !== -1) {
+          this.threads.splice(ix, 1);
+
+          this.notify('threads');
+        }
+      }
+    }
+  }, {
+    key: 'addExecutor',
+    value: function addExecutor(executor) {
+      if (true) {
+        this.executors.push(executor);
+
+        this.notify('executors');
+      }
+    }
+  }, {
+    key: 'removeExecutor',
+    value: function removeExecutor(executor) {
+      if (true) {
+        var ix = this.executors.indexOf(executor);
+
+        if (ix !== -1) {
+          this.executors.splice(ix, 1);
+
+          this.notify('executors');
+        }
+      }
+    }
+  }]);
+
+  return InspectorModel;
+}(_Model3.default);
+
+exports.default = InspectorModel;
+
+/***/ }),
 /* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _hasharray = __webpack_require__(11);
+
+var _hasharray2 = _interopRequireDefault(_hasharray);
+
+var _RingaObject2 = __webpack_require__(1);
+
+var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * This is a proxy class for HashArray that extends RingaObject.
+ */
+var RingaHashArray = function (_RingaObject) {
+  _inherits(RingaHashArray, _RingaObject);
+
+  function RingaHashArray() {
+    var name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '[name]';
+    var key = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'id';
+    var changeHandler = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : undefined;
+
+    _classCallCheck(this, RingaHashArray);
+
+    var _this = _possibleConstructorReturn(this, (RingaHashArray.__proto__ || Object.getPrototypeOf(RingaHashArray)).call(this, name));
+
+    _this._hashArray = new _hasharray2.default(key, changeHandler, options);
+    return _this;
+  }
+
+  _createClass(RingaHashArray, [{
+    key: 'add',
+    value: function add() {
+      var _hashArray;
+
+      return (_hashArray = this._hashArray).add.apply(_hashArray, arguments);
+    }
+  }, {
+    key: 'addAll',
+    value: function addAll() {
+      var _hashArray2;
+
+      return (_hashArray2 = this._hashArray).addAll.apply(_hashArray2, arguments);
+    }
+  }, {
+    key: 'addMap',
+    value: function addMap() {
+      var _hashArray3;
+
+      return (_hashArray3 = this._hashArray).addMap.apply(_hashArray3, arguments);
+    }
+  }, {
+    key: 'addOne',
+    value: function addOne() {
+      var _hashArray4;
+
+      return (_hashArray4 = this._hashArray).addOne.apply(_hashArray4, arguments);
+    }
+  }, {
+    key: 'get',
+    value: function get() {
+      var _hashArray5;
+
+      return (_hashArray5 = this._hashArray).get.apply(_hashArray5, arguments);
+    }
+  }, {
+    key: 'getAll',
+    value: function getAll() {
+      var _hashArray6;
+
+      return (_hashArray6 = this._hashArray).getAll.apply(_hashArray6, arguments);
+    }
+  }, {
+    key: 'getAsArray',
+    value: function getAsArray() {
+      var _hashArray7;
+
+      return (_hashArray7 = this._hashArray).getAsArray.apply(_hashArray7, arguments);
+    }
+  }, {
+    key: 'sample',
+    value: function sample() {
+      var _hashArray8;
+
+      return (_hashArray8 = this._hashArray).sample.apply(_hashArray8, arguments);
+    }
+  }, {
+    key: 'remove',
+    value: function remove() {
+      var _hashArray9;
+
+      return (_hashArray9 = this._hashArray).remove.apply(_hashArray9, arguments);
+    }
+  }, {
+    key: 'removeByKey',
+    value: function removeByKey() {
+      var _hashArray10;
+
+      return (_hashArray10 = this._hashArray).removeByKey.apply(_hashArray10, arguments);
+    }
+  }, {
+    key: 'removeAll',
+    value: function removeAll() {
+      var _hashArray11;
+
+      return (_hashArray11 = this._hashArray).removeAll.apply(_hashArray11, arguments);
+    }
+  }, {
+    key: 'intersection',
+    value: function intersection() {
+      var _hashArray12;
+
+      return (_hashArray12 = this._hashArray).intersection.apply(_hashArray12, arguments);
+    }
+  }, {
+    key: 'complement',
+    value: function complement() {
+      var _hashArray13;
+
+      return (_hashArray13 = this._hashArray).complement.apply(_hashArray13, arguments);
+    }
+  }, {
+    key: 'has',
+    value: function has() {
+      var _hashArray14;
+
+      return (_hashArray14 = this._hashArray).has.apply(_hashArray14, arguments);
+    }
+  }, {
+    key: 'hasMultiple',
+    value: function hasMultiple() {
+      var _hashArray15;
+
+      return (_hashArray15 = this._hashArray).hasMultiple.apply(_hashArray15, arguments);
+    }
+  }, {
+    key: 'collides',
+    value: function collides() {
+      var _hashArray16;
+
+      return (_hashArray16 = this._hashArray).collides.apply(_hashArray16, arguments);
+    }
+  }, {
+    key: 'forEach',
+    value: function forEach() {
+      var _hashArray17;
+
+      return (_hashArray17 = this._hashArray).forEach.apply(_hashArray17, arguments);
+    }
+  }, {
+    key: 'forEachDeep',
+    value: function forEachDeep() {
+      var _hashArray18;
+
+      return (_hashArray18 = this._hashArray).forEachDeep.apply(_hashArray18, arguments);
+    }
+  }, {
+    key: 'sum',
+    value: function sum() {
+      var _hashArray19;
+
+      return (_hashArray19 = this._hashArray).sum.apply(_hashArray19, arguments);
+    }
+  }, {
+    key: 'average',
+    value: function average() {
+      var _hashArray20;
+
+      return (_hashArray20 = this._hashArray).average.apply(_hashArray20, arguments);
+    }
+  }, {
+    key: 'filter',
+    value: function filter() {
+      var _hashArray21;
+
+      return (_hashArray21 = this._hashArray).filter.apply(_hashArray21, arguments);
+    }
+  }, {
+    key: 'objectAt',
+    value: function objectAt() {
+      var _hashArray22;
+
+      return (_hashArray22 = this._hashArray).objectAt.apply(_hashArray22, arguments);
+    }
+  }, {
+    key: 'clone',
+    value: function clone() {
+      var _hashArray23;
+
+      return (_hashArray23 = this._hashArray).clone.apply(_hashArray23, arguments);
+    }
+  }, {
+    key: 'all',
+    get: function get() {
+      return this._hashArray._list;
+    }
+  }]);
+
+  return RingaHashArray;
+}(_RingaObject3.default);
+
+exports.default = RingaHashArray;
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.mergeRingaEventDetails = mergeRingaEventDetails;
+function mergeRingaEventDetails(ringaEvent, detail) {
+  var warnOnOverwrite = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+
+  var nextDetail = Object.assign({}, detail); // Make sure we clone!!
+  var prevDetail = ringaEvent.detail || {};
+
+  for (var key in prevDetail) {
+    if (prevDetail.hasOwnProperty(key)) {
+      if (true && nextDetail[key] !== undefined && (warnOnOverwrite || ringaEvent.debug)) {
+        console.warn("mergeRingaEventDetails(): overwriting property '" + key + "' on " + ringaEvent + ".\n" + ("Old value: " + prevDetail[key] + "\n") + ("New value: " + nextDetail[key] + "\n"));
+      }
+      if (nextDetail[key] === undefined) {
+        nextDetail[key] = prevDetail[key];
+      }
+    }
+  }
+  ringaEvent.detail = nextDetail;
+  return nextDetail;
+};
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3425,7 +3859,7 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 var _function = __webpack_require__(4);
 
@@ -3536,6 +3970,18 @@ var Command = function (_ExecutorAbstract) {
 
       _get(Command.prototype.__proto__ || Object.getPrototypeOf(Command.prototype), 'fail', this).call(this, error, kill);
     }
+
+    /**
+     * By default is this executors id.
+     *
+     * @returns {string|*}
+     */
+
+  }, {
+    key: 'toString',
+    value: function toString() {
+      return this.id;
+    }
   }, {
     key: 'cache',
     get: function get() {
@@ -3553,7 +3999,7 @@ var Command = function (_ExecutorAbstract) {
 exports.default = Command;
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3577,7 +4023,7 @@ var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
 var _type = __webpack_require__(3);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3680,11 +4126,14 @@ var ForEachExecutor = function (_ExecutorAbstract) {
               return _this2.done();
             }
 
-            _this2.executors[ix]._execute(function () {
+            var executor = _this2.executors[ix];
+            executor._execute(function () {
+              _this2.killChildExecutor(executor);
               setTimeout(_next, 0);
             }, function (error) {
               var kill = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+              _this2.killChildExecutor(executor);
               _this2.fail(error, kill);
 
               if (!kill) {
@@ -3735,7 +4184,7 @@ var ForEachExecutor = function (_ExecutorAbstract) {
 exports.default = ForEachExecutor;
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3759,7 +4208,7 @@ var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
 var _function = __webpack_require__(4);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 var _type = __webpack_require__(3);
 
@@ -3820,6 +4269,8 @@ var IifExecutor = function (_ExecutorAbstract) {
      * @private
      */
     value: function _execute(doneHandler, failHandler) {
+      var _this2 = this;
+
       _get(IifExecutor.prototype.__proto__ || Object.getPrototypeOf(IifExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
       var argNames = (0, _function.getArgNames)(this.condition);
@@ -3828,9 +4279,18 @@ var IifExecutor = function (_ExecutorAbstract) {
       var executor = !!conditionResult ? this.trueExecutor : this.falseExecutor;
 
       if (executor) {
-        var executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
+        (function () {
+          var executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
+          var executorInst = executorFactory.build(_this2.thread);
 
-        executorFactory.build(this.thread)._execute(this.done, this.fail);
+          executorInst._execute(function () {
+            _this2.killChildExecutor(executorInst);
+            _this2.done();
+          }, function (event, kill) {
+            _this2.killChildExecutor(executorInst);
+            _this2.fail(event, kill);
+          });
+        })();
       } else {
         this.done();
       }
@@ -3853,7 +4313,7 @@ var IifExecutor = function (_ExecutorAbstract) {
 exports.default = IifExecutor;
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3877,7 +4337,7 @@ var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
 var _function = __webpack_require__(4);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 var _type = __webpack_require__(3);
 
@@ -3964,7 +4424,8 @@ var IntervalExecutor = function (_ExecutorAbstract) {
         this.done();
       } else {
         this.resetTimeout();
-        this.executorFactory.build(this.thread)._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
+        this.childExecutor = this.executorFactory.build(this.thread);
+        this.childExecutor._execute(this._intervalDone.bind(this), this._intervalFail.bind(this));
         setTimeout(this._interval.bind(this), this.milliseconds);
       }
     }
@@ -3983,11 +4444,12 @@ var IntervalExecutor = function (_ExecutorAbstract) {
   }, {
     key: '_intervalDone',
     value: function _intervalDone() {
-      // TODO: remove or add useful functionality (discuss)
+      this.killChildExecutor(this.childExecutor);
     }
   }, {
     key: '_intervalFail',
     value: function _intervalFail(error, kill) {
+      this.killChildExecutor(this.childExecutor);
       this.fail(error, kill);
     }
   }, {
@@ -4003,7 +4465,7 @@ var IntervalExecutor = function (_ExecutorAbstract) {
 exports.default = IntervalExecutor;
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4094,7 +4556,7 @@ var SpawnExecutor = function (_ExecutorAbstract) {
 exports.default = SpawnExecutor;
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4112,7 +4574,7 @@ var _ExecutorFactory2 = __webpack_require__(5);
 
 var _ExecutorFactory3 = _interopRequireDefault(_ExecutorFactory2);
 
-var _ringaEvent = __webpack_require__(14);
+var _ringaEvent = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4149,7 +4611,7 @@ var AssignFactory = function (_ExecutorFactory) {
 exports.default = AssignFactory;
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4207,7 +4669,7 @@ module.exports = function () {
 };
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4435,7 +4897,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })(undefined);
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4450,7 +4912,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     /* istanbul ignore next */
 
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(34)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(36)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -4634,7 +5096,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4643,7 +5105,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /*===========================================================================*\
  * Requires
 \*===========================================================================*/
-var JClass = __webpack_require__(27);
+var JClass = __webpack_require__(29);
 
 /*===========================================================================*\
  * HashArray
@@ -4866,13 +5328,15 @@ var HashArray = JClass._extend({
         var key = this.objectAt(item, this.keyFields[ix]);
         if (key) {
           var ix = this._map[key].indexOf(item);
-          if (ix != -1) this._map[key].splice(ix, 1);
+          if (ix != -1) this._map[key].splice(ix, 1);else throw new Error('HashArray: attempting to remove an object that was never added!' + key);
 
           if (this._map[key].length == 0) delete this._map[key];
         }
       }
 
-      this._list.splice(this._list.indexOf(item), 1);
+      var ix = this._list.indexOf(item);
+
+      if (ix != -1) this._list.splice(ix, 1);else throw new Error('HashArray: attempting to remove an object that was never added!' + key);
     }
 
     if (this.callback) {
@@ -5014,7 +5478,7 @@ module.exports = HashArray;
 if (typeof window !== 'undefined') window.HashArray = HashArray;
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5356,7 +5820,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 28 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5420,17 +5884,17 @@ module.exports = function (str, locale) {
 };
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var lowerCase = __webpack_require__(28);
+var lowerCase = __webpack_require__(30);
 
-var NON_WORD_REGEXP = __webpack_require__(32);
-var CAMEL_CASE_REGEXP = __webpack_require__(30);
-var CAMEL_CASE_UPPER_REGEXP = __webpack_require__(31);
+var NON_WORD_REGEXP = __webpack_require__(34);
+var CAMEL_CASE_REGEXP = __webpack_require__(32);
+var CAMEL_CASE_UPPER_REGEXP = __webpack_require__(33);
 
 /**
  * Sentence case a string.
@@ -5468,7 +5932,7 @@ module.exports = function (str, locale, replacement) {
 };
 
 /***/ }),
-/* 30 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5477,7 +5941,7 @@ module.exports = function (str, locale, replacement) {
 module.exports = /([a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010B\u010D\u010F\u0111\u0113\u0115\u0117\u0119\u011B\u011D\u011F\u0121\u0123\u0125\u0127\u0129\u012B\u012D\u012F\u0131\u0133\u0135\u0137\u0138\u013A\u013C\u013E\u0140\u0142\u0144\u0146\u0148\u0149\u014B\u014D\u014F\u0151\u0153\u0155\u0157\u0159\u015B\u015D\u015F\u0161\u0163\u0165\u0167\u0169\u016B\u016D\u016F\u0171\u0173\u0175\u0177\u017A\u017C\u017E-\u0180\u0183\u0185\u0188\u018C\u018D\u0192\u0195\u0199-\u019B\u019E\u01A1\u01A3\u01A5\u01A8\u01AA\u01AB\u01AD\u01B0\u01B4\u01B6\u01B9\u01BA\u01BD-\u01BF\u01C6\u01C9\u01CC\u01CE\u01D0\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u01DD\u01DF\u01E1\u01E3\u01E5\u01E7\u01E9\u01EB\u01ED\u01EF\u01F0\u01F3\u01F5\u01F9\u01FB\u01FD\u01FF\u0201\u0203\u0205\u0207\u0209\u020B\u020D\u020F\u0211\u0213\u0215\u0217\u0219\u021B\u021D\u021F\u0221\u0223\u0225\u0227\u0229\u022B\u022D\u022F\u0231\u0233-\u0239\u023C\u023F\u0240\u0242\u0247\u0249\u024B\u024D\u024F-\u0293\u0295-\u02AF\u0371\u0373\u0377\u037B-\u037D\u0390\u03AC-\u03CE\u03D0\u03D1\u03D5-\u03D7\u03D9\u03DB\u03DD\u03DF\u03E1\u03E3\u03E5\u03E7\u03E9\u03EB\u03ED\u03EF-\u03F3\u03F5\u03F8\u03FB\u03FC\u0430-\u045F\u0461\u0463\u0465\u0467\u0469\u046B\u046D\u046F\u0471\u0473\u0475\u0477\u0479\u047B\u047D\u047F\u0481\u048B\u048D\u048F\u0491\u0493\u0495\u0497\u0499\u049B\u049D\u049F\u04A1\u04A3\u04A5\u04A7\u04A9\u04AB\u04AD\u04AF\u04B1\u04B3\u04B5\u04B7\u04B9\u04BB\u04BD\u04BF\u04C2\u04C4\u04C6\u04C8\u04CA\u04CC\u04CE\u04CF\u04D1\u04D3\u04D5\u04D7\u04D9\u04DB\u04DD\u04DF\u04E1\u04E3\u04E5\u04E7\u04E9\u04EB\u04ED\u04EF\u04F1\u04F3\u04F5\u04F7\u04F9\u04FB\u04FD\u04FF\u0501\u0503\u0505\u0507\u0509\u050B\u050D\u050F\u0511\u0513\u0515\u0517\u0519\u051B\u051D\u051F\u0521\u0523\u0525\u0527\u0529\u052B\u052D\u052F\u0561-\u0587\u13F8-\u13FD\u1D00-\u1D2B\u1D6B-\u1D77\u1D79-\u1D9A\u1E01\u1E03\u1E05\u1E07\u1E09\u1E0B\u1E0D\u1E0F\u1E11\u1E13\u1E15\u1E17\u1E19\u1E1B\u1E1D\u1E1F\u1E21\u1E23\u1E25\u1E27\u1E29\u1E2B\u1E2D\u1E2F\u1E31\u1E33\u1E35\u1E37\u1E39\u1E3B\u1E3D\u1E3F\u1E41\u1E43\u1E45\u1E47\u1E49\u1E4B\u1E4D\u1E4F\u1E51\u1E53\u1E55\u1E57\u1E59\u1E5B\u1E5D\u1E5F\u1E61\u1E63\u1E65\u1E67\u1E69\u1E6B\u1E6D\u1E6F\u1E71\u1E73\u1E75\u1E77\u1E79\u1E7B\u1E7D\u1E7F\u1E81\u1E83\u1E85\u1E87\u1E89\u1E8B\u1E8D\u1E8F\u1E91\u1E93\u1E95-\u1E9D\u1E9F\u1EA1\u1EA3\u1EA5\u1EA7\u1EA9\u1EAB\u1EAD\u1EAF\u1EB1\u1EB3\u1EB5\u1EB7\u1EB9\u1EBB\u1EBD\u1EBF\u1EC1\u1EC3\u1EC5\u1EC7\u1EC9\u1ECB\u1ECD\u1ECF\u1ED1\u1ED3\u1ED5\u1ED7\u1ED9\u1EDB\u1EDD\u1EDF\u1EE1\u1EE3\u1EE5\u1EE7\u1EE9\u1EEB\u1EED\u1EEF\u1EF1\u1EF3\u1EF5\u1EF7\u1EF9\u1EFB\u1EFD\u1EFF-\u1F07\u1F10-\u1F15\u1F20-\u1F27\u1F30-\u1F37\u1F40-\u1F45\u1F50-\u1F57\u1F60-\u1F67\u1F70-\u1F7D\u1F80-\u1F87\u1F90-\u1F97\u1FA0-\u1FA7\u1FB0-\u1FB4\u1FB6\u1FB7\u1FBE\u1FC2-\u1FC4\u1FC6\u1FC7\u1FD0-\u1FD3\u1FD6\u1FD7\u1FE0-\u1FE7\u1FF2-\u1FF4\u1FF6\u1FF7\u210A\u210E\u210F\u2113\u212F\u2134\u2139\u213C\u213D\u2146-\u2149\u214E\u2184\u2C30-\u2C5E\u2C61\u2C65\u2C66\u2C68\u2C6A\u2C6C\u2C71\u2C73\u2C74\u2C76-\u2C7B\u2C81\u2C83\u2C85\u2C87\u2C89\u2C8B\u2C8D\u2C8F\u2C91\u2C93\u2C95\u2C97\u2C99\u2C9B\u2C9D\u2C9F\u2CA1\u2CA3\u2CA5\u2CA7\u2CA9\u2CAB\u2CAD\u2CAF\u2CB1\u2CB3\u2CB5\u2CB7\u2CB9\u2CBB\u2CBD\u2CBF\u2CC1\u2CC3\u2CC5\u2CC7\u2CC9\u2CCB\u2CCD\u2CCF\u2CD1\u2CD3\u2CD5\u2CD7\u2CD9\u2CDB\u2CDD\u2CDF\u2CE1\u2CE3\u2CE4\u2CEC\u2CEE\u2CF3\u2D00-\u2D25\u2D27\u2D2D\uA641\uA643\uA645\uA647\uA649\uA64B\uA64D\uA64F\uA651\uA653\uA655\uA657\uA659\uA65B\uA65D\uA65F\uA661\uA663\uA665\uA667\uA669\uA66B\uA66D\uA681\uA683\uA685\uA687\uA689\uA68B\uA68D\uA68F\uA691\uA693\uA695\uA697\uA699\uA69B\uA723\uA725\uA727\uA729\uA72B\uA72D\uA72F-\uA731\uA733\uA735\uA737\uA739\uA73B\uA73D\uA73F\uA741\uA743\uA745\uA747\uA749\uA74B\uA74D\uA74F\uA751\uA753\uA755\uA757\uA759\uA75B\uA75D\uA75F\uA761\uA763\uA765\uA767\uA769\uA76B\uA76D\uA76F\uA771-\uA778\uA77A\uA77C\uA77F\uA781\uA783\uA785\uA787\uA78C\uA78E\uA791\uA793-\uA795\uA797\uA799\uA79B\uA79D\uA79F\uA7A1\uA7A3\uA7A5\uA7A7\uA7A9\uA7B5\uA7B7\uA7FA\uAB30-\uAB5A\uAB60-\uAB65\uAB70-\uABBF\uFB00-\uFB06\uFB13-\uFB17\uFF41-\uFF5A0-9\xB2\xB3\xB9\xBC-\xBE\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u09F4-\u09F9\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0B72-\u0B77\u0BE6-\u0BF2\u0C66-\u0C6F\u0C78-\u0C7E\u0CE6-\u0CEF\u0D66-\u0D75\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F33\u1040-\u1049\u1090-\u1099\u1369-\u137C\u16EE-\u16F0\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1946-\u194F\u19D0-\u19DA\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\u2070\u2074-\u2079\u2080-\u2089\u2150-\u2182\u2185-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2CFD\u3007\u3021-\u3029\u3038-\u303A\u3192-\u3195\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\uA620-\uA629\uA6E6-\uA6EF\uA830-\uA835\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19])([A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AD\uA7B0-\uA7B4\uA7B6\uFF21-\uFF3A])/g;
 
 /***/ }),
-/* 31 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5486,7 +5950,7 @@ module.exports = /([a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010
 module.exports = /([A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AD\uA7B0-\uA7B4\uA7B6\uFF21-\uFF3A]+)([A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AD\uA7B0-\uA7B4\uA7B6\uFF21-\uFF3A][a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010B\u010D\u010F\u0111\u0113\u0115\u0117\u0119\u011B\u011D\u011F\u0121\u0123\u0125\u0127\u0129\u012B\u012D\u012F\u0131\u0133\u0135\u0137\u0138\u013A\u013C\u013E\u0140\u0142\u0144\u0146\u0148\u0149\u014B\u014D\u014F\u0151\u0153\u0155\u0157\u0159\u015B\u015D\u015F\u0161\u0163\u0165\u0167\u0169\u016B\u016D\u016F\u0171\u0173\u0175\u0177\u017A\u017C\u017E-\u0180\u0183\u0185\u0188\u018C\u018D\u0192\u0195\u0199-\u019B\u019E\u01A1\u01A3\u01A5\u01A8\u01AA\u01AB\u01AD\u01B0\u01B4\u01B6\u01B9\u01BA\u01BD-\u01BF\u01C6\u01C9\u01CC\u01CE\u01D0\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u01DD\u01DF\u01E1\u01E3\u01E5\u01E7\u01E9\u01EB\u01ED\u01EF\u01F0\u01F3\u01F5\u01F9\u01FB\u01FD\u01FF\u0201\u0203\u0205\u0207\u0209\u020B\u020D\u020F\u0211\u0213\u0215\u0217\u0219\u021B\u021D\u021F\u0221\u0223\u0225\u0227\u0229\u022B\u022D\u022F\u0231\u0233-\u0239\u023C\u023F\u0240\u0242\u0247\u0249\u024B\u024D\u024F-\u0293\u0295-\u02AF\u0371\u0373\u0377\u037B-\u037D\u0390\u03AC-\u03CE\u03D0\u03D1\u03D5-\u03D7\u03D9\u03DB\u03DD\u03DF\u03E1\u03E3\u03E5\u03E7\u03E9\u03EB\u03ED\u03EF-\u03F3\u03F5\u03F8\u03FB\u03FC\u0430-\u045F\u0461\u0463\u0465\u0467\u0469\u046B\u046D\u046F\u0471\u0473\u0475\u0477\u0479\u047B\u047D\u047F\u0481\u048B\u048D\u048F\u0491\u0493\u0495\u0497\u0499\u049B\u049D\u049F\u04A1\u04A3\u04A5\u04A7\u04A9\u04AB\u04AD\u04AF\u04B1\u04B3\u04B5\u04B7\u04B9\u04BB\u04BD\u04BF\u04C2\u04C4\u04C6\u04C8\u04CA\u04CC\u04CE\u04CF\u04D1\u04D3\u04D5\u04D7\u04D9\u04DB\u04DD\u04DF\u04E1\u04E3\u04E5\u04E7\u04E9\u04EB\u04ED\u04EF\u04F1\u04F3\u04F5\u04F7\u04F9\u04FB\u04FD\u04FF\u0501\u0503\u0505\u0507\u0509\u050B\u050D\u050F\u0511\u0513\u0515\u0517\u0519\u051B\u051D\u051F\u0521\u0523\u0525\u0527\u0529\u052B\u052D\u052F\u0561-\u0587\u13F8-\u13FD\u1D00-\u1D2B\u1D6B-\u1D77\u1D79-\u1D9A\u1E01\u1E03\u1E05\u1E07\u1E09\u1E0B\u1E0D\u1E0F\u1E11\u1E13\u1E15\u1E17\u1E19\u1E1B\u1E1D\u1E1F\u1E21\u1E23\u1E25\u1E27\u1E29\u1E2B\u1E2D\u1E2F\u1E31\u1E33\u1E35\u1E37\u1E39\u1E3B\u1E3D\u1E3F\u1E41\u1E43\u1E45\u1E47\u1E49\u1E4B\u1E4D\u1E4F\u1E51\u1E53\u1E55\u1E57\u1E59\u1E5B\u1E5D\u1E5F\u1E61\u1E63\u1E65\u1E67\u1E69\u1E6B\u1E6D\u1E6F\u1E71\u1E73\u1E75\u1E77\u1E79\u1E7B\u1E7D\u1E7F\u1E81\u1E83\u1E85\u1E87\u1E89\u1E8B\u1E8D\u1E8F\u1E91\u1E93\u1E95-\u1E9D\u1E9F\u1EA1\u1EA3\u1EA5\u1EA7\u1EA9\u1EAB\u1EAD\u1EAF\u1EB1\u1EB3\u1EB5\u1EB7\u1EB9\u1EBB\u1EBD\u1EBF\u1EC1\u1EC3\u1EC5\u1EC7\u1EC9\u1ECB\u1ECD\u1ECF\u1ED1\u1ED3\u1ED5\u1ED7\u1ED9\u1EDB\u1EDD\u1EDF\u1EE1\u1EE3\u1EE5\u1EE7\u1EE9\u1EEB\u1EED\u1EEF\u1EF1\u1EF3\u1EF5\u1EF7\u1EF9\u1EFB\u1EFD\u1EFF-\u1F07\u1F10-\u1F15\u1F20-\u1F27\u1F30-\u1F37\u1F40-\u1F45\u1F50-\u1F57\u1F60-\u1F67\u1F70-\u1F7D\u1F80-\u1F87\u1F90-\u1F97\u1FA0-\u1FA7\u1FB0-\u1FB4\u1FB6\u1FB7\u1FBE\u1FC2-\u1FC4\u1FC6\u1FC7\u1FD0-\u1FD3\u1FD6\u1FD7\u1FE0-\u1FE7\u1FF2-\u1FF4\u1FF6\u1FF7\u210A\u210E\u210F\u2113\u212F\u2134\u2139\u213C\u213D\u2146-\u2149\u214E\u2184\u2C30-\u2C5E\u2C61\u2C65\u2C66\u2C68\u2C6A\u2C6C\u2C71\u2C73\u2C74\u2C76-\u2C7B\u2C81\u2C83\u2C85\u2C87\u2C89\u2C8B\u2C8D\u2C8F\u2C91\u2C93\u2C95\u2C97\u2C99\u2C9B\u2C9D\u2C9F\u2CA1\u2CA3\u2CA5\u2CA7\u2CA9\u2CAB\u2CAD\u2CAF\u2CB1\u2CB3\u2CB5\u2CB7\u2CB9\u2CBB\u2CBD\u2CBF\u2CC1\u2CC3\u2CC5\u2CC7\u2CC9\u2CCB\u2CCD\u2CCF\u2CD1\u2CD3\u2CD5\u2CD7\u2CD9\u2CDB\u2CDD\u2CDF\u2CE1\u2CE3\u2CE4\u2CEC\u2CEE\u2CF3\u2D00-\u2D25\u2D27\u2D2D\uA641\uA643\uA645\uA647\uA649\uA64B\uA64D\uA64F\uA651\uA653\uA655\uA657\uA659\uA65B\uA65D\uA65F\uA661\uA663\uA665\uA667\uA669\uA66B\uA66D\uA681\uA683\uA685\uA687\uA689\uA68B\uA68D\uA68F\uA691\uA693\uA695\uA697\uA699\uA69B\uA723\uA725\uA727\uA729\uA72B\uA72D\uA72F-\uA731\uA733\uA735\uA737\uA739\uA73B\uA73D\uA73F\uA741\uA743\uA745\uA747\uA749\uA74B\uA74D\uA74F\uA751\uA753\uA755\uA757\uA759\uA75B\uA75D\uA75F\uA761\uA763\uA765\uA767\uA769\uA76B\uA76D\uA76F\uA771-\uA778\uA77A\uA77C\uA77F\uA781\uA783\uA785\uA787\uA78C\uA78E\uA791\uA793-\uA795\uA797\uA799\uA79B\uA79D\uA79F\uA7A1\uA7A3\uA7A5\uA7A7\uA7A9\uA7B5\uA7B7\uA7FA\uAB30-\uAB5A\uAB60-\uAB65\uAB70-\uABBF\uFB00-\uFB06\uFB13-\uFB17\uFF41-\uFF5A])/g;
 
 /***/ }),
-/* 32 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5495,13 +5959,13 @@ module.exports = /([A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u0
 module.exports = /[^A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0-\u08B4\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788\uA78B-\uA7AD\uA7B0-\uA7B7\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC0-9\xB2\xB3\xB9\xBC-\xBE\u0660-\u0669\u06F0-\u06F9\u07C0-\u07C9\u0966-\u096F\u09E6-\u09EF\u09F4-\u09F9\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0B72-\u0B77\u0BE6-\u0BF2\u0C66-\u0C6F\u0C78-\u0C7E\u0CE6-\u0CEF\u0D66-\u0D75\u0DE6-\u0DEF\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F33\u1040-\u1049\u1090-\u1099\u1369-\u137C\u16EE-\u16F0\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1946-\u194F\u19D0-\u19DA\u1A80-\u1A89\u1A90-\u1A99\u1B50-\u1B59\u1BB0-\u1BB9\u1C40-\u1C49\u1C50-\u1C59\u2070\u2074-\u2079\u2080-\u2089\u2150-\u2182\u2185-\u2189\u2460-\u249B\u24EA-\u24FF\u2776-\u2793\u2CFD\u3007\u3021-\u3029\u3038-\u303A\u3192-\u3195\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\uA620-\uA629\uA6E6-\uA6EF\uA830-\uA835\uA8D0-\uA8D9\uA900-\uA909\uA9D0-\uA9D9\uA9F0-\uA9F9\uAA50-\uAA59\uABF0-\uABF9\uFF10-\uFF19]+/g;
 
 /***/ }),
-/* 33 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var noCase = __webpack_require__(29);
+var noCase = __webpack_require__(31);
 
 /**
  * Snake case a string.
@@ -5515,7 +5979,7 @@ module.exports = function (value, locale) {
 };
 
 /***/ }),
-/* 34 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5640,7 +6104,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 35 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5652,9 +6116,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(13);
+var _RingaHashArray2 = __webpack_require__(17);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
+
+var _InspectorController = __webpack_require__(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5732,6 +6198,10 @@ var Thread = function (_RingaHashArray) {
     value: function executeNext() {
       var executor = this.all[this.index];
 
+      if (this.index > 0) {
+        var previousExecutor = this.all[this.index - 1];
+        this.removeExecutor(previousExecutor);
+      }
       try {
         this.ringaEvent.addDebug('Executing: ' + executor);
 
@@ -5744,6 +6214,19 @@ var Thread = function (_RingaHashArray) {
     key: 'kill',
     value: function kill() {
       this.running = false;
+    }
+  }, {
+    key: 'removeExecutor',
+    value: function removeExecutor(executor) {
+      if (true && !this.controller.__blockRingaEvents) {
+        (0, _InspectorController.inspectorDispatch)('ringaExecutorEnd', {
+          executor: executor
+        });
+      }
+
+      if (this.has(executor)) {
+        this.remove(executor);
+      }
     }
 
     //-----------------------------------
@@ -5758,7 +6241,7 @@ var Thread = function (_RingaHashArray) {
       if (!this.all[this.index]) {
         this._finCouldNotFindError();
       } else {
-        executor = this.all[this.index].destroy();
+        executor = this.all[this.index].destroy(true);
       }
 
       this.ringaEvent.addDebug('Done: ' + executor);
@@ -5773,6 +6256,7 @@ var Thread = function (_RingaHashArray) {
         setTimeout(this.executeNext.bind(this), 0);
       } else {
         this.doneHandler(this);
+        this.removeExecutor(executor);
       }
     }
   }, {
@@ -5783,7 +6267,7 @@ var Thread = function (_RingaHashArray) {
       if (!this.all[this.index]) {
         this._finCouldNotFindError(error);
       } else {
-        executor = this.all[this.index].destroy();
+        executor = this.all[this.index].destroy(true);
       }
 
       this.ringaEvent.addDebug('Fail: ' + executor);
@@ -5798,11 +6282,23 @@ var Thread = function (_RingaHashArray) {
 
       if (!kill) {
         this._executorDoneHandler();
+      } else {
+        this.removeExecutor(executor);
       }
     }
   }, {
     key: '_finCouldNotFindError',
     value: function _finCouldNotFindError(error) {
+      /**
+       * During unit tests, __hardReset() is called at the end of the test. After that point, its possible
+       * for some of the executors to finish up and then because all the threads have been destroyed this
+       * object is going to try to kill the executor that Ringa already cleaned up during a __hardReset. Since
+       * we are moving onto the next unit test, we can just ignore that issue.
+       */
+      if (this.destroyed) {
+        return;
+      }
+
       var e = this.all && this.all.length ? this.all.map(function (e) {
         return e.toString();
       }).join(', ') : 'No executors found on thread ' + this.toString();
@@ -5822,7 +6318,7 @@ var Thread = function (_RingaHashArray) {
 exports.default = Thread;
 
 /***/ }),
-/* 36 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5890,6 +6386,8 @@ var EventExecutor = function (_ExecutorAbstract) {
   _createClass(EventExecutor, [{
     key: '_execute',
     value: function _execute(doneHandler, failHandler) {
+      var _this2 = this;
+
       _get(EventExecutor.prototype.__proto__ || Object.getPrototypeOf(EventExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
 
       this.dispatchedRingaEvent = this.ringaEventFactory.build(this);
@@ -5908,11 +6406,15 @@ var EventExecutor = function (_ExecutorAbstract) {
 
       this.ringaEvent.lastEvent = this.dispatchedRingaEvent;
 
-      this.dispatchedRingaEvent.dispatch(bus);
+      setTimeout(function () {
+        _this2.dispatchedRingaEvent.dispatch(bus);
 
-      if ((this.dispatchedRingaEvent.detail.requireCatch === undefined || this.dispatchedRingaEvent.detail.requireCatch) && !this.dispatchedRingaEvent.caught) {
-        this.fail(Error('EventExecutor::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'));
-      }
+        if (_this2.dispatchedRingaEvent.requireCatch === undefined || _this2.dispatchedRingaEvent.requireCatch) {
+          if (!_this2.dispatchedRingaEvent.caught) {
+            _this2.fail(Error('EventExecutor::_execute(): event ' + _this2.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'));
+          }
+        }
+      }, 0);
     }
   }, {
     key: 'toString',
@@ -5963,7 +6465,7 @@ var EventExecutor = function (_ExecutorAbstract) {
 exports.default = EventExecutor;
 
 /***/ }),
-/* 37 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5981,7 +6483,7 @@ var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 var _function = __webpack_require__(4);
 
@@ -6072,7 +6574,7 @@ var FunctionExecutor = function (_ExecutorAbstract) {
 exports.default = FunctionExecutor;
 
 /***/ }),
-/* 38 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6173,7 +6675,7 @@ var ParallelExecutor = function (_ExecutorAbstract) {
 exports.default = ParallelExecutor;
 
 /***/ }),
-/* 39 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6210,7 +6712,7 @@ var PromiseExecutor = function (_ExecutorAbstract) {
 exports.default = PromiseExecutor;
 
 /***/ }),
-/* 40 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6291,7 +6793,7 @@ var SleepExecutor = function (_ExecutorAbstract) {
 exports.default = SleepExecutor;
 
 /***/ }),
-/* 41 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6300,7 +6802,7 @@ exports.default = SleepExecutor;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ModelWatcher = exports.Model = exports.Bus = exports.RingaObject = exports.RingaEvent = exports.Controller = exports.ThreadFactory = exports.ExecutorFactory = exports.Command = undefined;
+exports.InspectorModel = exports.InspectorController = exports.ModelWatcher = exports.Model = exports.Bus = exports.RingaObject = exports.RingaEvent = exports.Controller = exports.ThreadFactory = exports.ExecutorFactory = exports.Command = undefined;
 exports.dispatch = dispatch;
 exports.forEach = forEach;
 exports.forEachParallel = forEachParallel;
@@ -6315,7 +6817,15 @@ exports.notify = notify;
 exports.debug = debug;
 exports.__hardReset = __hardReset;
 
-var _Command = __webpack_require__(17);
+var _InspectorController = __webpack_require__(7);
+
+var _InspectorController2 = _interopRequireDefault(_InspectorController);
+
+var _InspectorModel = __webpack_require__(16);
+
+var _InspectorModel2 = _interopRequireDefault(_InspectorModel);
+
+var _Command = __webpack_require__(19);
 
 var _Command2 = _interopRequireDefault(_Command);
 
@@ -6323,11 +6833,11 @@ var _ExecutorFactory = __webpack_require__(5);
 
 var _ExecutorFactory2 = _interopRequireDefault(_ExecutorFactory);
 
-var _ThreadFactory = __webpack_require__(11);
+var _ThreadFactory = __webpack_require__(15);
 
 var _ThreadFactory2 = _interopRequireDefault(_ThreadFactory);
 
-var _Controller = __webpack_require__(16);
+var _Controller = __webpack_require__(12);
 
 var _Controller2 = _interopRequireDefault(_Controller);
 
@@ -6335,51 +6845,51 @@ var _RingaEvent = __webpack_require__(6);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _RingaObject = __webpack_require__(2);
+var _RingaObject = __webpack_require__(1);
 
 var _RingaObject2 = _interopRequireDefault(_RingaObject);
 
-var _RingaEventFactory = __webpack_require__(10);
+var _RingaEventFactory = __webpack_require__(14);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
-var _AssignFactory = __webpack_require__(22);
+var _AssignFactory = __webpack_require__(24);
 
 var _AssignFactory2 = _interopRequireDefault(_AssignFactory);
 
-var _Model = __webpack_require__(8);
+var _Model = __webpack_require__(9);
 
 var _Model2 = _interopRequireDefault(_Model);
 
-var _ModelWatcher = __webpack_require__(9);
+var _ModelWatcher = __webpack_require__(13);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
-var _Bus = __webpack_require__(15);
+var _Bus = __webpack_require__(8);
 
 var _Bus2 = _interopRequireDefault(_Bus);
 
-var _IifExecutor = __webpack_require__(19);
+var _IifExecutor = __webpack_require__(21);
 
 var _IifExecutor2 = _interopRequireDefault(_IifExecutor);
 
-var _ForEachExecutor = __webpack_require__(18);
+var _ForEachExecutor = __webpack_require__(20);
 
 var _ForEachExecutor2 = _interopRequireDefault(_ForEachExecutor);
 
-var _IntervalExecutor = __webpack_require__(20);
+var _IntervalExecutor = __webpack_require__(22);
 
 var _IntervalExecutor2 = _interopRequireDefault(_IntervalExecutor);
 
-var _SpawnExecutor = __webpack_require__(21);
+var _SpawnExecutor = __webpack_require__(23);
 
 var _SpawnExecutor2 = _interopRequireDefault(_SpawnExecutor);
 
 var _type = __webpack_require__(3);
 
-var _debug = __webpack_require__(7);
+var _debug = __webpack_require__(10);
 
-var _executors = __webpack_require__(1);
+var _executors = __webpack_require__(2);
 
 var _ExecutorAbstract = __webpack_require__(0);
 
@@ -6452,8 +6962,9 @@ function event(eventType, detail, bus) {
   var requireCatch = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
   var bubbles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   var cancellable = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
+  var event = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : undefined;
 
-  return new _RingaEventFactory2.default(eventType, detail, bus, requireCatch, bubbles, cancellable);
+  return new _RingaEventFactory2.default(eventType, detail, bus, requireCatch, bubbles, cancellable, event);
 }
 
 function notify(eventType) {
@@ -6474,12 +6985,12 @@ if (typeof window !== 'undefined') {
   window.ringaDebug = debug;
 }
 
-function __hardReset() {
-  _RingaObject.ids.map = {};
-  _RingaObject.ids.counts = new WeakMap();
+function __hardReset(debug) {
+  _RingaObject.ids.__hardReset(debug);
   _ExecutorAbstract.executorCounts.map = new Map();
   _Bus.busses.count = 0;
   _executors.injectionInfo.byName = {};
+  _RingaEvent.eventIx.count = 0;
 }
 
 exports.Command = _Command2.default;
@@ -6491,7 +7002,11 @@ exports.RingaObject = _RingaObject2.default;
 exports.Bus = _Bus2.default;
 exports.Model = _Model2.default;
 exports.ModelWatcher = _ModelWatcher2.default;
+exports.InspectorController = _InspectorController2.default;
+exports.InspectorModel = _InspectorModel2.default;
 exports.default = {
+  InspectorController: _InspectorController2.default,
+  InspectorModel: _InspectorModel2.default,
   Controller: _Controller2.default,
   Command: _Command2.default,
   ExecutorFactory: _ExecutorFactory2.default,

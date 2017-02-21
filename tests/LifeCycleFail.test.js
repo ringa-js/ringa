@@ -14,7 +14,7 @@ import CommandSimple from './shared/CommandSimple';
 const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
 
-describe('LifeCycle', () => {
+describe('LifeCycleFail', () => {
   let command, domNode, reactNode, threadFactory,
     threadFactory2, controller;
 
@@ -51,7 +51,7 @@ describe('LifeCycle', () => {
       expect(event.error.message).toEqual('some error');
       done();
     });
-  }, 50);
+  }, 200);
 
   //----------------------------------------------
   // RingaEvent -> 1 Command Fail Call (kill false)
@@ -76,7 +76,7 @@ describe('LifeCycle', () => {
       didFail = true;
       expect(event.error).toEqual('some error');
     });
-  }, 50);
+  }, 200);
 
   //----------------------------------------------
   // RingaEvent -> 1 Command Fail Call (kill true)
@@ -87,7 +87,7 @@ describe('LifeCycle', () => {
 
     controller.options.consoleLogFails = false;
 
-    let ringaEvent = Ringa.dispatch(TEST_EVENT, {
+    Ringa.dispatch(TEST_EVENT, {
       error: 'some error',
       kill: true,
       testObject: {}
@@ -95,8 +95,7 @@ describe('LifeCycle', () => {
       done('Unexpectedly called done when a fail was expected!');
     }).addFailListener((event) => {
       expect(event.error).toEqual('some error');
-      expect(ringaEvent.detail.testObject.count).toEqual(undefined);
       done();
     });
-  }, 50);
+  }, 200);
 });

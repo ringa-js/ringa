@@ -23,7 +23,7 @@ describe('Command', () => {
     ));
 
     controller = new Ringa.Controller('testController', domNode, {
-      timeout: 50
+      timeout: 100000
     });
 
     threadFactory = new Ringa.ThreadFactory('testCommandThreadFactory', [
@@ -125,7 +125,7 @@ describe('Command', () => {
     Ringa.dispatch('promiseTest', {
       shouldFail: false
     }, domNode);
-  });
+  }, 100000);
 
   it('should work properly when a promise is returned and fails', (done) => {
 
@@ -142,5 +142,5 @@ describe('Command', () => {
     Ringa.dispatch('promiseTest', {
       shouldFail: true
     }, domNode);
-  });
+  }, 500);
 });

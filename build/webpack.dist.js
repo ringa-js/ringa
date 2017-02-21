@@ -58,7 +58,12 @@ module.exports = Object.assign({
           'RingaHashArray',
           'RingaObject',
           'Thread',
-          'ThreadFactory']
+          'ThreadFactory',
+          'InspectorModel',
+          'inspectorModel',
+          'InspectorController',
+          'inspectorController',
+          'thread']
       }
     })
   ]

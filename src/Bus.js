@@ -1,4 +1,5 @@
 import RingaObject from './RingaObject';
+import RingaEvent from './RingaEvent';
 
 /**
  * Used to auto-generate non-conflicting Bus ids as the application runs.
@@ -20,8 +21,8 @@ class Bus extends RingaObject {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id) {
-    super(id || ('bus' + busses.count++));
+  constructor(name, id) {
+    super(name || ('bus' + busses.count++), id);
 
     this._map = {};
     this._captureMap = {};
@@ -144,6 +145,12 @@ class Bus extends RingaObject {
       });
     }
   }
+
+  dispatch(type, detail, requireCatch) {
+    this._dispatch(new RingaEvent(type, detail, true, true, undefined, requireCatch));
+  }
 }
+
+export let ringaGlobalBus = new Bus('GLOBALBUS', 'GLOBALBUS');
 
 export default Bus;

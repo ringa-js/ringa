@@ -21,10 +21,11 @@ describe('Bus', () => {
     expect(bus.id).toEqual('Bus1');
   });
 
-  it('should create without error and have proper id and name', () => {
-    bus = new Bus('name', 'id');
+  it('should create without error and have proper custom id and name', () => {
+    bus = new Bus('__name__', '__id__');
 
-    expect(bus.id).toEqual('Bus2');
+    expect(bus.name).toEqual('__name__');
+    expect(bus.id).toEqual('__id__');
   });
 
   it('should have proper starting properties', () => {

@@ -7,13 +7,14 @@ class RingaEventFactory {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true) {
+  constructor(eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true, event = undefined) {
     this.eventType = eventType;
     this.detailOrig = detail;
     this.domNode = domNode;
     this.bubbles = true;
     this.cancellable = true;
     this.requireCatch = requireCatch;
+    this.event = event;
   }
 
   //-----------------------------------
@@ -33,9 +34,8 @@ class RingaEventFactory {
     let newDetail = mergeRingaEventDetails(executor.ringaEvent, detail, executor.controller.options.warnOnDetailOverwrite);
 
     newDetail._executor = executor;
-    newDetail.requireCatch = this.requireCatch;
 
-    return new RingaEvent(this.eventType, newDetail, this.bubbles, this.cancellable);
+    return new RingaEvent(this.eventType, newDetail, this.bubbles, this.cancellable, this.event, this.requireCatch);
   }
 
   toString() {

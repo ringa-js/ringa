@@ -1,8 +1,10 @@
+import InspectorController from './debug/InspectorController';
+import InspectorModel from './debug/InspectorModel';
 import Command from './executors/Command';
 import ExecutorFactory from './ExecutorFactory';
 import ThreadFactory from './ThreadFactory';
 import Controller from './Controller';
-import RingaEvent from './RingaEvent';
+import RingaEvent, {eventIx} from './RingaEvent';
 import RingaObject from './RingaObject';
 import RingaEventFactory from './RingaEventFactory';
 import AssignFactory from './factories/AssignFactory';
@@ -81,8 +83,8 @@ export function assign (executor, detail) {
   return new AssignFactory(executor, detail);
 }
 
-export function event (eventType, detail, bus, requireCatch = false, bubbles = true, cancellable = true) {
-  return new RingaEventFactory(eventType, detail, bus, requireCatch, bubbles, cancellable);
+export function event (eventType, detail, bus, requireCatch = false, bubbles = true, cancellable = true, event = undefined) {
+  return new RingaEventFactory(eventType, detail, bus, requireCatch, bubbles, cancellable, event);
 }
 
 export function notify(eventType) {
@@ -103,17 +105,19 @@ if (typeof window !== 'undefined') {
   window.ringaDebug = debug;
 }
 
-export function __hardReset() {
-  ids.map = {};
-  ids.counts = new WeakMap();
+export function __hardReset(debug) {
+  ids.__hardReset(debug);
   executorCounts.map = new Map();
   busses.count = 0;
   injectionInfo.byName = {};
+  eventIx.count = 0;
 }
 
-export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus, Model, ModelWatcher };
+export { Command, ExecutorFactory, ThreadFactory, Controller, RingaEvent, RingaObject, Bus, Model, ModelWatcher, InspectorController, InspectorModel };
 
 export default {
+  InspectorController,
+  InspectorModel,
   Controller,
   Command,
   ExecutorFactory,

@@ -6,7 +6,7 @@ import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TestController from './shared/TestController';
-import Ringa, {__hardReset, dispatch} from '../src/index';
+import {__hardReset, dispatch} from '../src/index';
 
 describe('RingaEvent', () => {
   let command, domNode, reactNode, controller;

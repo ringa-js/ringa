@@ -51,12 +51,15 @@ class EventExecutor extends ExecutorAbstract {
 
     this.ringaEvent.lastEvent = this.dispatchedRingaEvent;
 
-    this.dispatchedRingaEvent.dispatch(bus);
+    setTimeout(() => {
+      this.dispatchedRingaEvent.dispatch(bus);
 
-    if ((this.dispatchedRingaEvent.detail.requireCatch === undefined || this.dispatchedRingaEvent.detail.requireCatch) &&
-        !this.dispatchedRingaEvent.caught) {
-      this.fail(Error('EventExecutor::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'))
-    }
+      if (this.dispatchedRingaEvent.requireCatch === undefined || this.dispatchedRingaEvent.requireCatch) {
+        if (!this.dispatchedRingaEvent.caught) {
+          this.fail(Error('EventExecutor::_execute(): event ' + this.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'))
+        }
+      }
+    }, 0);
   }
 
   toString() {

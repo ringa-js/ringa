@@ -45,5 +45,5 @@ describe('sleepExecutor', () => {
       expect(tracker).toBeGreaterThanOrEqual(4);
       done();
     });
-  }, 75);
+  }, 150);
 });

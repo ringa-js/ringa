@@ -5,7 +5,9 @@ import {isDOMNode} from './util/type';
 import {getArgNames} from './util/function';
 import {buildArgumentsFromRingaEvent} from './util/executors';
 
-let eventIx = 0;
+export let eventIx = {
+  count: 0
+};
 
 /**
  * RingaEvent is a generic event type for Ringa that, when dispatched on the DOM, wraps a CustomEvent:
@@ -41,10 +43,11 @@ class RingaEvent extends RingaObject {
    *               into any executors this triggers, making passing values super simple.
    * @param bubbles True if you want the event to bubble (default is true).
    * @param cancelable True if you want the event to be cancellable (default is true).
+   * @param event If an event triggered this one, then this will be set (e.g. a DOM Event like 'click' or 'resize')
    */
-  constructor(type, detail = {}, bubbles = true, cancelable = true, event = undefined) {
+  constructor(type, detail = {}, bubbles = true, cancelable = true, event = undefined, requireCatch = true) {
     // TODO add cancel support and unit tests!
-    super(`RingaEvent[${type}, ${eventIx++}]`);
+    super(`RingaEvent[${type}, ${eventIx.count++}]`);
 
     this.detail = detail;
     detail.ringaEvent = this;
@@ -58,9 +61,12 @@ class RingaEvent extends RingaObject {
 
     this._errors = undefined;
 
+    this.requireCatch = requireCatch;
+
     this.event = event;
 
     this.listeners = {};
+    this.dispatchedEvents = [];
 
     // Controllers that are currently handling the event
     this.catchers = [];
@@ -169,19 +175,14 @@ class RingaEvent extends RingaObject {
   /**
    * Dispatch the event on the provided bus.
    *
-   * Note: this method is always delayed so you must not access its properties
-   * until a frame later.
-   *
    * @param bus
    */
   dispatch(bus = document) {
-    if (__DEV__ || this.detail.debug) {
-      setTimeout(() => {
-        if (!this.caught) {
-          console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
-        }
-      }, 50);
+    if (__DEV__ && this.dispatched) {
+      throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
+    }
 
+    if (__DEV__ || this.detail.debug) {
       this.dispatchStack = ErrorStackParser.parse(new Error());
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
@@ -190,23 +191,6 @@ class RingaEvent extends RingaObject {
       }
     } else {
       this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
-    }
-
-    setTimeout(this._dispatch.bind(this, bus), 0);
-
-    return this;
-  }
-
-  /**
-   * Internal dispatch function. This is called after a timeout of 0 milliseconds to clear the stack from
-   * dispatch().
-   *
-   * @param bus The bus to dispatch on.
-   * @private
-   */
-  _dispatch(bus) {
-    if (__DEV__ && this.dispatched) {
-      throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
     }
 
     if (isDOMNode(bus)) {
@@ -222,6 +206,12 @@ class RingaEvent extends RingaObject {
     this.addDebug(`Dispatching on ${bus} ${this.customEvent ? 'as custom event.' : 'as RingaEvent.'} (${this.bubbles ? 'bubbling' : 'does not bubble'})`);
 
     bus.dispatchEvent(this.customEvent ? this.customEvent : this);
+
+    if ((__DEV__ || this.detail.debug) && this.requireCatch && !this.caught) {
+      console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
+    }
+
+    return this;
   }
 
   /**
@@ -340,6 +330,12 @@ class RingaEvent extends RingaObject {
   _dispatchEvent(type, detail, error) {
     let listeners = this.listeners[type];
 
+    this.dispatchedEvents.push({
+      type,
+      detail,
+      error
+    });
+
     if (listeners) {
       listeners.forEach((listener) => {
         listener({
@@ -370,6 +366,12 @@ class RingaEvent extends RingaObject {
     }
 
     this.listeners[eventType].push(handler);
+
+    this.dispatchedEvents.forEach(_dispatched => {
+      if (_dispatched.type === eventType) {
+        handler(_dispatched);
+      }
+    });
 
     return this;
   }
@@ -441,7 +443,7 @@ class RingaEvent extends RingaObject {
    * @returns {string}
    */
   toString() {
-    return `RingaEvent['${this.type}' caught by ${this._controllers ? this._controllers.toString() : 'nothing yet.'} ] `;
+    return `${this.id}['${this.type}' caught by ${this._controllers ? this._controllers.toString() : 'nothing yet.'} ] `;
   }
 
   /**

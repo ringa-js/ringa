@@ -91,6 +91,15 @@ class Command extends ExecutorAbstract {
   fail(error, kill = false) {
     super.fail(error, kill);
   }
+
+  /**
+   * By default is this executors id.
+   *
+   * @returns {string|*}
+   */
+  toString() {
+    return this.id;
+  }
 }
 
 export default Command;
