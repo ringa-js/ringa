@@ -470,9 +470,7 @@ var RingaObject = function () {
       ids.counts[this.constructor]++;
     }
 
-    if (!name) {
-      name = (0, _camelcase2.default)(this.constructor.name);
-    }
+    name = name || (0, _camelcase2.default)(this.constructor.name);
 
     if (true) {
       ids.constructorNames[this.constructor.name] = this.constructor.name;
@@ -1926,6 +1924,7 @@ var Model = function (_RingaObject) {
 
     var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
 
+    _this.properties = [];
     _this._values = values;
     _this._modelWatchers = [];
     _this.watchers = [];
@@ -1936,13 +1935,29 @@ var Model = function (_RingaObject) {
   // Methods
   //-----------------------------------
   /**
-   * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
+   * Deserializes this object from a POJO only updating properties added with addProperty.
    *
-   * @param modelWatcher The ModelWatcher to add.
+   * @param values
    */
 
 
   _createClass(Model, [{
+    key: 'deserialize',
+    value: function deserialize(values) {
+      var _this2 = this;
+
+      this.properties.forEach(function (key) {
+        _this2[key] = values[key];
+      });
+    }
+
+    /**
+     * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
+     *
+     * @param modelWatcher The ModelWatcher to add.
+     */
+
+  }, {
     key: 'addInjector',
     value: function addInjector(modelWatcher) {
       if (true && this._modelWatchers.indexOf(modelWatcher) !== -1) {
@@ -1961,11 +1976,11 @@ var Model = function (_RingaObject) {
   }, {
     key: 'notify',
     value: function notify(signal) {
-      var _this2 = this;
+      var _this3 = this;
 
       // Notify all view objects through all injectors
       this._modelWatchers.forEach(function (mi) {
-        mi.notify(_this2, signal);
+        mi.notify(_this3, signal);
       });
 
       this.watchers.forEach(function (handler) {
@@ -2049,6 +2064,8 @@ var Model = function (_RingaObject) {
       if (this._values && this._values[name]) {
         this['_' + name] = this._values[name];
       }
+
+      this.properties.push(name);
     }
   }]);
 
@@ -3084,6 +3101,57 @@ var ModelWatcher = function (_RingaObject) {
         paths.forEach(function (path) {
           group.byPath[path] = group.byPath[path] || [];
           group.byPath[path].push(watchee);
+        });
+      }
+    }
+  }, {
+    key: 'unwatch',
+    value: function unwatch(classOrIdOrName, propertyPath, handler) {
+      // If handler is second property...
+      if (typeof propertyPath === 'function') {
+        handler = propertyPath;
+        propertyPath = undefined;
+      }
+
+      var group = void 0;
+
+      if (typeof classOrIdOrName === 'function') {
+        group = this.classToWatchees[classOrIdOrName];
+      } else if (typeof classOrIdOrName === 'string') {
+        group = this.idNameToWatchees[classOrIdOrName];
+      } else if (true) {
+        throw new Error('ModelWatcher::unwatch(): can only unwatch by Class or id');
+      }
+
+      if (!group) {
+        console.warn('ModelWatcher::unwatch(): could not unwatch because reference was not found: ' + classOrIdOrName);
+        return;
+      }
+
+      if (!propertyPath) {
+        for (var i = 0; i < group.all.length; i++) {
+          var watchee = group.all[i];
+
+          if (watchee.handler === handler) {
+            group.all.splice(i, 1);
+            return;
+          }
+        }
+      } else {
+        var paths = pathAll(propertyPath);
+
+        paths.forEach(function (path) {
+          var groupByPath = group.byPath[path];
+          if (groupByPath) {
+            for (var i = 0; i < groupByPath.length; i++) {
+              var _watchee = groupByPath[i];
+
+              if (_watchee.handler === handler) {
+                groupByPath.splice(i, 1);
+                return;
+              }
+            }
+          }
         });
       }
     }

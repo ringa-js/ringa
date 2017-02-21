@@ -235,6 +235,56 @@ class ModelWatcher extends RingaObject {
     }
   }
 
+  unwatch(classOrIdOrName, propertyPath, handler) {
+    // If handler is second property...
+    if (typeof propertyPath === 'function') {
+      handler = propertyPath;
+      propertyPath = undefined;
+    }
+
+    let group;
+
+    if (typeof classOrIdOrName === 'function') {
+      group = this.classToWatchees[classOrIdOrName];
+    } else if (typeof classOrIdOrName === 'string') {
+      group = this.idNameToWatchees[classOrIdOrName];
+    } else if (__DEV__) {
+      throw new Error(`ModelWatcher::unwatch(): can only unwatch by Class or id`);
+    }
+
+    if (!group) {
+      console.warn(`ModelWatcher::unwatch(): could not unwatch because reference was not found: ${classOrIdOrName}`);
+      return;
+    }
+
+    if (!propertyPath) {
+      for (var i = 0; i < group.all.length; i++) {
+        let watchee = group.all[i];
+
+        if (watchee.handler === handler) {
+          group.all.splice(i, 1);
+          return;
+        }
+      }
+    } else {
+      let paths = pathAll(propertyPath);
+
+      paths.forEach(path => {
+        let groupByPath = group.byPath[path];
+        if (groupByPath) {
+          for (var i = 0; i < groupByPath.length; i++) {
+            let watchee = groupByPath[i];
+
+            if (watchee.handler === handler) {
+              groupByPath.splice(i, 1);
+              return;
+            }
+          }
+        }
+      });
+    }
+  }
+
   /**
    * The notify method is rather complex. We need to intelligently create a Set of watchees (functions to notify)
    * about changes on each model based upon what they wanted to be notified about and also ordered by the priority

@@ -61,6 +61,7 @@
     "dateformat": "^2.0.0",
     "error-stack-parser": "^2.0.0",
     "hasharray": "^1.1.0",
+    "jsdoc": "^3.4.3",
     "snake-case": "^2.1.0"
   },
   "devDependencies": {

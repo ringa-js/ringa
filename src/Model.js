@@ -22,6 +22,7 @@ class Model extends RingaObject {
 
     super(name, (values && values.id) ? values.id : undefined);
 
+    this.properties = [];
     this._values = values;
     this._modelWatchers = [];
     this.watchers = [];
@@ -30,6 +31,17 @@ class Model extends RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  /**
+   * Deserializes this object from a POJO only updating properties added with addProperty.
+   *
+   * @param values
+   */
+  deserialize(values) {
+    this.properties.forEach(key => {
+      this[key] = values[key];
+    });
+  }
+
   /**
    * Add a ModelWatcher as a parent watcher of this Model. Each Model can be watched by any number of ModelWatchers.
    *
@@ -127,6 +139,8 @@ class Model extends RingaObject {
     if (this._values && this._values[name]) {
       this[`_${name}`] = this._values[name];
     }
+
+    this.properties.push(name);
   }
 }
 

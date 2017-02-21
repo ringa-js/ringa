@@ -34,9 +34,7 @@ export default class RingaObject {
       ids.counts[this.constructor]++;
     }
 
-    if (!name) {
-      name = camelCase(this.constructor.name);
-    }
+    name = name || camelCase(this.constructor.name);
 
     if (__DEV__) {
       ids.constructorNames[this.constructor.name] = this.constructor.name;
