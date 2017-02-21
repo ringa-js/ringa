@@ -388,6 +388,7 @@ class Controller extends RingaObject {
 
       ringaEvent._fail(this, error, true);
       ringaEvent.destroy(true);
+      return;
     }
 
     if (abort === true) {

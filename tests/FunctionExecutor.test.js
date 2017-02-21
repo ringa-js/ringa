@@ -36,11 +36,10 @@ describe('FunctionExecutor', () => {
   });
 
   it('injection should work', (done) => {
-    let _ringaEvent;
     let _controller = controller;
 
     controller.addListener(TEST_EVENT, [(val1, $ringaEvent, val2, $controller, val3) => {
-      expect(_ringaEvent).toEqual($ringaEvent);
+      expect($ringaEvent.type).toEqual(TEST_EVENT);
       expect(_controller).toEqual($controller);
 
       expect(val1).toEqual(1);
@@ -50,7 +49,7 @@ describe('FunctionExecutor', () => {
       done();
     }]);
 
-    _ringaEvent = controller.dispatch(TEST_EVENT, {
+    controller.dispatch(TEST_EVENT, {
       val1: 1,
       val2: 2,
       val3: '3'

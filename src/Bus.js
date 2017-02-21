@@ -94,7 +94,6 @@ class Bus extends RingaObject {
     if (this._map[type]) {
       let ix = this._map[type].indexOf(handler);
       if (ix !== -1) {
-        console.log('REMOVING HANDLER');
         this._map[type].splice(ix, 1);
       }
     }

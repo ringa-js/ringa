@@ -66,6 +66,7 @@ class RingaEvent extends RingaObject {
     this.event = event;
 
     this.listeners = {};
+    this.dispatchedEvents = [];
 
     // Controllers that are currently handling the event
     this.catchers = [];
@@ -174,21 +175,14 @@ class RingaEvent extends RingaObject {
   /**
    * Dispatch the event on the provided bus.
    *
-   * Note: this method is always delayed so you must not access its properties
-   * until a frame later.
-   *
    * @param bus
    */
   dispatch(bus = document) {
-    if (__DEV__ || this.detail.debug) {
-      if (this.requireCatch) {
-        setTimeout(() => {
-          if (!this.caught) {
-            console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
-          }
-        }, 50);
-      }
+    if (__DEV__ && this.dispatched) {
+      throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
+    }
 
+    if (__DEV__ || this.detail.debug) {
       this.dispatchStack = ErrorStackParser.parse(new Error());
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
@@ -197,23 +191,6 @@ class RingaEvent extends RingaObject {
       }
     } else {
       this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
-    }
-
-    setTimeout(this._dispatch.bind(this, bus), 0);
-
-    return this;
-  }
-
-  /**
-   * Internal dispatch function. This is called after a timeout of 0 milliseconds to clear the stack from
-   * dispatch().
-   *
-   * @param bus The bus to dispatch on.
-   * @private
-   */
-  _dispatch(bus) {
-    if (__DEV__ && this.dispatched) {
-      throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
     }
 
     if (isDOMNode(bus)) {
@@ -229,6 +206,12 @@ class RingaEvent extends RingaObject {
     this.addDebug(`Dispatching on ${bus} ${this.customEvent ? 'as custom event.' : 'as RingaEvent.'} (${this.bubbles ? 'bubbling' : 'does not bubble'})`);
 
     bus.dispatchEvent(this.customEvent ? this.customEvent : this);
+
+    if ((__DEV__ || this.detail.debug) && this.requireCatch && !this.caught) {
+      console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
+    }
+
+    return this;
   }
 
   /**
@@ -347,6 +330,12 @@ class RingaEvent extends RingaObject {
   _dispatchEvent(type, detail, error) {
     let listeners = this.listeners[type];
 
+    this.dispatchedEvents.push({
+      type,
+      detail,
+      error
+    });
+
     if (listeners) {
       listeners.forEach((listener) => {
         listener({
@@ -377,6 +366,12 @@ class RingaEvent extends RingaObject {
     }
 
     this.listeners[eventType].push(handler);
+
+    this.dispatchedEvents.forEach(_dispatched => {
+      if (_dispatched.type === eventType) {
+        handler(_dispatched);
+      }
+    });
 
     return this;
   }

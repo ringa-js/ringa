@@ -1026,6 +1026,7 @@ var RingaEvent = function (_RingaObject) {
     _this.event = event;
 
     _this.listeners = {};
+    _this.dispatchedEvents = [];
 
     // Controllers that are currently handling the event
     _this.catchers = [];
@@ -1058,25 +1059,16 @@ var RingaEvent = function (_RingaObject) {
     /**
      * Dispatch the event on the provided bus.
      *
-     * Note: this method is always delayed so you must not access its properties
-     * until a frame later.
-     *
      * @param bus
      */
     value: function dispatch() {
-      var _this2 = this;
-
       var bus = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
-      if (true) {
-        if (this.requireCatch) {
-          setTimeout(function () {
-            if (!_this2.caught) {
-              console.warn('RingaEvent::dispatch(): the RingaEvent \'' + _this2.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
-            }
-          }, 50);
-        }
+      if (true && this.dispatched) {
+        throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
+      }
 
+      if (true) {
         this.dispatchStack = _errorStackParser2.default.parse(new Error());
         this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
@@ -1085,26 +1077,6 @@ var RingaEvent = function (_RingaObject) {
         }
       } else {
         this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
-      }
-
-      setTimeout(this._dispatch.bind(this, bus), 0);
-
-      return this;
-    }
-
-    /**
-     * Internal dispatch function. This is called after a timeout of 0 milliseconds to clear the stack from
-     * dispatch().
-     *
-     * @param bus The bus to dispatch on.
-     * @private
-     */
-
-  }, {
-    key: '_dispatch',
-    value: function _dispatch(bus) {
-      if (true && this.dispatched) {
-        throw Error('RingaEvent::dispatch(): events should only be dispatched once!', this);
       }
 
       if ((0, _type.isDOMNode)(bus)) {
@@ -1120,6 +1092,12 @@ var RingaEvent = function (_RingaObject) {
       this.addDebug('Dispatching on ' + bus + ' ' + (this.customEvent ? 'as custom event.' : 'as RingaEvent.') + ' (' + (this.bubbles ? 'bubbling' : 'does not bubble') + ')');
 
       bus.dispatchEvent(this.customEvent ? this.customEvent : this);
+
+      if ((true || this.detail.debug) && this.requireCatch && !this.caught) {
+        console.warn('RingaEvent::dispatch(): the RingaEvent \'' + this.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
+      }
+
+      return this;
     }
 
     /**
@@ -1259,6 +1237,12 @@ var RingaEvent = function (_RingaObject) {
     value: function _dispatchEvent(type, detail, error) {
       var listeners = this.listeners[type];
 
+      this.dispatchedEvents.push({
+        type: type,
+        detail: detail,
+        error: error
+      });
+
       if (listeners) {
         listeners.forEach(function (listener) {
           listener({
@@ -1293,6 +1277,12 @@ var RingaEvent = function (_RingaObject) {
 
       this.listeners[eventType].push(handler);
 
+      this.dispatchedEvents.forEach(function (_dispatched) {
+        if (_dispatched.type === eventType) {
+          handler(_dispatched);
+        }
+      });
+
       return this;
     }
 
@@ -1306,12 +1296,12 @@ var RingaEvent = function (_RingaObject) {
   }, {
     key: 'addDoneListener',
     value: function addDoneListener(handler) {
-      var _this3 = this;
+      var _this2 = this;
 
       // TODO add unit tests for multiple controllers handling a thread
       return this.addListener(RingaEvent.DONE, function () {
         var argNames = (0, _function.getArgNames)(handler);
-        var args = (0, _executors.buildArgumentsFromRingaEvent)(undefined, argNames, _this3);
+        var args = (0, _executors.buildArgumentsFromRingaEvent)(undefined, argNames, _this2);
         handler.apply(undefined, args);
       });
     }
@@ -1801,7 +1791,6 @@ var Bus = function (_RingaObject) {
       if (this._map[type]) {
         var ix = this._map[type].indexOf(handler);
         if (ix !== -1) {
-          console.log('REMOVING HANDLER');
           this._map[type].splice(ix, 1);
         }
       }
@@ -1998,6 +1987,22 @@ var Model = function (_RingaObject) {
     key: 'watch',
     value: function watch(handler) {
       this.watchers.push(handler);
+    }
+
+    /**
+     * Unwatch from the specified handler
+     *
+     * @param handler
+     */
+
+  }, {
+    key: 'unwatch',
+    value: function unwatch(handler) {
+      var ix = this.watchers.indexOf(handler);
+
+      if (ix !== -1) {
+        this.watchers.splice(ix, 1);
+      }
     }
 
     /**
@@ -2615,6 +2620,7 @@ var Controller = function (_RingaObject) {
 
         ringaEvent._fail(this, error, true);
         ringaEvent.destroy(true);
+        return;
       }
 
       if (abort === true) {
@@ -6400,15 +6406,15 @@ var EventExecutor = function (_ExecutorAbstract) {
 
       this.ringaEvent.lastEvent = this.dispatchedRingaEvent;
 
-      this.dispatchedRingaEvent.dispatch(bus);
+      setTimeout(function () {
+        _this2.dispatchedRingaEvent.dispatch(bus);
 
-      if (this.dispatchedRingaEvent.requireCatch === undefined || this.dispatchedRingaEvent.requireCatch) {
-        setTimeout(function () {
+        if (_this2.dispatchedRingaEvent.requireCatch === undefined || _this2.dispatchedRingaEvent.requireCatch) {
           if (!_this2.dispatchedRingaEvent.caught) {
             _this2.fail(Error('EventExecutor::_execute(): event ' + _this2.dispatchedRingaEvent.type + ' was expected to be caught and it was not.'));
           }
-        }, 10);
-      }
+        }
+      }, 0);
     }
   }, {
     key: 'toString',

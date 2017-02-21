@@ -81,6 +81,19 @@ class Model extends RingaObject {
   }
 
   /**
+   * Unwatch from the specified handler
+   *
+   * @param handler
+   */
+  unwatch(handler) {
+    let ix = this.watchers.indexOf(handler);
+
+    if (ix !== -1) {
+      this.watchers.splice(ix, 1);
+    }
+  }
+
+  /**
    * Add a property to this model that by default does its own notifications to ModelWatcher and verifies that if the
    * value has not changed (strict reference compare A === B) then it won't notify and spam the ModelWatcher.
    *

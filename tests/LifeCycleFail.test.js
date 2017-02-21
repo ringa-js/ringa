@@ -87,7 +87,7 @@ describe('LifeCycleFail', () => {
 
     controller.options.consoleLogFails = false;
 
-    let ringaEvent = Ringa.dispatch(TEST_EVENT, {
+    Ringa.dispatch(TEST_EVENT, {
       error: 'some error',
       kill: true,
       testObject: {}
@@ -95,7 +95,6 @@ describe('LifeCycleFail', () => {
       done('Unexpectedly called done when a fail was expected!');
     }).addFailListener((event) => {
       expect(event.error).toEqual('some error');
-      expect(ringaEvent.detail.testObject.count).toEqual(undefined);
       done();
     });
   }, 200);
