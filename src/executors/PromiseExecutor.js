@@ -29,7 +29,7 @@ class PromiseExecutor extends ExecutorAbstract {
   _execute(doneHandler, failHandler) {
     super._execute(doneHandler, failHandler);
 
-    this.promise.then(this.done).catch(this.fail);
+    this.waitForPromise(this.promise);
   }
 }
 
