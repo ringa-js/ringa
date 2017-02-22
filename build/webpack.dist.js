@@ -32,6 +32,7 @@ module.exports = Object.assign({
           '$controller',
           '$thread',
           '$ringaEvent',
+          'event',
           '$customEvent',
           '$lastEvent',
           '$target',

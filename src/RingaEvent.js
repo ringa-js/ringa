@@ -208,7 +208,7 @@ class RingaEvent extends RingaObject {
     bus.dispatchEvent(this.customEvent ? this.customEvent : this);
 
     if ((__DEV__ || this.detail.debug) && this.requireCatch && !this.caught) {
-      console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ${bus}`);
+      console.warn(`RingaEvent::dispatch(): the RingaEvent '${this.type}' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on: `, bus, `and the event was: `, this);
     }
 
     return this;

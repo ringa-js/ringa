@@ -25,6 +25,7 @@ export const getInjections = function(ringaEvent, executor = undefined) {
         $controller: executor.controller,
         $thread: executor.thread,
         $ringaEvent: ringaEvent,
+        event: ringaEvent.event, // Used for DOM events that trigger a Ringa action
         $lastEvent: ringaEvent.lastEvent,
         $customEvent: ringaEvent.customEvent,
         $target: ringaEvent.target,

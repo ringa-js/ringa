@@ -603,6 +603,7 @@ var getInjections = exports.getInjections = function getInjections(ringaEvent) {
       $controller: executor.controller,
       $thread: executor.thread,
       $ringaEvent: ringaEvent,
+      event: ringaEvent.event, // Used for DOM events that trigger a Ringa action
       $lastEvent: ringaEvent.lastEvent,
       $customEvent: ringaEvent.customEvent,
       $target: ringaEvent.target,
@@ -1094,7 +1095,7 @@ var RingaEvent = function (_RingaObject) {
       bus.dispatchEvent(this.customEvent ? this.customEvent : this);
 
       if ((true || this.detail.debug) && this.requireCatch && !this.caught) {
-        console.warn('RingaEvent::dispatch(): the RingaEvent \'' + this.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on ' + bus);
+        console.warn('RingaEvent::dispatch(): the RingaEvent \'' + this.type + '\' was never caught! Did you dispatch on the proper bus or DOM node? Was dispatched on: ', bus, 'and the event was: ', this);
       }
 
       return this;
