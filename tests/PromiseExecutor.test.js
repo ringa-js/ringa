@@ -39,7 +39,7 @@ describe('promiseExecutor', () => {
         () => done()
       ]);
 
-    let event = Ringa.dispatch('myEvent', domNode);
+    Ringa.dispatch('myEvent', domNode);
   }, 50);
 
   //-------------------------------------------------------------
@@ -64,4 +64,42 @@ describe('promiseExecutor', () => {
       done();
     });
   }, 100);
+
+  //---------------------------
+  // should set promise result
+  //---------------------------
+  it('should set promise result', (done) => {
+    controller.addListener('myEvent', [
+        new Promise((resolve, reject) => {
+          resolve({testValue: 'promiseResult!'});
+        }),
+        $lastPromiseResult => {
+          expect($lastPromiseResult.testValue).toEqual('promiseResult!');
+          done();
+        }
+      ]);
+
+    Ringa.dispatch('myEvent', domNode);
+  }, 50);
+
+  //------------------------------------------------------------
+  // should fail if promise rejects (test emits console.errors)
+  //------------------------------------------------------------
+  it('should fail if promise rejects (test emits console.errors)', (done) => {
+    controller.options.consoleLogFails = false;
+
+    controller.addListener('myEvent', [
+        new Promise((resolve, reject) => {
+          reject('promiseExecutorRejectTest!');
+        }),
+        $lastPromiseError => {
+          expect($lastPromiseError).toEqual('promiseExecutorRejectTest!');
+        }
+      ]);
+
+    let event = Ringa.dispatch('myEvent', domNode);
+    event.addFailListener(() => {
+      done();
+    });
+  }, 50);
 });
