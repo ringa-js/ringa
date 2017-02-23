@@ -6686,6 +6686,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _ExecutorAbstract2 = __webpack_require__(0);
 
 var _ExecutorAbstract3 = _interopRequireDefault(_ExecutorAbstract2);
@@ -6701,11 +6705,44 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var PromiseExecutor = function (_ExecutorAbstract) {
   _inherits(PromiseExecutor, _ExecutorAbstract);
 
-  function PromiseExecutor() {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  /**
+   * Constructor for a new PromiseExecutor
+   *
+   * @param thread The parent thread that owns this executor.
+   * @param promise The promise to execute
+   */
+  function PromiseExecutor(thread, promise) {
     _classCallCheck(this, PromiseExecutor);
 
-    return _possibleConstructorReturn(this, (PromiseExecutor.__proto__ || Object.getPrototypeOf(PromiseExecutor)).apply(this, arguments));
+    var _this = _possibleConstructorReturn(this, (PromiseExecutor.__proto__ || Object.getPrototypeOf(PromiseExecutor)).call(this, thread));
+
+    _this.promise = promise;
+    return _this;
   }
+
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * Internal execution method called by Thread only.
+   *
+   * @param doneHandler The handler to call when done() is called.
+   * @param failHandler The handler to call when fail() is called;
+   * @private
+   */
+
+
+  _createClass(PromiseExecutor, [{
+    key: '_execute',
+    value: function _execute(doneHandler, failHandler) {
+      _get(PromiseExecutor.prototype.__proto__ || Object.getPrototypeOf(PromiseExecutor.prototype), '_execute', this).call(this, doneHandler, failHandler);
+
+      this.waitForPromise(this.promise);
+    }
+  }]);
 
   return PromiseExecutor;
 }(_ExecutorAbstract3.default);
