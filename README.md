@@ -38,7 +38,7 @@ The following example illustrates a few of the important features available in R
 * Injection
 
 ```
-import {Controller, Model, dispatch, while} from 'ringa';
+import {Controller, Model, dispatch, loop} from 'ringa';
 
 class CountModel extends Model {
   constructor() {
@@ -72,7 +72,7 @@ class BlastoffController extends Controller {
 
         countModel.count = total;
       },
-      while(countModel => countModel.count > 0, decrement),
+      loop(countModel => countModel.count > 0, decrement),
       (finalMessage) => {
         console.log(finalMessage);
       },
