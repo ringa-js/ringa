@@ -1,4 +1,4 @@
-[<img src="http://www.jungdigital.com/public/ringa/logo/ringa.png">](http://demo.ringajs.com)
+[<img src="http://www.jungdigital.com/public/ringa/logo/ringa.png" width="250">](http://demo.ringajs.com)
 
 Ringa is a Javascript state and action framework designed with no global model, no global controllers, the simplicity of proven dependency injection, and asynchronous action trees.
 
