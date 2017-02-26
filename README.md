@@ -1,113 +1,18 @@
-# ringa
+[<img src="http://www.jungdigital.com/public/ringa/logo/ringa.png">](http://demo.ringajs.com)
 
-Ringa is an extensible ES6 framework designed to help you build highly debuggable Javascript applications. It works on both the browser and server.
+Ringa is a Javascript state and action framework designed with no global model, no global controllers, the simplicity of proven dependency injection, and asynchronous action trees.
 
-Designed for small and enterprise solutions alike, Ringa includes:
+It was designed primarily for ReactJS and eliminates the need for the container/component pattern.
 
-* Tree structured event busses
-* Asynchronous executor trees (e.g. Promises)
-* Model and property watching
-* Detailed debugging output
-
-Ringa has all you need to ensure that your asynchronous executor trees, model injections, and separation of concerns do not slow down development as your project grows in size.
-
-*Note: this project is still in Alpha and will be released February, 2017.*
+*Note: Ringa is very much in alpha stage and a couple applications are being built on top of it. As such, it will be in a state of flux (no pun intended) for the next few months.*
 
 # Live Demo!
 
-[A live demo of the features of Ringa combined with ReactJs here](http://demo.ringajs.com)
+[A live demo of the features of Ringa combined with ReactJS here](http://demo.ringajs.com)
 
 # get started
 
     npm install -S ringa
-
-# nomenclature
-
-* Controller: an object that maps events to asynchronus executor trees
-* Executor: any asynchronous code (callback, Promise, async/await, etc.)
-
-# web example
-
-For a full-featured tour of Ringa, we highly recommend taking a look at the Demo above.
-
-The following example illustrates a few of the important features available in Ringa:
- 
-* Controller and Executors
-* Async Task Tree
-* Model watching
-* Injection
-
-```
-import {Controller, Model, dispatch, loop} from 'ringa';
-
-class CountModel extends Model {
-  constructor() {
-    this.addProperty('count', 0);
-  }
-}
-
-class BlastoffController extends Controller {
-  constructor() {
-    // Attach to document
-    super('Blastoff Controller', document);
-
-    // Add a model, accessible and injectable by its name which by default is a camelcase of its Class name
-    this.addModel(new CountModel()); 
-
-    // 1) inject 'countModel'
-    // 2) inject 'millis' by name from the dispatched events detail object
-    // 3) provide a 'done' and 'fail' callback (function could also return a Promise)
-    const decrement = (countModel, millis, done) => {
-      setTimeout(() => {
-        countModel.count--;
-
-        done();
-      }, millis);
-    };
-
-    // Creates BlastoffController.RUN_COUNTDOWN
-    this.addListener('runCountdown', [
-      (countModel, startMessage, total) => {
-        console.log(startMessage);
-
-        countModel.count = total;
-      },
-      loop(countModel => countModel.count > 0, decrement),
-      (finalMessage) => {
-        console.log(finalMessage);
-      },
-    ]);
-  }
-}
-
-let controller = new BlastoffController();
-
-// Watch our model and wait for the notification event 'count'
-controller.watch('myModel', 'count', count => {
-  console.log(count); // 5, 4, 3, 2, 1, 0...
-});
-
-// Kick everything off with a single event!
-dispatch(BlastoffController.RUN_COUNTDOWN, {
-  startMessage: 'Starting Countdown...',
-  finalMessage: 'Blastoff!',
-  total: 5
-  millis: 1000
-}, document);
-```
-
-**Output**
-
-Output counts down every second:
-
-    Starting Countdown...
-    5
-    4
-    3
-    2
-    1
-    0
-    Blastoff!
 
 # documentation
 
@@ -122,18 +27,18 @@ Output counts down every second:
 * Manage asynchronous code in clean, readable trees of executors
 * Rollback of each completed executor in the tree if an executor fails or is cancelled (COMING SOON)
 
-**Asynchronous Task Trees**
+**Asynchronous Executor/Task/Operation Trees**
 
-* Tasks can be Promises, Ringa commands, functions, dispatch of a new Ringa Event, or your own customization
+* Executors can be Promises, Ringa commands, functions, dispatch of a new Ringa Event, or your own customization
 * Arguments are injected into executors by argument name (similar to AngularJS)
-* Tasks can add new properties to the event details to be injected into the next executors
-* Tasks can be run in parallel or sequentially
+* Executors can add new properties to the event details to be injected into the next executors
+* Executors can be run in parallel or sequentially
 
 **Models**
 
-* Can be watched (e.g. to update the view)
+* Can be watched using the observer pattern
 * Watching is customizable by event to improve specificity and therefore performance
-* Watch notifications are batched and sent at once so your watchers do not get spammed for every change in the model
+* Watch notifications are batched and sent at once so your observers do not get spammed for every change in the model
 
 **Ringa Events**
 
@@ -148,7 +53,7 @@ Output counts down every second:
 
 # support
 
-* Dependency Injection to ReactJS Components (through the [react-ringa](https://github.com/jung-digital/react-ringa) project) (COMING SOON)
+* Dependency Injection and automated updates to ReactJS Components (through the [react-ringa](https://github.com/jung-digital/react-ringa) project)
 * Promises
 * async/await
 
