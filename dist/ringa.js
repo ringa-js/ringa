@@ -1920,19 +1920,23 @@ var Model = function (_RingaObject) {
     _this.watchers = [];
     return _this;
   }
-
   //-----------------------------------
-  // Methods
+  // Properties
   //-----------------------------------
-  /**
-   * Deserializes this object from a POJO only updating properties added with addProperty.
-   *
-   * @param values
-   */
 
 
   _createClass(Model, [{
     key: 'deserialize',
+
+
+    //-----------------------------------
+    // Methods
+    //-----------------------------------
+    /**
+     * Deserializes this object from a POJO only updating properties added with addProperty.
+     *
+     * @param values
+     */
     value: function deserialize(values) {
       var _this2 = this;
 
@@ -1976,6 +1980,11 @@ var Model = function (_RingaObject) {
       this.watchers.forEach(function (handler) {
         handler(signal);
       });
+
+      // Continue up the parent tree, notifying as we go.
+      if (this.parentModel) {
+        this.parentModel.notify(this.name + '.' + signal);
+      }
     }
 
     /**
@@ -2039,17 +2048,22 @@ var Model = function (_RingaObject) {
     value: function addProperty(name, defaultValue) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-      this['_' + name] = defaultValue;
-
       var defaultGet = function defaultGet() {
         return this['_' + name];
       };
 
       var defaultSet = function defaultSet(value) {
-        // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
-        // bubble up to this model and notify its watchers too.
         if (this['_' + name] === value) {
           return;
+        }
+
+        // Clear old parentModel if it was set
+        if (this['_' + name] instanceof Model && this['_' + name].parentModel === this) {
+          this['_' + name].parentModel = undefined;
+        }
+
+        if (value && value instanceof Model) {
+          value.parentModel = this;
         }
 
         this['_' + name] = value;
@@ -2069,9 +2083,35 @@ var Model = function (_RingaObject) {
 
       if (this._values && this._values[name]) {
         this['_' + name] = this._values[name];
+      } else {
+        this['' + name] = defaultValue;
       }
 
       this.properties.push(name);
+    }
+
+    /**
+     * Performs a shallow clone of this object and all items that were added with addProperty().
+     */
+
+  }, {
+    key: 'clone',
+    value: function clone() {
+      var _this4 = this;
+
+      var newInstance = new this.constructor(this.name, this._values);
+
+      this.properties.forEach(function (propName) {
+        newInstance[propName] = _this4[propName];
+      });
+    }
+  }, {
+    key: 'parentModel',
+    set: function set(value) {
+      this._parentModel = value;
+    },
+    get: function get() {
+      return this._parentModel;
     }
   }]);
 
@@ -5696,7 +5736,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       } else if (!("value" in property) && ("set" in property || "get" in property)) {
         Object.defineProperty(prototype, key, property);
 
-        // normal member, controller assignment
+        // normal member, simple assignment
       } else {
         prototype[key] = member;
 
