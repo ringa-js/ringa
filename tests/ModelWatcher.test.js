@@ -4,17 +4,20 @@ window.__DEV__ = true;
 
 import TestUtils from 'react-addons-test-utils';
 import React from 'react';
-import Ringa, {__hardReset} from '../src/index';
+import Ringa, {__hardReset, Model} from '../src/index';
 import ModelSimple from './shared/ModelSimple';
 import ModelSimpleExt from './shared/ModelSimpleExt';
 
 describe('ModelWatcher', () => {
-  let model1, model2, modelExt3, watcher;
+  let model1, model2, modelExt3, childModel, childModel2, watcher;
 
   beforeEach(() => {
     model1 = new ModelSimple('model1');
     model2 = new ModelSimple('model2');
     modelExt3 = new ModelSimpleExt('modelExt3');
+
+    childModel = new Model();
+    childModel2 = new Model();
 
     watcher = new Ringa.ModelWatcher('modelWatcher');
 
@@ -492,5 +495,43 @@ describe('ModelWatcher', () => {
     expect(() => {
       watcher.addModel({});
     }).toThrow();
+  });
+
+  //-----------------------------------
+  // Should handle a child model dispatch
+  //-----------------------------------
+  it('Should handle a child model dispatch', () => {
+    watcher.watch('model1', 'childModel.childProp', (arg) => {
+      expect(arg[0].value).toEqual(childModel.childProp);
+      done();
+    });
+
+    childModel.addProperty('childProp', 'default value');
+
+    model1.childModel = childModel;
+
+    // When we set childModels childProp, it should trigger the change
+    childModel.childProp = 'hello world!';
+  });
+
+  //----------------------------------------------------
+  // Should handle a child model dispatch (multi-nested)
+  //----------------------------------------------------
+  it('Should handle a child model dispatch', () => {
+    watcher.watch('model1', 'childModel.childModel.childProp', (arg) => {
+      expect(arg[0].value).toEqual(childModel2.childProp);
+      done();
+    });
+
+    childModel.addProperty('childModel');
+    childModel2.addProperty('childProp');
+
+    childModel.childModel = childModel2;
+
+    // Creates chain model1['childModel']['childModel']['childProp']
+    model1.childModel = childModel;
+
+    // When we set childModels childProp, it should trigger the change
+    childModel2.childProp = 'hello world!';
   });
 });

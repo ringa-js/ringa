@@ -992,7 +992,7 @@ var RingaEvent = function (_RingaObject) {
    *
    * @param type The event type.
    * @param detail Event details object. Note that properties on the RingaEvent in the details object are injected by name
-   *               into any executors this triggers, making passing values super simple.
+   *               into any executors this triggers, making passing values super controller.
    * @param bubbles True if you want the event to bubble (default is true).
    * @param cancelable True if you want the event to be cancellable (default is true).
    * @param event If an event triggered this one, then this will be set (e.g. a DOM Event like 'click' or 'resize')
@@ -1413,7 +1413,7 @@ var RingaEvent = function (_RingaObject) {
     }
 
     /**
-     * A simple output of the most relevant features of this RingaEvent. Useful for console display.
+     * A controller output of the most relevant features of this RingaEvent. Useful for console display.
      *
      * @returns {{type: *, detail: ({}|*), controllers: Array, bubbles: *, dispatchStack: (*|string), fullEvent: RingaEvent}}
      */
@@ -5696,7 +5696,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       } else if (!("value" in property) && ("set" in property || "get" in property)) {
         Object.defineProperty(prototype, key, property);
 
-        // normal member, simple assignment
+        // normal member, controller assignment
       } else {
         prototype[key] = member;
 

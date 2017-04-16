@@ -27,6 +27,16 @@ class Model extends RingaObject {
     this._modelWatchers = [];
     this.watchers = [];
   }
+  //-----------------------------------
+  // Properties
+  //-----------------------------------
+  set parentModel(value) {
+    this._parentModel = value;
+  }
+
+  get parentModel() {
+     return this._parentModel;
+  }
 
   //-----------------------------------
   // Methods
@@ -69,6 +79,11 @@ class Model extends RingaObject {
     this.watchers.forEach(handler => {
       handler(signal);
     });
+
+    // Continue up the parent tree, notifying as we go.
+    if (this.parentModel) {
+      this.parentModel.notify(`${this.name}.${signal}`);
+    }
   }
 
   /**
@@ -121,17 +136,22 @@ class Model extends RingaObject {
    *   Anything else will be saved as metadata to the value `_${name}Options`.
    */
   addProperty(name, defaultValue, options = {}) {
-    this[`_${name}`] = defaultValue;
-
     let defaultGet = function() {
       return this[`_${name}`];
     }
 
     let defaultSet = function(value) {
-      // TODO if value is itself a Model, I think we should watch it as well for changes. Any changes on it should
-      // bubble up to this model and notify its watchers too.
       if (this[`_${name}`] === value) {
         return;
+      }
+
+      // Clear old parentModel if it was set
+      if (this[`_${name}`] instanceof Model && this[`_${name}`].parentModel === this) {
+        this[`_${name}`].parentModel = undefined;
+      }
+
+      if (value && value instanceof Model) {
+        value.parentModel = this;
       }
 
       this[`_${name}`] = value;
@@ -151,9 +171,22 @@ class Model extends RingaObject {
 
     if (this._values && this._values[name]) {
       this[`_${name}`] = this._values[name];
+    } else {
+      this[`${name}`] = defaultValue;
     }
 
     this.properties.push(name);
+  }
+
+  /**
+   * Performs a shallow clone of this object and all items that were added with addProperty().
+   */
+  clone() {
+    let newInstance = new (this.constructor)(this.name, this._values);
+
+    this.properties.forEach(propName => {
+      newInstance[propName] = this[propName];
+    });
   }
 }
 

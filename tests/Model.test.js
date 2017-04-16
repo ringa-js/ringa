@@ -8,10 +8,11 @@ import Ringa, {__hardReset} from '../src/index';
 import Model from '../src/Model';
 
 describe('Model', () => {
-  let model, watcher;
+  let model, childModel, watcher;
 
   beforeEach(() => {
     model = new Model();
+    childModel = new Model();
 
     watcher = new Ringa.ModelWatcher('modelWatcher');
 
@@ -127,6 +128,41 @@ describe('Model', () => {
       model.addProperty('myProp', 'default');
 
       expect(model.myProp).toEqual(123456);
+      done();
+    });
+
+    //------------------------------------------------
+    // should automatically set parentModel
+    //------------------------------------------------
+    it('should automatically set parentModel', (done) => {
+      model = new Model();
+
+      let childModel = new Model();
+
+      model.addProperty('childModel', childModel);
+
+      expect(childModel.parentModel).toEqual(model);
+
+      done();
+    });
+
+    //------------------------------------------------
+    // should automatically clear parentModel
+    //------------------------------------------------
+    it('should automatically set parentModel', (done) => {
+      model = new Model();
+
+      let childModel = new Model();
+
+      model.addProperty('childModel', childModel);
+
+      expect(childModel.parentModel).toEqual(model);
+
+      let newChildModel = model.childModel = new Model();
+
+      expect(childModel.parentModel).toEqual(undefined);
+      expect(newChildModel.parentModel).toEqual(model);
+
       done();
     });
   });
