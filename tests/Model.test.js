@@ -165,5 +165,100 @@ describe('Model', () => {
 
       done();
     });
+
+    //------------------------------------------------
+    // should serialize properly (1/x)
+    //------------------------------------------------
+    it('should serialize properly (1/x)', () => {
+      model = new Model();
+      model.addProperty('someProperty', 'defaultValue');
+
+      expect(model.serialize()).toEqual({
+        someProperty: 'defaultValue'
+      });
+    });
+
+    //------------------------------------------------
+    // should serialize properly (2/x)
+    //------------------------------------------------
+    it('should serialize properly (2/x)', () => {
+      model = new Model();
+      model.addProperty('someProperty', 'defaultValue');
+      model.addProperty('someOtherProperty', {value: 1});
+
+      expect(model.serialize()).toEqual({
+        someProperty: 'defaultValue',
+        someOtherProperty: {
+          value: 1
+        }
+      });
+    });
+
+    //------------------------------------------------
+    // should serialize properly (3/x)
+    //------------------------------------------------
+    it('should serialize properly (3/x)', () => {
+      model = new Model();
+
+      expect(model.serialize()).toEqual({});
+    });
+
+    //------------------------------------------------
+    // should serialize properly (4/x)
+    //------------------------------------------------
+    it('should serialize properly (4/x)', () => {
+      model = new Model();
+
+      let childModel = new Model();
+      childModel.addProperty('someProp', 8);
+
+      model.addProperty('someModel', childModel);
+
+      expect(model.serialize()).toEqual({
+        someModel: {
+          someProp: 8
+        }
+      });
+    });
+
+    //------------------------------------------------
+    // should serialize properly (5/x)
+    //------------------------------------------------
+    it('should serialize properly (5/x)', () => {
+      model = new Model();
+
+      let childModel = new Model();
+      childModel.addProperty('someProp', 8);
+
+      model.addProperty('someModel', [childModel]);
+
+      expect(model.serialize()).toEqual({
+        someModel: [{
+          someProp: 8
+        }]
+      });
+    });
+
+    //------------------------------------------------
+    // should serialize properly (6/x)
+    //------------------------------------------------
+    it('should serialize properly (6/x)', () => {
+      model = new Model();
+
+      let childModel = new Model();
+      childModel.addProperty('someProp', 8);
+
+      model.addProperty('someModel', [childModel, childModel, childModel]);
+
+      expect(model.serialize()).toEqual({
+        someModel: [{
+          someProp: 8
+        },{
+          someProp: 8
+        },{
+          someProp: 8
+        }]
+      });
+    });
   });
 });

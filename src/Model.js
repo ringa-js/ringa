@@ -1,6 +1,43 @@
 import RingaObject from './RingaObject';
 
 /**
+ * Serialize a Ringa Model object to a POJO by iterating over properties recursively on any
+ * descendent Model instances.
+ *
+ * @param model
+ * @param pojo
+ * @returns {*|{}}
+ * @private
+ */
+let _serialize = function (model, pojo) {
+  pojo = pojo || {};
+
+  model.properties.forEach(key => {
+    let obj = model[key];
+
+    if (obj instanceof Array) {
+      let newArr = [];
+
+      obj.forEach(item => {
+        if (item instanceof Model) {
+          newArr.push(item.serialize());
+        } else {
+          newArr.push(item);
+        }
+      });
+
+      pojo[key] = newArr;
+    } else if (obj instanceof Model) {
+      pojo[key] = obj.serialize();
+    } else {
+      pojo[key] = model[key];
+    }
+  });
+
+  return pojo;
+};
+
+/**
  * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
  * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
  */
@@ -50,6 +87,17 @@ class Model extends RingaObject {
     this.properties.forEach(key => {
       this[key] = values[key];
     });
+  }
+
+  /**
+   * Serialize this model object for each property
+   */
+  serialize() {
+    let pojo = {};
+
+    _serialize(this, pojo);
+
+    return pojo;
   }
 
   /**
