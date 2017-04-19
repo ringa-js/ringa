@@ -1889,9 +1889,49 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /**
+ * Serialize a Ringa Model object to a POJO by iterating over properties recursively on any
+ * descendent Model instances.
+ *
+ * @param model
+ * @param pojo
+ * @returns {*|{}}
+ * @private
+ */
+var _serialize = function _serialize(model, pojo) {
+  pojo = pojo || {};
+
+  model.properties.forEach(function (key) {
+    var obj = model[key];
+
+    if (obj instanceof Array) {
+      (function () {
+        var newArr = [];
+
+        obj.forEach(function (item) {
+          if (item instanceof Model) {
+            newArr.push(item.serialize());
+          } else {
+            newArr.push(item);
+          }
+        });
+
+        pojo[key] = newArr;
+      })();
+    } else if (obj instanceof Model) {
+      pojo[key] = obj.serialize();
+    } else {
+      pojo[key] = model[key];
+    }
+  });
+
+  return pojo;
+};
+
+/**
  * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
  * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
  */
+
 var Model = function (_RingaObject) {
   _inherits(Model, _RingaObject);
 
@@ -1943,6 +1983,20 @@ var Model = function (_RingaObject) {
       this.properties.forEach(function (key) {
         _this2[key] = values[key];
       });
+    }
+
+    /**
+     * Serialize this model object for each property
+     */
+
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      var pojo = {};
+
+      _serialize(this, pojo);
+
+      return pojo;
     }
 
     /**
