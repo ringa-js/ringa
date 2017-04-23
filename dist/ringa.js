@@ -1874,6 +1874,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _RingaObject2 = __webpack_require__(1);
@@ -2145,7 +2147,7 @@ var Model = function (_RingaObject) {
     }
 
     /**
-     * Performs a shallow clone of this object and all items that were added with addProperty().
+     * Recursively performs a deep clone of this object and all items that were added with addProperty().
      */
 
   }, {
@@ -2153,11 +2155,41 @@ var Model = function (_RingaObject) {
     value: function clone() {
       var _this4 = this;
 
-      var newInstance = new this.constructor(this.name, this._values);
+      var newInstance = new this.constructor(this.name);
+
+      var _clone = function _clone(obj) {
+        if (obj instanceof Array) {
+          return obj.map(_clone);
+        } else if (obj instanceof Model) {
+          return obj.clone();
+        } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj.hasOwnProperty('clone')) {
+          return obj.clone();
+        } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
+          var newObj = {};
+          for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              newObj[key] = _clone(obj[key]);
+            }
+          }
+          return newObj;
+        }
+
+        return obj;
+      };
 
       this.properties.forEach(function (propName) {
-        newInstance[propName] = _this4[propName];
+        var newObj = void 0;
+
+        if (_this4['_' + propName + 'Options'].clone) {
+          newObj = _this4['_' + propName + 'Options'].clone(_this4[propName]);
+        } else {
+          newObj = _clone(_this4[propName]);
+        }
+
+        newInstance[propName] = newObj;
       });
+
+      return newInstance;
     }
   }, {
     key: 'parentModel',

@@ -227,14 +227,44 @@ class Model extends RingaObject {
   }
 
   /**
-   * Performs a shallow clone of this object and all items that were added with addProperty().
+   * Recursively performs a deep clone of this object and all items that were added with addProperty().
    */
   clone() {
-    let newInstance = new (this.constructor)(this.name, this._values);
+    let newInstance = new (this.constructor)(this.name);
+
+    let _clone = (obj) => {
+      if (obj instanceof Array) {
+        return obj.map(_clone);
+      } else if (obj instanceof Model) {
+        return obj.clone();
+      } else if (typeof obj === 'object' && obj.hasOwnProperty('clone')) {
+        return obj.clone();
+      } else if (typeof obj === 'object') {
+        let newObj = {};
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            newObj[key] = _clone(obj[key]);
+          }
+        }
+        return newObj;
+      }
+
+      return obj;
+    };
 
     this.properties.forEach(propName => {
-      newInstance[propName] = this[propName];
+      let newObj;
+
+      if (this[`_${propName}Options`].clone) {
+        newObj = this[`_${propName}Options`].clone(this[propName]);
+      } else {
+        newObj = _clone(this[propName]);
+      }
+
+      newInstance[propName] = newObj;
     });
+
+    return newInstance;
   }
 }
 

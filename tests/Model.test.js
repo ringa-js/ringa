@@ -260,5 +260,146 @@ describe('Model', () => {
         }]
       });
     });
+
+    //------------------------------------------------
+    // should have a working clone method (1/x)
+    //------------------------------------------------
+    it('should have a working clone method (1/x)', () => {
+      model = new Model();
+      let clone = model.clone();
+
+      expect(clone).toBeDefined();
+      expect(clone).not.toBe(model);
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (2/x)
+    //------------------------------------------------
+    it('should have a working clone method (2/x)', () => {
+      model = new Model();
+      model.addProperty('prop', 'value');
+
+      let clone = model.clone();
+
+      expect(clone.prop).toBe('value');
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (3/x)
+    //------------------------------------------------
+    it('should have a working clone method (3/x)', () => {
+      model = new Model();
+      model.addProperty('prop', {
+        value: 'value'
+      });
+
+      let clone = model.clone();
+
+      expect(clone.prop).toEqual({
+        value: 'value'
+      });
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (4/x)
+    //------------------------------------------------
+    it('should have a working clone method (4/x)', () => {
+      model = new Model();
+      model.addProperty('prop', {
+        clone: () => 101
+      });
+
+      let clone = model.clone();
+
+      expect(clone.prop).toEqual(101);
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (5/x)
+    //------------------------------------------------
+    it('should have a working clone method (5/x)', () => {
+      model = new Model();
+      childModel = new Model();
+      childModel.addProperty('prop', 'value');
+      model.addProperty('child', childModel);
+
+      let clone = model.clone();
+
+      expect(clone.child).not.toBe(childModel);
+      expect(clone.child.prop).toEqual('value');
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (6/x)
+    //------------------------------------------------
+    it('should have a working clone method (6/x)', () => {
+      model = new Model();
+      childModel = new Model();
+      childModel.addProperty('prop', 'value');
+      childModel.clone = () => 101;
+
+      model.addProperty('child', childModel);
+
+      let clone = model.clone();
+
+      expect(clone.child).not.toBe(childModel);
+      expect(clone.child).toEqual(101);
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (7/x)
+    //------------------------------------------------
+    it('should have a working clone method (7/x)', () => {
+      model = new Model();
+      childModel = new Model();
+      childModel.addProperty('prop', 'value', {
+        clone: () => 200
+      });
+
+      model.addProperty('child', childModel);
+
+      let clone = model.clone();
+
+      expect(clone.child).not.toBe(childModel);
+      expect(clone.child.prop).toEqual(200);
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (8/x)
+    //------------------------------------------------
+    it('should have a working clone method (8/x)', () => {
+      model = new Model();
+      childModel = new Model();
+      childModel.addProperty('prop', 100);
+
+      model.addProperty('children', [childModel, childModel, childModel, 'hello world']);
+
+      let clone = model.clone();
+
+      for (let i = 0; i < clone.children.length - 1; i++) {
+        expect(clone.children[i]).not.toBe(childModel);
+        expect(clone.children[i].prop).toEqual(100);
+      }
+
+      expect(clone.children[3]).toBe('hello world');
+    });
+
+    //------------------------------------------------
+    // should have a working clone method (9/x)
+    //------------------------------------------------
+    it('should have a working clone method (9/x)', () => {
+      model = new Model();
+      childModel = new Model();
+      childModel.addProperty('prop', 300);
+
+      model.addProperty('children', {
+        childModel
+      });
+
+      let clone = model.clone();
+
+      expect(clone.children.childModel).not.toBe(childModel);
+      expect(clone.children.childModel.prop).toBe(300);
+    });
   });
 });
