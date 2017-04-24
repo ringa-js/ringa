@@ -2210,7 +2210,32 @@ var Model = function (_RingaObject) {
 
       this.properties.push(name);
 
+      if (options.index) {
+        this.indexProperties = this.indexProperties || [];
+        this.indexProperties.push(name);
+      }
+
       return this['' + name];
+    }
+
+    /**
+     * Just like addProperty, except explicitly sets the index option to true.
+     *
+     * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
+     * @param defaultValue The default value of the property.
+     * @param options See addProperty for details.
+     */
+
+  }, {
+    key: 'addIndexedProperty',
+    value: function addIndexedProperty(name, defaultValue) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      options = Object.assign({}, {
+        index: true
+      }, options);
+
+      return this.addProperty(name, defaultValue, options);
     }
 
     /**
@@ -2260,14 +2285,52 @@ var Model = function (_RingaObject) {
     }
 
     /**
-     * Uses the trie-search to recursively index every number and string.
+     * Uses a trie-search to (optionally recursively) index every property that has index set to true (or was added with addIndexedProperty)
      *
      * Returns the TrieSearch instance.
      */
 
   }, {
     key: 'index',
-    value: function index() {}
+    value: function index() {
+      var recurse = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      var _this6 = this;
+
+      var trieSearchOptions = arguments[1];
+      var trieSearch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+
+      trieSearch = trieSearch || new _trieSearch2.default(undefined, trieSearchOptions);
+
+      var nonRecurseProperties = [];
+
+      var _add = function _add(prop, obj) {
+        if (obj instanceof Array) {
+          if (recurse) {
+            obj.map(_add);
+          }
+        } else if (obj instanceof Model) {
+          if (recurse) {
+
+            obj.index(recurse, trieSearchOptions, trieSearch);
+          }
+        } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
+          console.warn('Model()::index() does not support indexing raw Object types.');
+        } else {
+          nonRecurseProperties.push(prop);
+        }
+      };
+
+      this.indexProperties.forEach(function (prop) {
+        return _add(prop, _this6[prop]);
+      });
+
+      if (nonRecurseProperties.length) {
+        trieSearch.add(this, nonRecurseProperties);
+      }
+
+      return trieSearch;
+    }
   }, {
     key: 'parentModel',
     set: function set(value) {
@@ -6338,11 +6401,13 @@ function deepLookup(obj, keys) {
 }
 
 TrieSearch.prototype = {
-  add: function add(obj) {
+  add: function add(obj, customKeys) {
     if (this.options.cache) this.clearCache();
 
-    for (var k in this.keyFields) {
-      var key = this.keyFields[k],
+    var keyFields = customKeys || this.keyFields;
+
+    for (var k in keyFields) {
+      var key = keyFields[k],
           isKeyArr = key instanceof Array,
           val = isKeyArr ? deepLookup(obj, key) : obj[key];
 
