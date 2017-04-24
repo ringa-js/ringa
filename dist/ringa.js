@@ -1968,6 +1968,7 @@ var Model = function (_RingaObject) {
     var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
 
     _this.properties = [];
+    _this.propertyOptions = {};
     _this._values = values;
     _this._modelWatchers = [];
     _this.watchers = [];
@@ -1979,64 +1980,22 @@ var Model = function (_RingaObject) {
 
 
   _createClass(Model, [{
-    key: 'getPropertiesRecursively',
+    key: 'deserialize',
 
 
     //-----------------------------------
     // Methods
     //-----------------------------------
-    value: function getPropertiesRecursively() {
-      var _this2 = this;
-
-      var properties = [];
-
-      var _clone = function _clone(obj) {
-        if (obj instanceof Array) {
-          return obj.map(_clone);
-        } else if (obj instanceof Model) {
-          return obj.clone();
-        } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj.hasOwnProperty('clone')) {
-          return obj.clone();
-        } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
-          var newObj = {};
-          for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-              newObj[key] = _clone(obj[key]);
-            }
-          }
-          return newObj;
-        }
-
-        return obj;
-      };
-
-      this.properties.forEach(function (propName) {
-        var newObj = void 0;
-
-        if (_this2['_' + propName + 'Options'].clone) {
-          newObj = _this2['_' + propName + 'Options'].clone(_this2[propName]);
-        } else {
-          newObj = _clone(_this2[propName]);
-        }
-
-        newInstance[propName] = newObj;
-      });
-
-      return properties;
-    }
     /**
      * Deserializes this object from a POJO only updating properties added with addProperty.
      *
      * @param values
      */
-
-  }, {
-    key: 'deserialize',
     value: function deserialize(values) {
-      var _this3 = this;
+      var _this2 = this;
 
       this.properties.forEach(function (key) {
-        _this3[key] = values[key];
+        _this2[key] = values[key];
       });
     }
 
@@ -2079,11 +2038,11 @@ var Model = function (_RingaObject) {
   }, {
     key: 'notify',
     value: function notify(signal, item, descriptor) {
-      var _this4 = this;
+      var _this3 = this;
 
       // Notify all view objects through all injectors
       this._modelWatchers.forEach(function (mi) {
-        mi.notify(_this4, signal, item, descriptor);
+        mi.notify(_this3, signal, item, descriptor);
       });
 
       this.watchers.forEach(function (handler) {
@@ -2159,34 +2118,36 @@ var Model = function (_RingaObject) {
     value: function addProperty(name, defaultValue) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
+      var subScriptName = '_' + name;
+
       var defaultGet = function defaultGet() {
-        return this['_' + name];
+        return this[subScriptName];
       };
 
       var defaultSet = function defaultSet(value) {
-        if (this['_' + name] === value) {
+        if (this[subScriptName] === value) {
           return;
         }
 
         // Clear old parentModel if it was set
-        if (this['_' + name] instanceof Model && this['_' + name].parentModel === this) {
-          this['_' + name].parentModel = undefined;
+        if (this[subScriptName] instanceof Model && this[subScriptName].parentModel === this) {
+          this[subScriptName].parentModel = undefined;
         }
 
         if (value && value instanceof Model) {
           value.parentModel = this;
         }
 
-        this['_' + name] = value;
+        this[subScriptName] = value;
 
         var descriptor = void 0;
 
-        if (this['_' + name + 'Options'].descriptor) {
-          if (typeof this['_' + name + 'Options'].descriptor === 'function') {
-            descriptor = this['_' + name + 'Options'].descriptor(value);
+        if (this.propertyOptions[name].descriptor) {
+          if (typeof this.propertyOptions[name].descriptor === 'function') {
+            descriptor = this.propertyOptions[name].descriptor(value);
           }
 
-          descriptor = this['_' + name + 'Options'].descriptor;
+          descriptor = this.propertyOptions[name].descriptor;
         }
 
         this.notify(name, this, descriptor);
@@ -2200,12 +2161,12 @@ var Model = function (_RingaObject) {
       delete options.get;
       delete options.set;
 
-      this['_' + name + 'Options'] = options;
+      this.propertyOptions[name] = options;
 
       if (this._values && this._values[name]) {
-        this['_' + name] = this._values[name];
+        this[subScriptName] = this._values[name];
       } else {
-        this['' + name] = defaultValue;
+        this[name] = defaultValue;
       }
 
       this.properties.push(name);
@@ -2215,7 +2176,7 @@ var Model = function (_RingaObject) {
         this.indexProperties.push(name);
       }
 
-      return this['' + name];
+      return this[name];
     }
 
     /**
@@ -2245,7 +2206,7 @@ var Model = function (_RingaObject) {
   }, {
     key: 'clone',
     value: function clone() {
-      var _this5 = this;
+      var _this4 = this;
 
       var newInstance = new this.constructor(this.name);
 
@@ -2272,10 +2233,10 @@ var Model = function (_RingaObject) {
       this.properties.forEach(function (propName) {
         var newObj = void 0;
 
-        if (_this5['_' + propName + 'Options'].clone) {
-          newObj = _this5['_' + propName + 'Options'].clone(_this5[propName]);
+        if (_this4.propertyOptions[propName].clone) {
+          newObj = _this4.propertyOptions[propName].clone(_this4[propName]);
         } else {
-          newObj = _clone(_this5[propName]);
+          newObj = _clone(_this4[propName]);
         }
 
         newInstance[propName] = newObj;
@@ -2295,7 +2256,7 @@ var Model = function (_RingaObject) {
     value: function index() {
       var recurse = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-      var _this6 = this;
+      var _this5 = this;
 
       var trieSearchOptions = arguments[1];
       var trieSearch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
@@ -2322,7 +2283,7 @@ var Model = function (_RingaObject) {
       };
 
       this.indexProperties.forEach(function (prop) {
-        return _add(prop, _this6[prop]);
+        return _add(prop, _this5[prop]);
       });
 
       if (nonRecurseProperties.length) {

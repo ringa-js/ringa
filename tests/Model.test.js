@@ -40,6 +40,19 @@ describe('Model', () => {
       expect(model.myProp).toEqual(true);
     });
 
+    //---------------------------------------------
+    // should add property and set options
+    //---------------------------------------------
+    it('should add property and set options', () => {
+      model.addProperty('myProp', true, {
+        someOptions: 'yay some options'
+      });
+
+      expect(model.propertyOptions.myProp).toEqual({
+        someOptions: 'yay some options'
+      });
+    });
+
     //----------------------------------------
     // should notify when property is changed
     //----------------------------------------

@@ -61,6 +61,7 @@ class Model extends RingaObject {
     super(name, (values && values.id) ? values.id : undefined);
 
     this.properties = [];
+    this.propertyOptions = {};
     this._values = values;
     this._modelWatchers = [];
     this.watchers = [];
@@ -79,43 +80,6 @@ class Model extends RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  getPropertiesRecursively() {
-    let properties = [];
-
-    let _clone = (obj) => {
-      if (obj instanceof Array) {
-        return obj.map(_clone);
-      } else if (obj instanceof Model) {
-        return obj.clone();
-      } else if (typeof obj === 'object' && obj.hasOwnProperty('clone')) {
-        return obj.clone();
-      } else if (typeof obj === 'object') {
-        let newObj = {};
-        for (let key in obj) {
-          if (obj.hasOwnProperty(key)) {
-            newObj[key] = _clone(obj[key]);
-          }
-        }
-        return newObj;
-      }
-
-      return obj;
-    };
-
-    this.properties.forEach(propName => {
-      let newObj;
-
-      if (this[`_${propName}Options`].clone) {
-        newObj = this[`_${propName}Options`].clone(this[propName]);
-      } else {
-        newObj = _clone(this[propName]);
-      }
-
-      newInstance[propName] = newObj;
-    });
-
-    return properties;
-  }
   /**
    * Deserializes this object from a POJO only updating properties added with addProperty.
    *
@@ -224,38 +188,40 @@ class Model extends RingaObject {
    *   Anything else will be saved as metadata to the value `_${name}Options`.
    */
   addProperty(name, defaultValue, options = {}) {
+    let subScriptName = `_${name}`;
+
     let defaultGet = function() {
-      return this[`_${name}`];
-    }
+      return this[subScriptName];
+    };
 
     let defaultSet = function(value) {
-      if (this[`_${name}`] === value) {
+      if (this[subScriptName] === value) {
         return;
       }
 
       // Clear old parentModel if it was set
-      if (this[`_${name}`] instanceof Model && this[`_${name}`].parentModel === this) {
-        this[`_${name}`].parentModel = undefined;
+      if (this[subScriptName] instanceof Model && this[subScriptName].parentModel === this) {
+        this[subScriptName].parentModel = undefined;
       }
 
       if (value && value instanceof Model) {
         value.parentModel = this;
       }
 
-      this[`_${name}`] = value;
+      this[subScriptName] = value;
 
       let descriptor;
 
-      if (this[`_${name}Options`].descriptor) {
-        if (typeof this[`_${name}Options`].descriptor === 'function') {
-          descriptor = this[`_${name}Options`].descriptor(value);
+      if (this.propertyOptions[name].descriptor) {
+        if (typeof this.propertyOptions[name].descriptor === 'function') {
+          descriptor = this.propertyOptions[name].descriptor(value);
         }
 
-        descriptor = this[`_${name}Options`].descriptor;
+        descriptor = this.propertyOptions[name].descriptor;
       }
 
       this.notify(name, this, descriptor);
-    }
+    };
 
     Object.defineProperty(this, name, {
       get: options.get || defaultGet,
@@ -265,12 +231,12 @@ class Model extends RingaObject {
     delete options.get;
     delete options.set;
 
-    this[`_${name}Options`] = options;
+    this.propertyOptions[name] = options;
 
     if (this._values && this._values[name]) {
-      this[`_${name}`] = this._values[name];
+      this[subScriptName] = this._values[name];
     } else {
-      this[`${name}`] = defaultValue;
+      this[name] = defaultValue;
     }
 
     this.properties.push(name);
@@ -280,7 +246,7 @@ class Model extends RingaObject {
       this.indexProperties.push(name);
     }
 
-    return this[`${name}`];
+    return this[name];
   }
 
   /**
@@ -327,8 +293,8 @@ class Model extends RingaObject {
     this.properties.forEach(propName => {
       let newObj;
 
-      if (this[`_${propName}Options`].clone) {
-        newObj = this[`_${propName}Options`].clone(this[propName]);
+      if (this.propertyOptions[propName].clone) {
+        newObj = this.propertyOptions[propName].clone(this[propName]);
       } else {
         newObj = _clone(this[propName]);
       }
