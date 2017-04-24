@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 43);
+/******/ 	return __webpack_require__(__webpack_require__.s = 45);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -98,7 +98,7 @@ var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
 var _InspectorController = __webpack_require__(7);
 
-var _debug = __webpack_require__(10);
+var _debug = __webpack_require__(11);
 
 var _type = __webpack_require__(3);
 
@@ -427,7 +427,7 @@ var _camelcase = __webpack_require__(25);
 
 var _camelcase2 = _interopRequireDefault(_camelcase);
 
-var _hasharray = __webpack_require__(11);
+var _hasharray = __webpack_require__(8);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -461,22 +461,20 @@ var RingaObject = function () {
   function RingaObject(name, id) {
     _classCallCheck(this, RingaObject);
 
-    ids.counts[this.constructor] = ids.counts[this.constructor] || 1;
+    ids.counts[this.constructor.name] = ids.counts[this.constructor.name] || 1;
 
     if (id) {
       this.id = id;
     } else {
-      this.id = this.constructor.name + ids.counts[this.constructor];
-      ids.counts[this.constructor]++;
+      this.id = this.constructor.name + ids.counts[this.constructor.name];
+      ids.counts[this.constructor.name]++;
     }
 
-    name = name || (0, _camelcase2.default)(this.constructor.name);
+    this._name = name || (0, _camelcase2.default)(this.constructor.name);
 
     if (true) {
       ids.constructorNames[this.constructor.name] = this.constructor.name;
     }
-
-    this._name = name;
   }
 
   //-----------------------------------
@@ -819,23 +817,23 @@ var _ExecutorAbstract = __webpack_require__(0);
 
 var _ExecutorAbstract2 = _interopRequireDefault(_ExecutorAbstract);
 
-var _FunctionExecutor = __webpack_require__(39);
+var _FunctionExecutor = __webpack_require__(41);
 
 var _FunctionExecutor2 = _interopRequireDefault(_FunctionExecutor);
 
-var _PromiseExecutor = __webpack_require__(41);
+var _PromiseExecutor = __webpack_require__(43);
 
 var _PromiseExecutor2 = _interopRequireDefault(_PromiseExecutor);
 
-var _EventExecutor = __webpack_require__(38);
+var _EventExecutor = __webpack_require__(40);
 
 var _EventExecutor2 = _interopRequireDefault(_EventExecutor);
 
-var _ParallelExecutor = __webpack_require__(40);
+var _ParallelExecutor = __webpack_require__(42);
 
 var _ParallelExecutor2 = _interopRequireDefault(_ParallelExecutor);
 
-var _SleepExecutor = __webpack_require__(42);
+var _SleepExecutor = __webpack_require__(44);
 
 var _SleepExecutor2 = _interopRequireDefault(_SleepExecutor);
 
@@ -938,7 +936,7 @@ var _errorStackParser = __webpack_require__(27);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
-var _debug = __webpack_require__(10);
+var _debug = __webpack_require__(11);
 
 var _type = __webpack_require__(3);
 
@@ -1569,7 +1567,7 @@ var _InspectorModel = __webpack_require__(16);
 
 var _InspectorModel2 = _interopRequireDefault(_InspectorModel);
 
-var _Bus = __webpack_require__(8);
+var _Bus = __webpack_require__(9);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1648,6 +1646,15 @@ exports.default = InspectorController;
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(28);
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1864,7 +1871,7 @@ var ringaGlobalBus = exports.ringaGlobalBus = new Bus('GLOBALBUS', 'GLOBALBUS');
 exports.default = Bus;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1881,6 +1888,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
+
+var _trieSearch = __webpack_require__(37);
+
+var _trieSearch2 = _interopRequireDefault(_trieSearch);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1968,22 +1979,64 @@ var Model = function (_RingaObject) {
 
 
   _createClass(Model, [{
-    key: 'deserialize',
+    key: 'getPropertiesRecursively',
 
 
     //-----------------------------------
     // Methods
     //-----------------------------------
+    value: function getPropertiesRecursively() {
+      var _this2 = this;
+
+      var properties = [];
+
+      var _clone = function _clone(obj) {
+        if (obj instanceof Array) {
+          return obj.map(_clone);
+        } else if (obj instanceof Model) {
+          return obj.clone();
+        } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj.hasOwnProperty('clone')) {
+          return obj.clone();
+        } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
+          var newObj = {};
+          for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              newObj[key] = _clone(obj[key]);
+            }
+          }
+          return newObj;
+        }
+
+        return obj;
+      };
+
+      this.properties.forEach(function (propName) {
+        var newObj = void 0;
+
+        if (_this2['_' + propName + 'Options'].clone) {
+          newObj = _this2['_' + propName + 'Options'].clone(_this2[propName]);
+        } else {
+          newObj = _clone(_this2[propName]);
+        }
+
+        newInstance[propName] = newObj;
+      });
+
+      return properties;
+    }
     /**
      * Deserializes this object from a POJO only updating properties added with addProperty.
      *
      * @param values
      */
+
+  }, {
+    key: 'deserialize',
     value: function deserialize(values) {
-      var _this2 = this;
+      var _this3 = this;
 
       this.properties.forEach(function (key) {
-        _this2[key] = values[key];
+        _this3[key] = values[key];
       });
     }
 
@@ -2025,21 +2078,21 @@ var Model = function (_RingaObject) {
 
   }, {
     key: 'notify',
-    value: function notify(signal) {
-      var _this3 = this;
+    value: function notify(signal, item, descriptor) {
+      var _this4 = this;
 
       // Notify all view objects through all injectors
       this._modelWatchers.forEach(function (mi) {
-        mi.notify(_this3, signal);
+        mi.notify(_this4, signal, item, descriptor);
       });
 
       this.watchers.forEach(function (handler) {
-        handler(signal);
+        handler(signal, item, descriptor);
       });
 
       // Continue up the parent tree, notifying as we go.
       if (this.parentModel) {
-        this.parentModel.notify(this.name + '.' + signal);
+        this.parentModel.notify(this.name + '.' + signal, item, descriptor);
       }
     }
 
@@ -2052,7 +2105,9 @@ var Model = function (_RingaObject) {
   }, {
     key: 'watch',
     value: function watch(handler) {
-      this.watchers.push(handler);
+      if (this.watchers.indexOf(handler) === -1) {
+        this.watchers.push(handler);
+      }
     }
 
     /**
@@ -2124,7 +2179,17 @@ var Model = function (_RingaObject) {
 
         this['_' + name] = value;
 
-        this.notify(name);
+        var descriptor = void 0;
+
+        if (this['_' + name + 'Options'].descriptor) {
+          if (typeof this['_' + name + 'Options'].descriptor === 'function') {
+            descriptor = this['_' + name + 'Options'].descriptor(value);
+          }
+
+          descriptor = this['_' + name + 'Options'].descriptor;
+        }
+
+        this.notify(name, this, descriptor);
       };
 
       Object.defineProperty(this, name, {
@@ -2144,6 +2209,8 @@ var Model = function (_RingaObject) {
       }
 
       this.properties.push(name);
+
+      return this['' + name];
     }
 
     /**
@@ -2153,7 +2220,7 @@ var Model = function (_RingaObject) {
   }, {
     key: 'clone',
     value: function clone() {
-      var _this4 = this;
+      var _this5 = this;
 
       var newInstance = new this.constructor(this.name);
 
@@ -2180,10 +2247,10 @@ var Model = function (_RingaObject) {
       this.properties.forEach(function (propName) {
         var newObj = void 0;
 
-        if (_this4['_' + propName + 'Options'].clone) {
-          newObj = _this4['_' + propName + 'Options'].clone(_this4[propName]);
+        if (_this5['_' + propName + 'Options'].clone) {
+          newObj = _this5['_' + propName + 'Options'].clone(_this5[propName]);
         } else {
-          newObj = _clone(_this4[propName]);
+          newObj = _clone(_this5[propName]);
         }
 
         newInstance[propName] = newObj;
@@ -2191,6 +2258,16 @@ var Model = function (_RingaObject) {
 
       return newInstance;
     }
+
+    /**
+     * Uses the trie-search to recursively index every number and string.
+     *
+     * Returns the TrieSearch instance.
+     */
+
+  }, {
+    key: 'index',
+    value: function index() {}
   }, {
     key: 'parentModel',
     set: function set(value) {
@@ -2207,7 +2284,7 @@ var Model = function (_RingaObject) {
 exports.default = Model;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2294,15 +2371,6 @@ function uglifyWhitelist() {
 }
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = __webpack_require__(28);
-
-/***/ }),
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2325,7 +2393,7 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _hasharray = __webpack_require__(11);
+var _hasharray = __webpack_require__(8);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -2339,7 +2407,7 @@ var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
 var _InspectorController = __webpack_require__(7);
 
-var _Bus = __webpack_require__(8);
+var _Bus = __webpack_require__(9);
 
 var _snakeCase = __webpack_require__(35);
 
@@ -2958,7 +3026,7 @@ var _RingaObject2 = __webpack_require__(1);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _Model = __webpack_require__(9);
+var _Model = __webpack_require__(10);
 
 var _Model2 = _interopRequireDefault(_Model);
 
@@ -3522,7 +3590,7 @@ var _RingaHashArray2 = __webpack_require__(17);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
-var _Thread = __webpack_require__(37);
+var _Thread = __webpack_require__(39);
 
 var _Thread2 = _interopRequireDefault(_Thread);
 
@@ -3611,7 +3679,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Model2 = __webpack_require__(9);
+var _Model2 = __webpack_require__(10);
 
 var _Model3 = _interopRequireDefault(_Model2);
 
@@ -3727,7 +3795,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hasharray = __webpack_require__(11);
+var _hasharray = __webpack_require__(8);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -6237,6 +6305,198 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 "use strict";
 
 
+module.exports = __webpack_require__(38);
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var HashArray = __webpack_require__(8);
+
+var MAX_CACHE_SIZE = 64;
+
+var TrieSearch = function TrieSearch(keyFields, options) {
+  this.options = options || {};
+
+  // Default ignoreCase to true
+  this.options.ignoreCase = this.options.ignoreCase === undefined ? true : this.options.ignoreCase;
+  this.options.maxCacheSize = this.options.maxCacheSize || MAX_CACHE_SIZE;
+  this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
+  this.options.splitOnRegEx = this.options.hasOwnProperty('splitOnRegEx') ? this.options.splitOnRegEx : /\s/g;
+
+  this.keyFields = keyFields ? keyFields instanceof Array ? keyFields : [keyFields] : [];
+  this.root = {};
+  this.size = 0;
+  this.getCache = new HashArray('key');
+};
+
+function deepLookup(obj, keys) {
+  return keys.length === 1 ? obj[keys[0]] : deepLookup(obj[keys[0]], keys.slice(1, keys.length));
+}
+
+TrieSearch.prototype = {
+  add: function add(obj) {
+    if (this.options.cache) this.clearCache();
+
+    for (var k in this.keyFields) {
+      var key = this.keyFields[k],
+          isKeyArr = key instanceof Array,
+          val = isKeyArr ? deepLookup(obj, key) : obj[key];
+
+      if (!val) continue;
+
+      val = val.toString();
+
+      val = this.options.ignoreCase ? val.toLowerCase() : val;
+
+      if (this.options.splitOnRegEx !== undefined) {
+        phrases = val.split(this.options.splitOnRegEx);
+
+        for (var i = 0, l = phrases.length; i < l; i++) {
+          this.map(phrases[i], obj);
+        }
+      } else this.map(val, obj);
+    }
+  },
+  reset: function reset() {
+    this.root = {};
+    this.size = 0;
+  },
+  clearCache: function clearCache() {
+    this.getCache = new HashArray('key');
+  },
+  cleanCache: function cleanCache() {
+    while (this.getCache.all.length > this.options.maxCacheSize) {
+      this.getCache.remove(this.getCache.all[0]);
+    }
+  },
+  addFromObject: function addFromObject(obj, valueField) {
+    if (this.options.cache) this.clearCache();
+
+    valueField = valueField || 'value';
+
+    if (this.keyFields.indexOf('_key_') == -1) this.keyFields.push('_key_');
+
+    for (var key in obj) {
+      var o = { _key_: key };
+      o[valueField] = obj[key];
+      this.add(o);
+    }
+  },
+  map: function map(key, value) {
+    if (this.options.cache) this.clearCache();
+
+    var keyArr = this.keyToArr(key),
+        self = this;
+
+    insert(keyArr, value, this.root);
+
+    function insert(keyArr, value, node) {
+      if (keyArr.length == 0) {
+        node['value'] = node['value'] || [];
+        node['value'].push(value);
+        return;
+      }
+
+      var k = keyArr.shift();
+
+      if (!node[k]) self.size++;
+
+      node[k] = node[k] || {};
+
+      insert(keyArr, value, node[k]);
+    }
+  },
+  keyToArr: function keyToArr(key) {
+    var keyArr;
+
+    if (this.options.min && this.options.min > 1) {
+      if (key.length < this.options.min) return [];
+
+      keyArr = [key.substr(0, this.options.min)];
+      keyArr = keyArr.concat(key.substr(this.options.min).split(''));
+    } else keyArr = key.split('');
+
+    return keyArr;
+  },
+  findNode: function findNode(key) {
+    if (this.options.min > 0 && key.length < this.options.min) return [];
+
+    return f(this.keyToArr(key), this.root);
+
+    function f(keyArr, node) {
+      if (!node) return undefined;
+      if (keyArr.length == 0) return node;
+
+      var k = keyArr.shift();
+      return f(keyArr, node[k]);
+    }
+  },
+  _get: function _get(phrase) {
+    phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
+
+    var c;
+    if (this.options.cache && (c = this.getCache.get(phrase))) return c.value;
+
+    var ret = undefined,
+        haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields;
+    words = this.options.splitOnRegEx ? phrase.split(this.options.splitOnRegEx) : [phrase];
+
+    for (var w = 0, l = words.length; w < l; w++) {
+      if (this.options.min && words[w].length < this.options.min) continue;
+
+      var temp = new HashArray(haKeyFields);
+
+      if (node = this.findNode(words[w])) aggregate(node, temp);
+
+      ret = ret ? ret.intersection(temp) : temp;
+    }
+
+    var v = ret ? ret.all : [];
+
+    if (this.options.cache) {
+      this.getCache.add({ key: phrase, value: v });
+      this.cleanCache();
+    }
+
+    return v;
+
+    function aggregate(node, ha) {
+      if (node.value && node.value.length) ha.addAll(node.value);
+
+      for (var k in node) {
+        if (k != 'value') aggregate(node[k], ha);
+      }
+    }
+  },
+  get: function get(phrases) {
+    var self = this,
+        haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
+        ret = undefined;
+
+    phrases = phrases instanceof Array ? phrases : [phrases];
+
+    for (var i = 0, l = phrases.length; i < l; i++) {
+      var temp = this._get(phrases[i]);
+      ret = ret ? ret.addAll(temp) : new HashArray(haKeyFields).addAll(temp);
+    }
+
+    return ret.all;
+  }
+};
+
+module.exports = TrieSearch;
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -6445,7 +6705,7 @@ var Thread = function (_RingaHashArray) {
 exports.default = Thread;
 
 /***/ }),
-/* 38 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6592,7 +6852,7 @@ var EventExecutor = function (_ExecutorAbstract) {
 exports.default = EventExecutor;
 
 /***/ }),
-/* 39 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6701,7 +6961,7 @@ var FunctionExecutor = function (_ExecutorAbstract) {
 exports.default = FunctionExecutor;
 
 /***/ }),
-/* 40 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6802,7 +7062,7 @@ var ParallelExecutor = function (_ExecutorAbstract) {
 exports.default = ParallelExecutor;
 
 /***/ }),
-/* 41 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6876,7 +7136,7 @@ var PromiseExecutor = function (_ExecutorAbstract) {
 exports.default = PromiseExecutor;
 
 /***/ }),
-/* 42 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6957,7 +7217,7 @@ var SleepExecutor = function (_ExecutorAbstract) {
 exports.default = SleepExecutor;
 
 /***/ }),
-/* 43 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7021,7 +7281,7 @@ var _AssignFactory = __webpack_require__(24);
 
 var _AssignFactory2 = _interopRequireDefault(_AssignFactory);
 
-var _Model = __webpack_require__(9);
+var _Model = __webpack_require__(10);
 
 var _Model2 = _interopRequireDefault(_Model);
 
@@ -7029,7 +7289,7 @@ var _ModelWatcher = __webpack_require__(13);
 
 var _ModelWatcher2 = _interopRequireDefault(_ModelWatcher);
 
-var _Bus = __webpack_require__(8);
+var _Bus = __webpack_require__(9);
 
 var _Bus2 = _interopRequireDefault(_Bus);
 
@@ -7051,7 +7311,7 @@ var _SpawnExecutor2 = _interopRequireDefault(_SpawnExecutor);
 
 var _type = __webpack_require__(3);
 
-var _debug = __webpack_require__(10);
+var _debug = __webpack_require__(11);
 
 var _executors = __webpack_require__(2);
 

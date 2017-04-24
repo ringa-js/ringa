@@ -401,5 +401,147 @@ describe('Model', () => {
       expect(clone.children.childModel).not.toBe(childModel);
       expect(clone.children.childModel.prop).toBe(300);
     });
+
+    //------------------------------------------------
+    // should have a working index() and addIndexedProperty() method (1/x)
+    //------------------------------------------------
+    it('should have a working index() and addIndexedProperty() method (1/x)', () => {
+      childModel.addIndexedProperty('prop', 'The quick brown fox jumps over the lazy dog');
+
+      let trieSearch = childModel.index();
+
+      expect(trieSearch.get('The')[0]).toBe(childModel);
+      expect(trieSearch.get('qu')[0]).toBe(childModel);
+      expect(trieSearch.get('quick')[0]).toBe(childModel);
+      expect(trieSearch.get('brown')[0]).toBe(childModel);
+      expect(trieSearch.get('lazy')[0]).toBe(childModel);
+      expect(trieSearch.get('abracadabra').length).toBe(0);
+    });
+
+    //------------------------------------------------
+    // should have a working index() and addIndexedProperty() method (2/x)
+    //------------------------------------------------
+    it('should have a working index() and addIndexedProperty() method (2/x)', () => {
+      childModel.addProperty('nonIndexProperty', 'Hello World!');
+      childModel.addIndexedProperty('prop', 'The quick brown fox jumps over the lazy dog');
+
+      let trieSearch = childModel.index();
+
+      expect(trieSearch.get('The')[0]).toBe(childModel);
+      expect(trieSearch.get('qu')[0]).toBe(childModel);
+      expect(trieSearch.get('quick')[0]).toBe(childModel);
+      expect(trieSearch.get('brown')[0]).toBe(childModel);
+      expect(trieSearch.get('lazy')[0]).toBe(childModel);
+      expect(trieSearch.get('abracadabra').length).toBe(0);
+      expect(trieSearch.get('Hell').length).toBe(0);
+      expect(trieSearch.get('Wor').length).toBe(0);
+    });
+
+    //------------------------------------------------
+    // should have a working index() and addIndexedProperty() method (3/x)
+    //------------------------------------------------
+    it('should have a working index() and addIndexedProperty() method (3/x)', () => {
+      childModel.addProperty('nonIndexProperty', 'Hello World!');
+      childModel.addProperty('prop', 'The quick brown fox jumps over the lazy dog', {
+        index: true
+      });
+
+      let trieSearch = childModel.index();
+
+      expect(trieSearch.get('The')[0]).toBe(childModel);
+      expect(trieSearch.get('qu')[0]).toBe(childModel);
+      expect(trieSearch.get('quick')[0]).toBe(childModel);
+      expect(trieSearch.get('brown')[0]).toBe(childModel);
+      expect(trieSearch.get('lazy')[0]).toBe(childModel);
+      expect(trieSearch.get('abracadabra').length).toBe(0);
+      expect(trieSearch.get('Hell').length).toBe(0);
+      expect(trieSearch.get('Wor').length).toBe(0);
+    });
+
+    //------------------------------------------------
+    // should have a working index() and addIndexedProperty() method (4/x)
+    //------------------------------------------------
+    it('should have a working index() and addIndexedProperty() method (4/x)', () => {
+      childModel.addIndexedProperty('nonIndexProperty', 1234567);
+
+      let trieSearch = childModel.index();
+
+      expect(trieSearch.get('1')[0]).toBe(childModel);
+      expect(trieSearch.get('12')[0]).toBe(childModel);
+      expect(trieSearch.get('123')[0]).toBe(childModel);
+      expect(trieSearch.get('1234')[0]).toBe(childModel);
+      expect(trieSearch.get('12345')[0]).toBe(childModel);
+      expect(trieSearch.get('123456')[0]).toBe(childModel);
+      expect(trieSearch.get('1234567')[0]).toBe(childModel);
+      expect(trieSearch.get('12345678').length).toBe(0);
+    });
+
+    //------------------------------------------------
+    // should have a working index() and addIndexedProperty() method (5/x)
+    //------------------------------------------------
+    it('should have a working index() and addIndexedProperty() method (5/x)', () => {
+      childModel.addIndexedProperty('nonIndexProperty', 1234567);
+
+      let trieSearch = childModel.index(false, {
+        min: 3
+      });
+
+      expect(trieSearch.get('1').length).toBe(0);
+      expect(trieSearch.get('12').length).toBe(0);
+      expect(trieSearch.get('123')[0]).toBe(childModel);
+      expect(trieSearch.get('1234')[0]).toBe(childModel);
+      expect(trieSearch.get('12345')[0]).toBe(childModel);
+      expect(trieSearch.get('123456')[0]).toBe(childModel);
+      expect(trieSearch.get('1234567')[0]).toBe(childModel);
+      expect(trieSearch.get('12345678').length).toBe(0);
+    });
+
+    //------------------------------------------------
+    // should have a working index() and addIndexedProperty() method (6/x)
+    //------------------------------------------------
+    it('should have a working index() and addIndexedProperty() method (6/x)', () => {
+      model.addIndexedProperty('child', childModel);
+
+      childModel.addIndexedProperty('property', 1234567);
+
+      let trieSearch = childModel.index(true);
+
+      expect(trieSearch.get('1')[0]).toBe(childModel);
+      expect(trieSearch.get('12')[0]).toBe(childModel);
+      expect(trieSearch.get('123')[0]).toBe(childModel);
+      expect(trieSearch.get('1234')[0]).toBe(childModel);
+      expect(trieSearch.get('12345')[0]).toBe(childModel);
+      expect(trieSearch.get('123456')[0]).toBe(childModel);
+      expect(trieSearch.get('1234567')[0]).toBe(childModel);
+      expect(trieSearch.get('12345678').length).toBe(0);
+    });
+
+    //------------------------------------------------
+    // should have a working index() and addIndexedProperty() method (7/x)
+    //------------------------------------------------
+    it('should have a working index() and addIndexedProperty() method (7/x)', () => {
+      model.addIndexedProperty('property', 1234567);
+      model.addIndexedProperty('child', childModel);
+
+      childModel.addIndexedProperty('property', 1234567);
+
+      let trieSearch = model.index(true);
+
+      expect(trieSearch.get('1')[0]).toBe(childModel);
+      expect(trieSearch.get('1')[1]).toBe(model);
+      expect(trieSearch.get('12')[0]).toBe(childModel);
+      expect(trieSearch.get('12')[1]).toBe(model);
+      expect(trieSearch.get('123')[0]).toBe(childModel);
+      expect(trieSearch.get('123')[1]).toBe(model);
+      expect(trieSearch.get('1234')[0]).toBe(childModel);
+      expect(trieSearch.get('1234')[1]).toBe(model);
+      expect(trieSearch.get('12345')[0]).toBe(childModel);
+      expect(trieSearch.get('12345')[1]).toBe(model);
+      expect(trieSearch.get('123456')[0]).toBe(childModel);
+      expect(trieSearch.get('123456')[1]).toBe(model);
+      expect(trieSearch.get('1234567')[0]).toBe(childModel);
+      expect(trieSearch.get('1234567')[1]).toBe(model);
+      expect(trieSearch.get('12345678').length).toBe(0);
+    });
   });
 });

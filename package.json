@@ -62,7 +62,8 @@
     "error-stack-parser": "^2.0.0",
     "hasharray": "^1.1.0",
     "jsdoc": "^3.4.3",
-    "snake-case": "^2.1.0"
+    "snake-case": "^2.1.0",
+    "trie-search": "^1.0.1"
   },
   "devDependencies": {
     "babel-core": "^6.22.1",

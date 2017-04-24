@@ -25,22 +25,20 @@ export default class RingaObject {
   // Constructor
   //-----------------------------------
   constructor(name, id) {
-    ids.counts[this.constructor] = ids.counts[this.constructor] || 1;
+    ids.counts[this.constructor.name] = ids.counts[this.constructor.name] || 1;
 
     if (id) {
       this.id = id;
     } else {
-      this.id = this.constructor.name + ids.counts[this.constructor];
-      ids.counts[this.constructor]++;
+      this.id = this.constructor.name + ids.counts[this.constructor.name];
+      ids.counts[this.constructor.name]++;
     }
 
-    name = name || camelCase(this.constructor.name);
+    this._name = name || camelCase(this.constructor.name);
 
     if (__DEV__) {
       ids.constructorNames[this.constructor.name] = this.constructor.name;
     }
-
-    this._name = name;
   }
 
   //-----------------------------------

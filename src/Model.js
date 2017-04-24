@@ -1,4 +1,5 @@
 import RingaObject from './RingaObject';
+import TrieSearch from 'trie-search';
 
 /**
  * Serialize a Ringa Model object to a POJO by iterating over properties recursively on any
@@ -78,6 +79,43 @@ class Model extends RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  getPropertiesRecursively() {
+    let properties = [];
+
+    let _clone = (obj) => {
+      if (obj instanceof Array) {
+        return obj.map(_clone);
+      } else if (obj instanceof Model) {
+        return obj.clone();
+      } else if (typeof obj === 'object' && obj.hasOwnProperty('clone')) {
+        return obj.clone();
+      } else if (typeof obj === 'object') {
+        let newObj = {};
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            newObj[key] = _clone(obj[key]);
+          }
+        }
+        return newObj;
+      }
+
+      return obj;
+    };
+
+    this.properties.forEach(propName => {
+      let newObj;
+
+      if (this[`_${propName}Options`].clone) {
+        newObj = this[`_${propName}Options`].clone(this[propName]);
+      } else {
+        newObj = _clone(this[propName]);
+      }
+
+      newInstance[propName] = newObj;
+    });
+
+    return properties;
+  }
   /**
    * Deserializes this object from a POJO only updating properties added with addProperty.
    *
@@ -118,19 +156,19 @@ class Model extends RingaObject {
    *
    * @param signal Generally a path to a property that has changed in the model.
    */
-  notify(signal) {
+  notify(signal, item, descriptor) {
     // Notify all view objects through all injectors
     this._modelWatchers.forEach(mi => {
-      mi.notify(this, signal);
+      mi.notify(this, signal, item, descriptor);
     });
 
     this.watchers.forEach(handler => {
-      handler(signal);
+      handler(signal, item, descriptor);
     });
 
     // Continue up the parent tree, notifying as we go.
     if (this.parentModel) {
-      this.parentModel.notify(`${this.name}.${signal}`);
+      this.parentModel.notify(`${this.name}.${signal}`, item, descriptor);
     }
   }
 
@@ -140,7 +178,9 @@ class Model extends RingaObject {
    * @param handler The function to call when a notify signal is sent.
    */
   watch(handler) {
-    this.watchers.push(handler);
+    if (this.watchers.indexOf(handler) === -1) {
+      this.watchers.push(handler);
+    }
   }
 
   /**
@@ -204,7 +244,17 @@ class Model extends RingaObject {
 
       this[`_${name}`] = value;
 
-      this.notify(name);
+      let descriptor;
+
+      if (this[`_${name}Options`].descriptor) {
+        if (typeof this[`_${name}Options`].descriptor === 'function') {
+          descriptor = this[`_${name}Options`].descriptor(value);
+        }
+
+        descriptor = this[`_${name}Options`].descriptor;
+      }
+
+      this.notify(name, this, descriptor);
     }
 
     Object.defineProperty(this, name, {
@@ -224,6 +274,28 @@ class Model extends RingaObject {
     }
 
     this.properties.push(name);
+
+    if (options.index) {
+      this.indexProperties = this.indexProperties || [];
+      this.indexProperties.push(name);
+    }
+
+    return this[`${name}`];
+  }
+
+  /**
+   * Just like addProperty, except explicitly sets the index option to true.
+   *
+   * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
+   * @param defaultValue The default value of the property.
+   * @param options See addProperty for details.
+   */
+  addIndexedProperty(name, defaultValue, options = {}) {
+    options = Object.assign({}, {
+      index: true
+    }, options);
+
+    return this.addProperty(name, defaultValue, options);
   }
 
   /**
@@ -265,6 +337,42 @@ class Model extends RingaObject {
     });
 
     return newInstance;
+  }
+
+  /**
+   * Uses a trie-search to (optionally recursively) index every property that has index set to true (or was added with addIndexedProperty)
+   *
+   * Returns the TrieSearch instance.
+   */
+  index(recurse = false, trieSearchOptions, trieSearch = undefined) {
+    trieSearch = trieSearch || new TrieSearch(undefined, trieSearchOptions);
+
+    let nonRecurseProperties = [];
+
+    let _add = (prop, obj) => {
+      if (obj instanceof Array) {
+        if (recurse) {
+          obj.map(_add);
+        }
+      } else if (obj instanceof Model) {
+        if (recurse) {
+
+          obj.index(recurse, trieSearchOptions, trieSearch);
+        }
+      } else if (typeof obj === 'object') {
+        console.warn('Model()::index() does not support indexing raw Object types.');
+      } else {
+        nonRecurseProperties.push(prop);
+      }
+    };
+
+    this.indexProperties.forEach(prop => _add(prop, this[prop]));
+
+    if (nonRecurseProperties.length) {
+      trieSearch.add(this, nonRecurseProperties);
+    }
+
+    return trieSearch;
   }
 }
 
