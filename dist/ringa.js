@@ -2201,6 +2201,8 @@ var Model = function (_RingaObject) {
 
     /**
      * Recursively performs a deep clone of this object and all items that were added with addProperty().
+     *
+     * @param parentModel Used to set the parentModel property when doing a clone.
      */
 
   }, {
@@ -2208,15 +2210,22 @@ var Model = function (_RingaObject) {
     value: function clone() {
       var _this4 = this;
 
+      var parentModel = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+
       var newInstance = new this.constructor(this.name);
+
+      if (parentModel) {
+        newInstance.parentModel = parentModel;
+      }
 
       var _clone = function _clone(obj) {
         if (obj instanceof Array) {
           return obj.map(_clone);
         } else if (obj instanceof Model) {
-          return obj.clone();
+          // Make sure we set the parentModel, which is our newInstance!
+          return obj.clone(newInstance);
         } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj.hasOwnProperty('clone')) {
-          return obj.clone();
+          return obj.clone(newInstance);
         } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
           var newObj = {};
           for (var key in obj) {

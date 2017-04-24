@@ -416,6 +416,38 @@ describe('Model', () => {
     });
 
     //------------------------------------------------
+    // should have a working clone method that properly sets parentModel (10/x)
+    //------------------------------------------------
+    it('should have a working clone method that properly sets parentModel (10/x)', () => {
+      model = new Model('model');
+
+      let child1 = new Model('child1');
+      let child2 = new Model('child2');
+
+      let grandchild1 = new Model('grandchild1');
+      let grandchild2 = new Model('grandchild2');
+
+      model.addProperty('children', [child1, child2]);
+
+      child1.addProperty('grandchild', grandchild1);
+      child2.addProperty('grandchild', grandchild2);
+
+      let clone = model.clone();
+
+      expect(clone.children[0].parentModel).toBe(clone);
+      expect(clone.children[1].parentModel).toBe(clone);
+
+      expect(clone.children[0].parentModel).not.toBe(model);
+      expect(clone.children[1].parentModel).not.toBe(model);
+
+      expect(clone.children[0].grandchild.parentModel.name).not.toBe(child1);
+      expect(clone.children[1].grandchild.parentModel.name).not.toBe(child2);
+
+      expect(clone.children[0].grandchild.parentModel.name).toBe(child1.name);
+      expect(clone.children[1].grandchild.parentModel.name).toBe(child2.name);
+    });
+
+    //------------------------------------------------
     // should have a working index() and addIndexedProperty() method (1/x)
     //------------------------------------------------
     it('should have a working index() and addIndexedProperty() method (1/x)', () => {

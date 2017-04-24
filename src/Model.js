@@ -266,17 +266,24 @@ class Model extends RingaObject {
 
   /**
    * Recursively performs a deep clone of this object and all items that were added with addProperty().
+   *
+   * @param parentModel Used to set the parentModel property when doing a clone.
    */
-  clone() {
+  clone(parentModel = undefined) {
     let newInstance = new (this.constructor)(this.name);
+
+    if (parentModel) {
+      newInstance.parentModel = parentModel;
+    }
 
     let _clone = (obj) => {
       if (obj instanceof Array) {
         return obj.map(_clone);
       } else if (obj instanceof Model) {
-        return obj.clone();
+        // Make sure we set the parentModel, which is our newInstance!
+        return obj.clone(newInstance);
       } else if (typeof obj === 'object' && obj.hasOwnProperty('clone')) {
-        return obj.clone();
+        return obj.clone(newInstance);
       } else if (typeof obj === 'object') {
         let newObj = {};
         for (let key in obj) {
