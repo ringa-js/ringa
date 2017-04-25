@@ -71,12 +71,8 @@ class Model extends RingaObject {
   //-----------------------------------
   // Properties
   //-----------------------------------
-  set parentModel(value) {
-    this._parentModel = value;
-  }
-
-  get parentModel() {
-     return this._parentModel;
+  get idPath() {
+    return this.parentModel ? `${this.parentModel.idPath}.${this.id}` : this.id;
   }
 
   //-----------------------------------
@@ -127,6 +123,7 @@ class Model extends RingaObject {
     // we try to figure out what the property is ourselves.
     if (!signaler) {
       value = this[signal];
+      descriptor = descriptor || (this.propertyOptions[signal] ? this.propertyOptions[signal].descriptor : undefined);
       signaler = this;
     }
 
@@ -164,10 +161,10 @@ class Model extends RingaObject {
     }
   }
 
-  getDescriptorFor(propertyName) {
+  getChangeDescriptor(propertyName, oldValue, newValue) {
     if (this.propertyOptions[propertyName].descriptor) {
       if (typeof this.propertyOptions[propertyName].descriptor === 'function') {
-        return this.propertyOptions[propertyName].descriptor(value);
+        return this.propertyOptions[propertyName].descriptor(oldValue, newValue);
       }
 
       return this.propertyOptions[propertyName].descriptor;
@@ -240,7 +237,7 @@ class Model extends RingaObject {
       }
 
       if (!skipNotify) {
-        this.notify(name, this, value, this.getDescriptorFor(name));
+        this.notify(name, this, value, this.getChangeDescriptor(name, oldValue, value));
       }
     };
 

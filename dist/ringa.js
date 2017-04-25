@@ -2046,6 +2046,7 @@ var Model = function (_RingaObject) {
       // we try to figure out what the property is ourselves.
       if (!signaler) {
         value = this[signal];
+        descriptor = descriptor || (this.propertyOptions[signal] ? this.propertyOptions[signal].descriptor : undefined);
         signaler = this;
       }
 
@@ -2089,11 +2090,11 @@ var Model = function (_RingaObject) {
       }
     }
   }, {
-    key: 'getDescriptorFor',
-    value: function getDescriptorFor(propertyName) {
+    key: 'getChangeDescriptor',
+    value: function getChangeDescriptor(propertyName, oldValue, newValue) {
       if (this.propertyOptions[propertyName].descriptor) {
         if (typeof this.propertyOptions[propertyName].descriptor === 'function') {
-          return this.propertyOptions[propertyName].descriptor(value);
+          return this.propertyOptions[propertyName].descriptor(oldValue, newValue);
         }
 
         return this.propertyOptions[propertyName].descriptor;
@@ -2171,7 +2172,7 @@ var Model = function (_RingaObject) {
         }
 
         if (!skipNotify) {
-          this.notify(name, this, value, this.getDescriptorFor(name));
+          this.notify(name, this, value, this.getChangeDescriptor(name, oldValue, value));
         }
       };
 
@@ -2384,12 +2385,9 @@ var Model = function (_RingaObject) {
       return trieSearch;
     }
   }, {
-    key: 'parentModel',
-    set: function set(value) {
-      this._parentModel = value;
-    },
+    key: 'idPath',
     get: function get() {
-      return this._parentModel;
+      return this.parentModel ? this.parentModel.idPath + '.' + this.id : this.id;
     }
   }]);
 
