@@ -1901,6 +1901,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+window.Model_notifications = {
+  watchers: 0,
+  modelWatchers: 0
+};
+
 /**
  * Serialize a Ringa Model object to a POJO by iterating over properties recursively on any
  * descendent Model instances.
@@ -2053,10 +2058,12 @@ var Model = function (_RingaObject) {
       // Notify all view objects through all injectors
       this._modelWatchers.forEach(function (mi) {
         mi.notify(_this3, signal, signaler, value, descriptor);
+        window.Model_notifications.modelWatchers++;
       });
 
       this.watchers.forEach(function (handler) {
         handler(signal, signaler, value, descriptor);
+        window.Model_notifications.watchers++;
       });
     }
 
@@ -3545,11 +3552,24 @@ var ModelWatcher = function (_RingaObject) {
         byPathFor = function byPathFor(watcheesByPath) {
           // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
           // or 'when'. So we go backwards through the array. I would do paths.reverse() but, well, performance and all.
-          for (var i = paths.length - 1; i >= 0; i--) {
-            var path = paths[i];
-            if (watcheesByPath[path]) {
-              watcheesByPath[path].forEach(addWatchee);
-              break;
+          // for (let i = paths.length - 1; i >= 0; i--) {
+          //   let path = paths[i];
+          //   if (watcheesByPath[path]) {
+          //     watcheesByPath[path].forEach(addWatchee);
+          //     break;
+          //   }
+          // }
+
+          for (var watchPathKey in watcheesByPath) {
+            // Scenario 1: Let's say we are watching for 'prop.value' (watchPathKey)
+            //             Let's say that 'prop' is our propertyPath, then this should trigger.
+            // Scenario 2: Let's say we are watching for 'prop.value' (watchPathKey)
+            //             Let's say that 'prop.value.key' is our propertyPath, then this should NOT trigger.
+
+            paths = pathAll(watchPathKey); // ['prop', 'prop.value']
+
+            if (paths.indexOf(propertyPath) !== -1) {
+              watcheesByPath[propertyPath].forEach(addWatchee);
             }
           }
         };

@@ -1,6 +1,11 @@
 import RingaObject from './RingaObject';
 import TrieSearch from 'trie-search';
 
+window.Model_notifications = {
+  watchers: 0,
+  modelWatchers: 0
+};
+
 /**
  * Serialize a Ringa Model object to a POJO by iterating over properties recursively on any
  * descendent Model instances.
@@ -130,10 +135,12 @@ class Model extends RingaObject {
     // Notify all view objects through all injectors
     this._modelWatchers.forEach(mi => {
       mi.notify(this, signal, signaler, value, descriptor);
+      window.Model_notifications.modelWatchers++;
     });
 
     this.watchers.forEach(handler => {
       handler(signal, signaler, value, descriptor);
+      window.Model_notifications.watchers++;
     });
   }
 

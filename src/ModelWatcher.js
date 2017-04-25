@@ -356,11 +356,24 @@ class ModelWatcher extends RingaObject {
       byPathFor = (watcheesByPath) => {
         // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
         // or 'when'. So we go backwards through the array. I would do paths.reverse() but, well, performance and all.
-        for (let i = paths.length - 1; i >= 0; i--) {
-          let path = paths[i];
-          if (watcheesByPath[path]) {
-            watcheesByPath[path].forEach(addWatchee);
-            break;
+        // for (let i = paths.length - 1; i >= 0; i--) {
+        //   let path = paths[i];
+        //   if (watcheesByPath[path]) {
+        //     watcheesByPath[path].forEach(addWatchee);
+        //     break;
+        //   }
+        // }
+
+        for (var watchPathKey in watcheesByPath) {
+          // Scenario 1: Let's say we are watching for 'prop.value' (watchPathKey)
+          //             Let's say that 'prop' is our propertyPath, then this should trigger.
+          // Scenario 2: Let's say we are watching for 'prop.value' (watchPathKey)
+          //             Let's say that 'prop.value.key' is our propertyPath, then this should NOT trigger.
+
+          paths = pathAll(watchPathKey); // ['prop', 'prop.value']
+
+          if (paths.indexOf(propertyPath) !== -1) {
+            watcheesByPath[propertyPath].forEach(addWatchee);
           }
         }
       }
