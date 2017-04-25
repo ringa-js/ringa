@@ -16,8 +16,8 @@ describe('ModelWatcher', () => {
     model2 = new ModelSimple('model2');
     modelExt3 = new ModelSimpleExt('modelExt3');
 
-    childModel = new Model();
-    childModel2 = new Model();
+    childModel = new Model('childModel1');
+    childModel2 = new Model('childModel2');
 
     watcher = new Ringa.ModelWatcher('modelWatcher');
 
@@ -139,16 +139,17 @@ describe('ModelWatcher', () => {
   it('Watch by name (2)', (done) => {
     watcher.watch('model1', (arg) => {
       expect(arg.length).toEqual(1);
-      expect(arg[0].model === model1).toEqual(true);
-      expect(arg[0].value).toEqual('someNewValue');
-      expect(arg[0].watchedValue === model1).toEqual(true);
-      expect(arg[0].path).toEqual('prop1');
-      expect(arg[0].watchedPath).toEqual(undefined);
+      expect(arg[0].watchedModel).toBe(model1);
+      expect(arg[0].watchedPath).toBe(undefined);
+      expect(arg[0].watchedValue).toBe(model1);
+      expect(arg[0].signalModel).toBe(model1);
+      expect(arg[0].signalPath).toBe('prop1');
+      expect(arg[0].signalValue).toBe('someNewValue');
       done();
     });
 
     model1.prop1 = 'someNewValue';
-  }, 5);
+  }, 50);
 
   //-----------------------------------
   // Watch by name and path (1)
@@ -156,8 +157,8 @@ describe('ModelWatcher', () => {
   it('Watch by name and path (1)', (done) => {
     watcher.watch('model1', 'prop1', (arg) => {
       expect(arg.length).toEqual(1);
-      expect(arg[0].model === model1).toEqual(true);
-      expect(arg[0].value).toEqual('someNewValue');
+      expect(arg[0].watchedModel === model1).toEqual(true);
+      expect(arg[0].watchedValue).toEqual('someNewValue');
       done();
     });
 
@@ -187,8 +188,8 @@ describe('ModelWatcher', () => {
   it('Watch by id and path (1)', (done) => {
     watcher.watch('ModelSimple1', 'prop1', (arg) => {
       expect(arg.length).toEqual(1);
-      expect(arg[0].model === model1).toEqual(true);
-      expect(arg[0].value).toEqual('someNewValue');
+      expect(arg[0].watchedModel).toBe(model1);
+      expect(arg[0].watchedValue).toEqual('someNewValue');
       done();
     });
 
@@ -210,104 +211,6 @@ describe('ModelWatcher', () => {
       expect(called).toEqual(false);
       done();
     }, 1);
-  }, 5);
-
-  //-----------------------------------
-  // Watch by name and deep path (1)
-  //-----------------------------------
-  it('Watch by name and deep path (1)', (done) => {
-    watcher.watch('model1', 'prop1', (arg) => {
-      expect(arg[0].value).toEqual(model1.prop1);
-      done();
-    });
-
-    model1.prop1 = {
-      deep: 'someNewValue'
-    };
-  }, 5);
-
-  //-----------------------------------
-  // Watch by name and deep path (2)
-  //-----------------------------------
-  it('Watch by name and deep path (2)', (done) => {
-    watcher.watch('model1', 'prop1.deep', (arg) => {
-      expect(arg[0].value).toEqual({
-        deep: 'someNewValue'
-      });
-      expect(arg[0].watchedValue).toEqual('someNewValue');
-      done();
-    });
-
-    model1.prop1 = {
-      deep: 'someNewValue'
-    };
-  }, 5);
-
-  //-----------------------------------
-  // Watch by name and deep path (3)
-  //-----------------------------------
-  it('Watch by name and deep path (3)', (done) => {
-    // prop1.deep.deeper doesn't exist!
-    watcher.watch('model1', 'prop1.deep.deeper', (arg) => {
-      expect(arg[0].value).toEqual({
-        deep: 'someNewValue'
-      });
-      expect(arg[0].watchedValue).toEqual(undefined);
-      done();
-    });
-
-    model1.prop1 = {
-      deep: 'someNewValue'
-    };
-  }, 5);
-
-  //-----------------------------------
-  // Watch by id and deep path (1)
-  //-----------------------------------
-  it('Watch by id and deep path (1)', (done) => {
-    watcher.watch('ModelSimple1', 'prop1', (arg) => {
-      expect(arg[0].value).toEqual(model1.prop1);
-      done();
-    });
-
-    model1.prop1 = {
-      deep: 'someNewValue'
-    };
-  }, 5);
-
-  //-----------------------------------
-  // Watch by id and deep path (2)
-  //-----------------------------------
-  it('Watch by id and deep path (2)', (done) => {
-    watcher.watch('ModelSimple1', 'prop1.deep', (arg) => {
-      expect(arg[0].value).toEqual({
-        deep: 'someNewValue'
-      });
-      expect(arg[0].watchedValue).toEqual('someNewValue');
-      done();
-    });
-
-    model1.prop1 = {
-      deep: 'someNewValue'
-    };
-  }, 5);
-
-  //-----------------------------------
-  // Watch by id and deep path (3)
-  //-----------------------------------
-  it('Watch by id and deep path (3)', (done) => {
-    // prop1.deep.deeper doesn't exist!
-    watcher.watch('ModelSimple1', 'prop1.deep.deeper', (arg) => {
-      expect(arg[0].value).toEqual({
-        deep: 'someNewValue'
-      });
-      expect(arg[0].watchedValue).toEqual(undefined);
-      done();
-    });
-
-    model1.prop1 = {
-      deep: 'someNewValue'
-    };
   }, 5);
 
   //-----------------------------------
@@ -346,12 +249,12 @@ describe('ModelWatcher', () => {
   it('Watch multiple separate handlers (1)', (done) => {
     let prop1Handler = false;
     watcher.watch('model1', 'prop1', (arg) => {
-      expect(arg[0].value).toEqual('prop1val');
+      expect(arg[0].watchedValue).toEqual('prop1val');
       prop1Handler = true;
     });
 
     watcher.watch('model1', 'prop2', (arg) => {
-      expect(arg[0].value).toEqual('prop2val');
+      expect(arg[0].watchedValue).toEqual('prop2val');
       expect(prop1Handler).toEqual(true);
       done();
     });
@@ -366,12 +269,12 @@ describe('ModelWatcher', () => {
   it('Watch multiple separate handlers (2)', (done) => {
     let prop1Handler = false;
     watcher.watch('model1', 'prop1', (arg) => {
-      expect(arg[0].value).toEqual('prop1val');
+      expect(arg[0].watchedValue).toEqual('prop1val');
       prop1Handler = true;
     });
 
     watcher.watch('model2', 'prop2', (arg) => {
-      expect(arg[0].value).toEqual('prop2val');
+      expect(arg[0].watchedValue).toEqual('prop2val');
       expect(prop1Handler).toEqual(true);
       done();
     });
@@ -385,15 +288,12 @@ describe('ModelWatcher', () => {
   //-----------------------------------
   it('Watch multiple combined handlers (1)', (done) => {
     let handler = (arg) => {
-      expect(arg[0].model).toEqual(model1);
-      expect(arg[0].value).toEqual('prop1val');
-      expect(arg[1].model).toEqual(model2);
-      expect(arg[1].value).toEqual('prop2val');
-      expect(arg[2].model).toEqual(modelExt3);
+      expect(arg[0].watchedModel).toEqual(model1);
+      expect(arg[0].watchedValue).toEqual('prop1val');
+      expect(arg[1].watchedModel).toEqual(model2);
+      expect(arg[1].watchedValue).toEqual('prop2val');
+      expect(arg[2].watchedModel).toEqual(modelExt3);
       expect(arg[2].watchedValue).toEqual('whatever');
-      expect(arg[2].value).toEqual({
-        value: 'whatever'
-      });
       done();
     };
 
@@ -413,15 +313,12 @@ describe('ModelWatcher', () => {
   //-----------------------------------------
   it('Watch multiple combined handlers (2)', (done) => {
     let handler = (arg) => {
-      expect(arg[0].model).toEqual(model1);
-      expect(arg[0].value).toEqual('prop1val');
-      expect(arg[1].model).toEqual(model2);
-      expect(arg[1].value).toEqual('prop2val');
-      expect(arg[2].model).toEqual(modelExt3);
+      expect(arg[0].watchedModel).toEqual(model1);
+      expect(arg[0].watchedValue).toEqual('prop1val');
+      expect(arg[1].watchedModel).toEqual(model2);
+      expect(arg[1].watchedValue).toEqual('prop2val');
+      expect(arg[2].watchedModel).toEqual(modelExt3);
       expect(arg[2].watchedValue).toEqual('whatever');
-      expect(arg[2].value).toEqual({
-        value: 'whatever'
-      });
       done();
     };
 
@@ -441,15 +338,12 @@ describe('ModelWatcher', () => {
   //--------------------------------------------------------------------------------
   it('Watch collision (requesting same type model that exists more than once) (1)', (done) => {
     let handler = (arg) => {
-      expect(arg[0].model).toEqual(model1);
-      expect(arg[0].value).toEqual('prop1val');
-      expect(arg[1].model).toEqual(model2);
-      expect(arg[1].value).toEqual('prop2val');
-      expect(arg[2].model).toEqual(modelExt3);
+      expect(arg[0].watchedModel).toEqual(model1);
+      expect(arg[0].watchedValue).toEqual('prop1val');
+      expect(arg[1].watchedModel).toEqual(model2);
+      expect(arg[1].watchedValue).toEqual('prop2val');
+      expect(arg[2].watchedModel).toEqual(modelExt3);
       expect(arg[2].watchedValue).toEqual({
-        value:'whatever'
-      });
-      expect(arg[2].value).toEqual({
         value: 'whatever'
       });
       done();
@@ -500,38 +394,96 @@ describe('ModelWatcher', () => {
   //-----------------------------------
   // Should handle a child model dispatch
   //-----------------------------------
-  it('Should handle a child model dispatch', () => {
-    watcher.watch('model1', 'childModel.childProp', (arg) => {
-      expect(arg[0].value).toEqual(childModel.childProp);
-      done();
-    });
-
+  it('Should handle a child model dispatch', (done) => {
     childModel.addProperty('childProp', 'default value');
 
     model1.childModel = childModel;
 
+    watcher.watch('model1', 'childModel.childProp', (arg) => {
+      expect(arg[0].watchedValue).toEqual(childModel.childProp);
+      done();
+    });
+
     // When we set childModels childProp, it should trigger the change
     childModel.childProp = 'hello world!';
-  });
+  }, 250);
 
   //----------------------------------------------------
   // Should handle a child model dispatch (multi-nested)
   //----------------------------------------------------
-  it('Should handle a child model dispatch', () => {
-    watcher.watch('model1', 'childModel.childModel.childProp', (arg) => {
-      expect(arg[0].value).toEqual(childModel2.childProp);
+  it('Should handle a child model dispatch (multi-nested)', (done) => {
+    childModel.addProperty('grandchild');
+    childModel2.addProperty('childProp');
+
+    childModel.grandchild = childModel2;
+
+    // Creates chain model1['childModel1']['childModel2']['childProp']
+    model1.childModel = childModel;
+
+    watcher.watch('model1', 'childModel.grandchild.childProp', (arg) => {
+      expect(arg[0].watchedValue).toEqual(childModel2.childProp);
       done();
     });
 
-    childModel.addProperty('childModel');
-    childModel2.addProperty('childProp');
+    // When we set childModels childProp, it should trigger the change
+    childModel2.childProp = 'hello world!';
+  });
 
-    childModel.childModel = childModel2;
+  //----------------------------------------------------
+  // ModelWatch should get a proper and valid signal when a model changes (1/x)
+  //----------------------------------------------------
+  it('ModelWatch should get a proper and valid signal when a model changes', (done) => {
+    childModel.addProperty('grandchildModel');
+    childModel2.addProperty('childProp', '', {
+      descriptor: 'Some property has changed!'
+    });
+
+    childModel.grandchildModel = childModel2;
 
     // Creates chain model1['childModel']['childModel']['childProp']
     model1.childModel = childModel;
 
+    watcher.watch('model1', 'childModel.grandchildModel.childProp');
+
+    watcher.notify = (model, propertyPath, item, value, descriptor) => {
+      expect(model).toBe(model1);
+      expect(propertyPath).toBe('childModel.grandchildModel.childProp');
+      expect(item).toBe(childModel2);
+      expect(value).toBe('hello world!');
+      expect(descriptor).toBe('Some property has changed!');
+      done();
+    };
+
     // When we set childModels childProp, it should trigger the change
     childModel2.childProp = 'hello world!';
+  });
+
+  //----------------------------------------------------
+  // ModelWatch should get a proper and valid signal when a model changes (2/x)
+  //----------------------------------------------------
+  it('ModelWatch should get a proper and valid signal when a model changes (2/x)', (done) => {
+    childModel.addProperty('grandchildModel');
+    childModel2.addProperty('childProp', '', {
+      descriptor: 'Some property has changed!'
+    });
+
+    childModel.grandchildModel = childModel2;
+
+    // Creates chain model1['childModel']['childModel']['childProp']
+    model1.childModel = childModel;
+
+    watcher.watch('model1', 'childModel.grandchildModel.childProp');
+
+    let newishModel = new Model();
+
+    watcher.notify = (model, propertyPath, item, value, descriptor) => {
+      expect(model).toBe(model1);
+      expect(propertyPath).toBe('childModel.grandchildModel');
+      expect(item).toBe(childModel);
+      expect(value).toBe(newishModel);
+      done();
+    };
+
+    childModel.grandchildModel = newishModel;
   });
 });

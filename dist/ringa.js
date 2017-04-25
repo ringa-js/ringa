@@ -1972,8 +1972,10 @@ var Model = function (_RingaObject) {
     _this._values = values;
     _this._modelWatchers = [];
     _this.watchers = [];
+    _this.childIdToRef = {};
     return _this;
   }
+
   //-----------------------------------
   // Properties
   //-----------------------------------
@@ -2037,22 +2039,24 @@ var Model = function (_RingaObject) {
 
   }, {
     key: 'notify',
-    value: function notify(signal, item, descriptor) {
+    value: function notify(signal, signaler, value, descriptor) {
       var _this3 = this;
+
+      // If item isn't specified someone might just be triggering a signal themselves manually. So
+      // we try to figure out what the property is ourselves.
+      if (!signaler) {
+        value = this[signal];
+        signaler = this;
+      }
 
       // Notify all view objects through all injectors
       this._modelWatchers.forEach(function (mi) {
-        mi.notify(_this3, signal, item, descriptor);
+        mi.notify(_this3, signal, signaler, value, descriptor);
       });
 
       this.watchers.forEach(function (handler) {
-        handler(signal, item, descriptor);
+        handler(signal, signaler, value, descriptor);
       });
-
-      // Continue up the parent tree, notifying as we go.
-      if (this.parentModel) {
-        this.parentModel.notify(this.name + '.' + signal, item, descriptor);
-      }
     }
 
     /**
@@ -2083,6 +2087,19 @@ var Model = function (_RingaObject) {
       if (ix !== -1) {
         this.watchers.splice(ix, 1);
       }
+    }
+  }, {
+    key: 'getDescriptorFor',
+    value: function getDescriptorFor(propertyName) {
+      if (this.propertyOptions[propertyName].descriptor) {
+        if (typeof this.propertyOptions[propertyName].descriptor === 'function') {
+          return this.propertyOptions[propertyName].descriptor(value);
+        }
+
+        return this.propertyOptions[propertyName].descriptor;
+      }
+
+      return undefined;
     }
 
     /**
@@ -2124,33 +2141,38 @@ var Model = function (_RingaObject) {
         return this[subScriptName];
       };
 
+      //-----------------------------------
+      // defaultSet
+      //-----------------------------------
       var defaultSet = function defaultSet(value) {
-        if (this[subScriptName] === value) {
+        var oldValue = this[subScriptName];
+
+        if (oldValue === value) {
           return;
         }
 
-        // Clear old parentModel if it was set
-        if (this[subScriptName] instanceof Model && this[subScriptName].parentModel === this) {
-          this[subScriptName].parentModel = undefined;
-        }
-
-        if (value && value instanceof Model) {
-          value.parentModel = this;
+        // Clear old child model
+        if (oldValue instanceof Model && oldValue.parentModel === this) {
+          this.removeModelChild(oldValue);
         }
 
         this[subScriptName] = value;
 
-        var descriptor = void 0;
-
-        if (this.propertyOptions[name].descriptor) {
-          if (typeof this.propertyOptions[name].descriptor === 'function') {
-            descriptor = this.propertyOptions[name].descriptor(value);
-          }
-
-          descriptor = this.propertyOptions[name].descriptor;
+        // Update new child model
+        if (value && value instanceof Model) {
+          this.addModelChild(name, value);
         }
 
-        this.notify(name, this, descriptor);
+        var onChange = this.propertyOptions[name].onChange;
+        var skipNotify = false;
+
+        if (onChange) {
+          skipNotify = onChange(oldValue, value);
+        }
+
+        if (!skipNotify) {
+          this.notify(name, this, value, this.getDescriptorFor(name));
+        }
       };
 
       Object.defineProperty(this, name, {
@@ -2177,6 +2199,64 @@ var Model = function (_RingaObject) {
       }
 
       return this[name];
+    }
+
+    /**
+     * Adds a child model, setting up the appropriate tree for watch/notify notifications.
+     *
+     * @param propertyName The propertyName that this child belongs to.
+     * @param child The child Model instance.
+     */
+
+  }, {
+    key: 'addModelChild',
+    value: function addModelChild(propertyName, child) {
+      if (this.childIdToRef[child.id]) {
+        this.removeModelChild(child);
+      }
+
+      if (this.propertyOptions[propertyName].setParentModel !== false) {
+        if (child.parentModel && child.parentModel !== this) {
+          throw new Error('Model::addModelChild(): ' + child.name + ' already has a parentModel!');
+        }
+
+        child.parentModel = this;
+      }
+
+      if (this.propertyOptions[propertyName].autoWatch !== false) {
+        var watchHandler = function (propertyName, signal, item, value, descriptor) {
+          this.notify(propertyName + '.' + signal, item, value, descriptor);
+        }.bind(this, propertyName);
+
+        child.watch(watchHandler);
+
+        this.childIdToRef[child.id] = {
+          watchHandler: watchHandler,
+          propertyName: propertyName
+        };
+      }
+    }
+
+    /**
+     * Remove a model child from the Model tree, safely removing the watcher.
+     *
+     * @param child The Model child.
+     */
+
+  }, {
+    key: 'removeModelChild',
+    value: function removeModelChild(child) {
+      var ref = this.childIdToRef[child.id];
+
+      if (this.propertyOptions[ref.propertyName].setParentModel !== false) {
+        child.parentModel = undefined;
+      }
+
+      if (this.propertyOptions[ref.propertyName].autoWatch !== false) {
+        child.unwatch(ref.watchHandler);
+
+        delete this.childIdToRef[child.id];
+      }
     }
 
     /**
@@ -2210,27 +2290,29 @@ var Model = function (_RingaObject) {
     value: function clone() {
       var _this4 = this;
 
-      var parentModel = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-
       var newInstance = new this.constructor(this.name);
 
-      if (parentModel) {
-        newInstance.parentModel = parentModel;
-      }
+      newInstance.propertyOptions = this.propertyOptions;
 
-      var _clone = function _clone(obj) {
+      var _clone = function _clone(propName, obj) {
         if (obj instanceof Array) {
-          return obj.map(_clone);
+          return obj.map(_clone.bind(undefined, propName));
         } else if (obj instanceof Model) {
           // Make sure we set the parentModel, which is our newInstance!
-          return obj.clone(newInstance);
+          var childModel = obj.clone();
+
+          if (childModel instanceof Model) {
+            newInstance.addModelChild(propName, childModel);
+          }
+
+          return childModel;
         } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj.hasOwnProperty('clone')) {
           return obj.clone(newInstance);
         } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
           var newObj = {};
           for (var key in obj) {
             if (obj.hasOwnProperty(key)) {
-              newObj[key] = _clone(obj[key]);
+              newObj[key] = _clone(propName, obj[key]);
             }
           }
           return newObj;
@@ -2245,7 +2327,7 @@ var Model = function (_RingaObject) {
         if (_this4.propertyOptions[propName].clone) {
           newObj = _this4.propertyOptions[propName].clone(_this4[propName]);
         } else {
-          newObj = _clone(_this4[propName]);
+          newObj = _clone(propName, _this4[propName]);
         }
 
         newInstance[propName] = newObj;
@@ -3127,15 +3209,17 @@ var Watchees = function () {
 
   _createClass(Watchees, [{
     key: 'add',
-    value: function add(model, propertyPath, watchee) {
+    value: function add(watchedModel, signalPath, signalModel, signalValue, descriptor, watchee) {
       var watcheeObj = void 0;
 
       var arg = {
-        model: model,
-        path: propertyPath,
-        value: objPath(model, propertyPath),
+        watchedModel: watchedModel,
         watchedPath: watchee.propertyPath,
-        watchedValue: objPath(model, watchee.propertyPath)
+        watchedValue: objPath(watchedModel, watchee.propertyPath),
+        signalModel: signalModel,
+        signalPath: signalPath,
+        signalValue: signalValue,
+        descriptor: descriptor
       };
 
       if (watchee.handler.__watchees && (watcheeObj = watchee.handler.__watchees[this.id])) {
@@ -3435,7 +3519,7 @@ var ModelWatcher = function (_RingaObject) {
 
   }, {
     key: 'notify',
-    value: function notify(model, propertyPath) {
+    value: function notify(model, propertyPath, item, value, descriptor) {
       var foundAtLeastOneWatchee = false;
 
       if (!globalWatchee) {
@@ -3449,7 +3533,7 @@ var ModelWatcher = function (_RingaObject) {
       var addWatchee = function addWatchee(watchee) {
         foundAtLeastOneWatchee = true;
 
-        n.add(model, propertyPath, watchee);
+        n.add(model, propertyPath, item, value, descriptor, watchee);
       };
 
       var watcheeGroup = function watcheeGroup(watchees) {

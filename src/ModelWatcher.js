@@ -50,15 +50,17 @@ class Watchees {
   //-----------------------------------
   // Methods
   //-----------------------------------
-  add(model, propertyPath, watchee) {
+  add(watchedModel, signalPath, signalModel, signalValue, descriptor, watchee) {
     let watcheeObj;
 
     let arg = {
-      model,
-      path: propertyPath,
-      value: objPath(model, propertyPath),
+      watchedModel,
       watchedPath: watchee.propertyPath,
-      watchedValue: objPath(model, watchee.propertyPath)
+      watchedValue: objPath(watchedModel, watchee.propertyPath),
+      signalModel,
+      signalPath,
+      signalValue,
+      descriptor
     };
 
     if (watchee.handler.__watchees && (watcheeObj = watchee.handler.__watchees[this.id])) {
@@ -327,7 +329,7 @@ class ModelWatcher extends RingaObject {
    * that if multiple properties get set on a model back to back and notify() is called over and over that the
    * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
    */
-  notify(model, propertyPath) {
+  notify(model, propertyPath, item, value, descriptor) {
     let foundAtLeastOneWatchee = false;
 
     if (!globalWatchee) {
@@ -340,7 +342,7 @@ class ModelWatcher extends RingaObject {
     let addWatchee = watchee => {
       foundAtLeastOneWatchee = true;
 
-      n.add(model, propertyPath, watchee);
+      n.add(model, propertyPath, item, value, descriptor, watchee);
     };
 
     let watcheeGroup = watchees => {

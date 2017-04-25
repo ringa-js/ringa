@@ -65,7 +65,9 @@ class Model extends RingaObject {
     this._values = values;
     this._modelWatchers = [];
     this.watchers = [];
+    this.childIdToRef = {};
   }
+
   //-----------------------------------
   // Properties
   //-----------------------------------
@@ -120,20 +122,22 @@ class Model extends RingaObject {
    *
    * @param signal Generally a path to a property that has changed in the model.
    */
-  notify(signal, item, descriptor) {
+  notify(signal, signaler, value, descriptor) {
+    // If item isn't specified someone might just be triggering a signal themselves manually. So
+    // we try to figure out what the property is ourselves.
+    if (!signaler) {
+      value = this[signal];
+      signaler = this;
+    }
+
     // Notify all view objects through all injectors
     this._modelWatchers.forEach(mi => {
-      mi.notify(this, signal, item, descriptor);
+      mi.notify(this, signal, signaler, value, descriptor);
     });
 
     this.watchers.forEach(handler => {
-      handler(signal, item, descriptor);
+      handler(signal, signaler, value, descriptor);
     });
-
-    // Continue up the parent tree, notifying as we go.
-    if (this.parentModel) {
-      this.parentModel.notify(`${this.name}.${signal}`, item, descriptor);
-    }
   }
 
   /**
@@ -158,6 +162,18 @@ class Model extends RingaObject {
     if (ix !== -1) {
       this.watchers.splice(ix, 1);
     }
+  }
+
+  getDescriptorFor(propertyName) {
+    if (this.propertyOptions[propertyName].descriptor) {
+      if (typeof this.propertyOptions[propertyName].descriptor === 'function') {
+        return this.propertyOptions[propertyName].descriptor(value);
+      }
+
+      return this.propertyOptions[propertyName].descriptor;
+    }
+
+    return undefined;
   }
 
   /**
@@ -194,33 +210,38 @@ class Model extends RingaObject {
       return this[subScriptName];
     };
 
+    //-----------------------------------
+    // defaultSet
+    //-----------------------------------
     let defaultSet = function(value) {
-      if (this[subScriptName] === value) {
+      const oldValue = this[subScriptName];
+
+      if (oldValue === value) {
         return;
       }
 
-      // Clear old parentModel if it was set
-      if (this[subScriptName] instanceof Model && this[subScriptName].parentModel === this) {
-        this[subScriptName].parentModel = undefined;
-      }
-
-      if (value && value instanceof Model) {
-        value.parentModel = this;
+      // Clear old child model
+      if (oldValue instanceof Model && oldValue.parentModel === this) {
+        this.removeModelChild(oldValue);
       }
 
       this[subScriptName] = value;
 
-      let descriptor;
-
-      if (this.propertyOptions[name].descriptor) {
-        if (typeof this.propertyOptions[name].descriptor === 'function') {
-          descriptor = this.propertyOptions[name].descriptor(value);
-        }
-
-        descriptor = this.propertyOptions[name].descriptor;
+      // Update new child model
+      if (value && value instanceof Model) {
+        this.addModelChild(name, value);
       }
 
-      this.notify(name, this, descriptor);
+      let onChange = this.propertyOptions[name].onChange;
+      let skipNotify = false;
+
+      if (onChange) {
+        skipNotify = onChange(oldValue, value);
+      }
+
+      if (!skipNotify) {
+        this.notify(name, this, value, this.getDescriptorFor(name));
+      }
     };
 
     Object.defineProperty(this, name, {
@@ -250,6 +271,58 @@ class Model extends RingaObject {
   }
 
   /**
+   * Adds a child model, setting up the appropriate tree for watch/notify notifications.
+   *
+   * @param propertyName The propertyName that this child belongs to.
+   * @param child The child Model instance.
+   */
+  addModelChild(propertyName, child) {
+    if (this.childIdToRef[child.id]) {
+      this.removeModelChild(child);
+    }
+
+    if (this.propertyOptions[propertyName].setParentModel !== false) {
+      if (child.parentModel && child.parentModel !== this) {
+        throw new Error(`Model::addModelChild(): ${child.name} already has a parentModel!`);
+      }
+
+      child.parentModel = this;
+    }
+
+    if (this.propertyOptions[propertyName].autoWatch !== false) {
+      let watchHandler = (function (propertyName, signal, item, value, descriptor) {
+        this.notify(`${propertyName}.${signal}`, item, value, descriptor);
+      }).bind(this, propertyName);
+
+      child.watch(watchHandler);
+
+      this.childIdToRef[child.id] = {
+        watchHandler,
+        propertyName
+      };
+    }
+  }
+
+  /**
+   * Remove a model child from the Model tree, safely removing the watcher.
+   *
+   * @param child The Model child.
+   */
+  removeModelChild(child) {
+    let ref = this.childIdToRef[child.id];
+
+    if (this.propertyOptions[ref.propertyName].setParentModel !== false) {
+      child.parentModel = undefined;
+    }
+
+    if (this.propertyOptions[ref.propertyName].autoWatch !== false) {
+      child.unwatch(ref.watchHandler);
+
+      delete this.childIdToRef[child.id];
+    }
+  }
+
+  /**
    * Just like addProperty, except explicitly sets the index option to true.
    *
    * @param name The name of the property. By default, a "private" property with a prefixed underscore is created to hold the data.
@@ -269,26 +342,30 @@ class Model extends RingaObject {
    *
    * @param parentModel Used to set the parentModel property when doing a clone.
    */
-  clone(parentModel = undefined) {
+  clone() {
     let newInstance = new (this.constructor)(this.name);
 
-    if (parentModel) {
-      newInstance.parentModel = parentModel;
-    }
+    newInstance.propertyOptions = this.propertyOptions;
 
-    let _clone = (obj) => {
+    let _clone = (propName, obj) => {
       if (obj instanceof Array) {
-        return obj.map(_clone);
+        return obj.map(_clone.bind(undefined, propName));
       } else if (obj instanceof Model) {
         // Make sure we set the parentModel, which is our newInstance!
-        return obj.clone(newInstance);
+        let childModel = obj.clone();
+
+        if (childModel instanceof Model) {
+          newInstance.addModelChild(propName, childModel);
+        }
+
+        return childModel;
       } else if (typeof obj === 'object' && obj.hasOwnProperty('clone')) {
         return obj.clone(newInstance);
       } else if (typeof obj === 'object') {
         let newObj = {};
         for (let key in obj) {
           if (obj.hasOwnProperty(key)) {
-            newObj[key] = _clone(obj[key]);
+            newObj[key] = _clone(propName, obj[key]);
           }
         }
         return newObj;
@@ -303,7 +380,7 @@ class Model extends RingaObject {
       if (this.propertyOptions[propName].clone) {
         newObj = this.propertyOptions[propName].clone(this[propName]);
       } else {
-        newObj = _clone(this[propName]);
+        newObj = _clone(propName, this[propName]);
       }
 
       newInstance[propName] = newObj;
@@ -311,6 +388,7 @@ class Model extends RingaObject {
 
     return newInstance;
   }
+
 
   /**
    * Uses a trie-search to (optionally recursively) index every property that has index set to true (or was added with addIndexedProperty)

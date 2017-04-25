@@ -8,11 +8,12 @@ import Ringa, {__hardReset} from '../src/index';
 import Model from '../src/Model';
 
 describe('Model', () => {
-  let model, childModel, watcher;
+  let model, childModel, childModel2, watcher;
 
   beforeEach(() => {
     model = new Model();
     childModel = new Model();
+    childModel2 = new Model('grandchildmodel');
 
     watcher = new Ringa.ModelWatcher('modelWatcher');
 
@@ -60,8 +61,8 @@ describe('Model', () => {
       model.addProperty('myProp', 'default');
 
       let handler = (arg) => {
-        expect(arg[0].model).toEqual(model);
-        expect(arg[0].value).toEqual('myPropVal');
+        expect(arg[0].watchedModel).toEqual(model);
+        expect(arg[0].watchedValue).toEqual('myPropVal');
         done();
       };
 
@@ -145,9 +146,9 @@ describe('Model', () => {
     });
 
     //------------------------------------------------
-    // should automatically set parentModel
+    // should automatically set/reset parentModel (1/x)
     //------------------------------------------------
-    it('should automatically set parentModel', (done) => {
+    it('should automatically set/reset parentModel (1/x)', (done) => {
       model = new Model();
 
       let childModel = new Model();
@@ -160,9 +161,9 @@ describe('Model', () => {
     });
 
     //------------------------------------------------
-    // should automatically clear parentModel
+    // should automatically set/reset parentModel (2/x)
     //------------------------------------------------
-    it('should automatically set parentModel', (done) => {
+    it('should automatically set/reset parentModel (2/x)', (done) => {
       model = new Model();
 
       let childModel = new Model();
@@ -587,6 +588,167 @@ describe('Model', () => {
       expect(trieSearch.get('1234567')[0]).toBe(childModel);
       expect(trieSearch.get('1234567')[1]).toBe(model);
       expect(trieSearch.get('12345678').length).toBe(0);
+    });
+
+    //----------------------------------------
+    // should properly watch and notify (1/x)
+    //----------------------------------------
+    it('should properly watch and notify (1/x)', (done) => {
+      model.addProperty('value', 123);
+
+      model.watch((signal, item, value, descriptor) => {
+        expect(signal).toBe('value');
+        expect(item).toBe(model);
+        expect(value).toBe(456);
+        expect(descriptor).toBe(undefined);
+        done();
+      });
+
+      model.value = 456;
+    }, 25);
+
+    //----------------------------------------
+    // should properly watch and notify (2/x)
+    //----------------------------------------
+    it('should properly watch and notify (2/x)', (done) => {
+      model.addProperty('child', childModel);
+
+      childModel.addProperty('value', 123);
+
+      model.watch((signal, item, value, descriptor) => {
+        expect(signal).toBe('child.value');
+        expect(item).toBe(childModel);
+        expect(value).toBe(456);
+        expect(descriptor).toBe(undefined);
+        done();
+      });
+
+      childModel.value = 456;
+    });
+
+    //----------------------------------------
+    // should properly watch and notify (3/x)
+    //----------------------------------------
+    it('should properly watch and notify (3/x)', (done) => {
+      model.addProperty('child', childModel);
+
+      childModel.addProperty('value', 123, {
+        descriptor: 'Value has changed!'
+      });
+
+      model.watch((signal, item, value, descriptor) => {
+        expect(descriptor).toBe('Value has changed!');
+        done();
+      });
+
+      childModel.value = 456;
+    });
+
+    //----------------------------------------
+    // should properly call addModelChild
+    //----------------------------------------
+    it('should properly call addModelChild', (done) => {
+      model.addModelChild = (propertyName, child) => {
+        expect(propertyName).toBe('value');
+        expect(child).toBe(childModel);
+        done();
+      };
+
+      model.addProperty('value', childModel);
+    });
+
+    //----------------------------------------
+    // should properly call addModelChild and setup watcher
+    //----------------------------------------
+    it('should properly call addModelChild and setup watcher', () => {
+      model.addProperty('value', childModel);
+
+      expect(model.childIdToRef[childModel.id]).not.toBe(undefined);
+    });
+
+    //----------------------------------------
+    // parent model should be notified on child model change
+    //----------------------------------------
+    it('parent model should be notified on child model change', (done) => {
+      childModel.addProperty('subvalue', '', {
+        descriptor: 'Well the subvalue has been changed, by joe.'
+      });
+
+      model.addProperty('child', childModel);
+
+      expect(model.childIdToRef[childModel.id]).not.toBe(undefined);
+
+      model.notify = (signal, item, value, descriptor) => {
+        expect(signal).toBe('child.subvalue');
+        expect(item).toBe(childModel);
+        expect(value).toBe(123);
+        expect(descriptor).toBe('Well the subvalue has been changed, by joe.');
+        done();
+      };
+
+      childModel.subvalue = 123;
+    });
+
+    //----------------------------------------
+    // parent model should be notified on child model change
+    //----------------------------------------
+    it('parent model should be notified on child model change', (done) => {
+      childModel.addProperty('grandchild');
+
+      model.addProperty('child', childModel);
+
+      childModel2.addProperty('subsubvalue', '', {
+        descriptor: 'Well the subvalue has been changed, by joe.'
+      });
+
+      childModel.grandchild = childModel2;
+
+      model.notify = (signal, item, value, descriptor) => {
+        expect(signal).toBe('child.grandchild.subsubvalue');
+        expect(item).toBe(childModel2);
+        expect(value).toBe(456);
+        expect(descriptor).toBe('Well the subvalue has been changed, by joe.');
+        done();
+      };
+
+      childModel2.subsubvalue = 456;
+    });
+
+    //----------------------------------------
+    // should provide an onChange option (1/x)
+    //----------------------------------------
+    it('should provide an onChange option (1/x)', (done) => {
+      model.addProperty('prop', 'some old value');
+
+      model.propertyOptions.prop.onChange = (oldValue, newValue) => {
+        expect(oldValue).toBe('some old value');
+        expect(newValue).toBe('some new value');
+        done();
+      };
+
+      model.prop = 'some new value';
+    }, 25);
+
+    //----------------------------------------
+    // should provide an onChange option (2/x)
+    //----------------------------------------
+    it('should provide an onChange option (2/x)', () => {
+      let count = 0;
+
+      // The initial set should trigger an onChange (first ++)
+      model.addProperty('prop', 'some old value', {
+        onChange: (oldValue, newValue) => {
+          count++;
+        }
+      });
+
+      // This is setting to the same value, so it is NOT a change
+      model.prop = 'some old value';
+
+      // This is setting to a new value, so ++
+      model.prop = 'some new value';
+
+      expect(count).toBe(2);
     });
   });
 });
