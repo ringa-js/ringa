@@ -1,10 +1,12 @@
 import RingaObject from './RingaObject';
 import TrieSearch from 'trie-search';
 
-window.Model_notifications = {
+window.$ModelNotifications = {
   watchers: 0,
   modelWatchers: 0
 };
+
+window.$ModelNameToConstructorMap = {};
 
 /**
  * Serialize a Ringa Model object to a POJO by iterating over properties recursively on any
@@ -71,6 +73,9 @@ class Model extends RingaObject {
     this._modelWatchers = [];
     this.watchers = [];
     this.childIdToRef = {};
+    this.$version = undefined; // Used when something is deserialized
+
+    window.$ModelNameToConstructorMap[this.constructor.name] = this.constructor;
   }
 
   //-----------------------------------
@@ -80,25 +85,35 @@ class Model extends RingaObject {
     return this.parentModel ? `${this.parentModel.idPath}.${this.id}` : this.id;
   }
 
+  set serializeId(value) {
+    this.id = value;
+  }
+
+  get serializeId() {
+    return this._id;
+  }
+
+  set serializeName(value) {
+    this.name = value;
+  }
+
+  get serializeName() {
+    return this._name;
+  }
+
   //-----------------------------------
   // Methods
   //-----------------------------------
   /**
-   * Deserializes this object from a POJO only updating properties added with addProperty.
-   *
-   * @param values
-   */
-  deserialize(values) {
-    this.properties.forEach(key => {
-      this[key] = values[key];
-    });
-  }
-
-  /**
    * Serialize this model object for each property
    */
   serialize() {
-    let pojo = {};
+    let pojo = {
+      $Model: this.constructor.name,
+      $version: this.constructor.version,
+      $name: this.serializeName,
+      $id: this.serializeId
+    };
 
     _serialize(this, pojo);
 
@@ -135,12 +150,12 @@ class Model extends RingaObject {
     // Notify all view objects through all injectors
     this._modelWatchers.forEach(mi => {
       mi.notify(this, signal, signaler, value, descriptor);
-      window.Model_notifications.modelWatchers++;
+      window.$ModelNotifications.modelWatchers++;
     });
 
     this.watchers.forEach(handler => {
       handler(signal, signaler, value, descriptor);
-      window.Model_notifications.watchers++;
+      window.$ModelNotifications.watchers++;
     });
   }
 
@@ -393,7 +408,6 @@ class Model extends RingaObject {
     return newInstance;
   }
 
-
   /**
    * Uses a trie-search to (optionally recursively) index every property that has index set to true (or was added with addIndexedProperty)
    *
@@ -430,5 +444,81 @@ class Model extends RingaObject {
     return trieSearch;
   }
 }
+
+Model.version = '0.0.0'; // This can be customized for serialization and deserialization
+
+Model.isDeserializable = function (pojo) {
+  if (!pojo.$Model) {
+    console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $Model property', pojo);
+    return false;
+  } else if (!window.$ModelNameToConstructorMap[pojo.$Model]) {
+    console.warn(`Model.isDeserializable: could not deserialize object because $Model property of '${pojo.$Model}' did not reference a valid model.`, pojo);
+    return false;
+  }
+
+  if (!pojo.$version) {
+    console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $version property', pojo);
+    return false;
+  }
+
+  return true;
+};
+
+Model.getModelClassByName = function (name) {
+  return window.$ModelNameToConstructorMap[name];
+};
+
+/**
+ * Deserializes this object from a POJO only updating properties added with addProperty.
+ *
+ * @param values
+ */
+Model.deserialize = function(pojo) {
+  if (!Model.isDeserializable(pojo)) {
+    return undefined;
+  }
+
+  let _deserializePOJOValue = (value) => {
+    if (value instanceof Array) {
+      return value.map(_deserializePOJOValue);
+    } else if (typeof value === 'object') {
+      if (value.hasOwnProperty('$Model')) {
+        return Model.getModelClassByName(value.$Model).deserialize(value);
+      }
+
+      return value;
+    }
+
+    return value;
+  };
+
+  const ModelClass = Model.getModelClassByName(pojo.$Model);
+
+  let newInstance;
+
+  // Is there a custom deserialize method?
+  if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
+    return ModelClass.deserialize(pojo);
+  } else {
+    newInstance = new (ModelClass)();
+  }
+
+  newInstance.deserializing = true;
+  newInstance.$version = pojo.$version;
+
+  newInstance.properties.forEach(key => {
+    if (pojo[key] && newInstance.propertyOptions[key].serialize !== false) {
+      newInstance[key] = _deserializePOJOValue(pojo[key]);
+    }
+  });
+
+  newInstance.deserializing = false;
+
+  if (newInstance.postDeserialize) {
+    newInstance.postDeserialize(pojo);
+  }
+
+  return newInstance;
+};
 
 export default Model;

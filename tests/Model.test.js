@@ -6,12 +6,17 @@ import TestUtils from 'react-addons-test-utils';
 import React from 'react';
 import Ringa, {__hardReset} from '../src/index';
 import Model from '../src/Model';
+import ModelDeserialize from './shared/ModelDeserialize';
+import ModelDeserialize2 from './shared/ModelDeserialize2';
 
 describe('Model', () => {
-  let model, childModel, childModel2, watcher;
+  let model, childModel, childModel2, watcher, modelDeserialize;
 
   beforeEach(() => {
     model = new Model();
+    modelDeserialize = new ModelDeserialize();
+    new ModelDeserialize2(); // Create one so that it builds the reference for deserialization.
+
     childModel = new Model();
     childModel2 = new Model('grandchildmodel');
 
@@ -31,7 +36,7 @@ describe('Model', () => {
     expect(model.id).toEqual('Model1');
   });
 
-  describe('addProperty', () => {
+  describe('properties', () => {
     //---------------------------------------------
     // should add property
     //---------------------------------------------
@@ -117,10 +122,34 @@ describe('Model', () => {
       done();
     });
 
+    //----------------------------------------
+    // should properly call addModelChild
+    //----------------------------------------
+    it('should properly call addModelChild', (done) => {
+      model.addModelChild = (propertyName, child) => {
+        expect(propertyName).toBe('value');
+        expect(child).toBe(childModel);
+        done();
+      };
+
+      model.addProperty('value', childModel);
+    });
+
+    //----------------------------------------
+    // should properly call addModelChild and setup watcher
+    //----------------------------------------
+    it('should properly call addModelChild and setup watcher', () => {
+      model.addProperty('value', childModel);
+
+      expect(model.childIdToRef[childModel.id]).not.toBe(undefined);
+    });
+  });
+
+  describe('constructor values', () => {
     //------------------------------------------------
-    // should allow properties set through constructor
+    // should accept a value passed in constructor 1/2
     //------------------------------------------------
-    it('should accept a custom getter', (done) => {
+    it('should accept a value passed in constructor 1/2', () => {
       model = new Model('someName', {
         myProp: 123456
       });
@@ -128,13 +157,12 @@ describe('Model', () => {
       model.addProperty('myProp', 'default');
 
       expect(model.myProp).toEqual(123456);
-      done();
     });
 
     //------------------------------------------------
-    // should allow properties set through constructor
+    // should accept a value passed in constructor 2/2
     //------------------------------------------------
-    it('should accept a custom getter', (done) => {
+    it('should accept a value passed in constructor 2/2', () => {
       model = new Model({
         myProp: 123456
       });
@@ -142,9 +170,10 @@ describe('Model', () => {
       model.addProperty('myProp', 'default');
 
       expect(model.myProp).toEqual(123456);
-      done();
     });
+  });
 
+  describe('tree', () => {
     //------------------------------------------------
     // should automatically set/reset parentModel (1/x)
     //------------------------------------------------
@@ -179,15 +208,22 @@ describe('Model', () => {
 
       done();
     });
+  });
 
+  describe('serialization', () => {
     //------------------------------------------------
     // should serialize properly (1/x)
     //------------------------------------------------
     it('should serialize properly (1/x)', () => {
       model = new Model();
+      model.id = 'kumquat';
       model.addProperty('someProperty', 'defaultValue');
 
       expect(model.serialize()).toEqual({
+        $Model: 'Model',
+        $version: '0.0.0',
+        $name: 'model',
+        $id: 'kumquat',
         someProperty: 'defaultValue'
       });
     });
@@ -197,10 +233,15 @@ describe('Model', () => {
     //------------------------------------------------
     it('should serialize properly (2/x)', () => {
       model = new Model();
+      model.id = 'kumquat';
       model.addProperty('someProperty', 'defaultValue');
       model.addProperty('someOtherProperty', {value: 1});
 
       expect(model.serialize()).toEqual({
+        $Model: 'Model',
+        $version: '0.0.0',
+        $name: 'model',
+        $id: 'kumquat',
         someProperty: 'defaultValue',
         someOtherProperty: {
           value: 1
@@ -213,8 +254,14 @@ describe('Model', () => {
     //------------------------------------------------
     it('should serialize properly (3/x)', () => {
       model = new Model();
+      model.id = 'kumquat';
 
-      expect(model.serialize()).toEqual({});
+      expect(model.serialize()).toEqual({
+        $Model: 'Model',
+        $version: '0.0.0',
+        $name: 'model',
+        $id: 'kumquat'
+      });
     });
 
     //------------------------------------------------
@@ -222,14 +269,23 @@ describe('Model', () => {
     //------------------------------------------------
     it('should serialize properly (4/x)', () => {
       model = new Model();
-
+      model.id = 'kumquat';
       let childModel = new Model();
+      childModel.id = 'rutabaga';
       childModel.addProperty('someProp', 8);
 
       model.addProperty('someModel', childModel);
 
       expect(model.serialize()).toEqual({
+        $Model: 'Model',
+        $version: '0.0.0',
+        $name: 'model',
+        $id: 'kumquat',
         someModel: {
+          $Model: 'Model',
+          $version: '0.0.0',
+          $name: 'model',
+          $id: 'rutabaga',
           someProp: 8
         }
       });
@@ -240,14 +296,24 @@ describe('Model', () => {
     //------------------------------------------------
     it('should serialize properly (5/x)', () => {
       model = new Model();
+      model.id = 'kumquat';
 
       let childModel = new Model();
       childModel.addProperty('someProp', 8);
+      childModel.id = 'rutabaga';
 
       model.addProperty('someModel', [childModel]);
 
       expect(model.serialize()).toEqual({
+        $Model: 'Model',
+        $version: '0.0.0',
+        $name: 'model',
+        $id: 'kumquat',
         someModel: [{
+          $Model: 'Model',
+          $version: '0.0.0',
+          $name: 'model',
+          $id: 'rutabaga',
           someProp: 8
         }]
       });
@@ -258,23 +324,42 @@ describe('Model', () => {
     //------------------------------------------------
     it('should serialize properly (6/x)', () => {
       model = new Model();
-
+      model.id = 'kumquat';
       let childModel = new Model();
+      childModel.id = 'rutabaga';
       childModel.addProperty('someProp', 8);
 
       model.addProperty('someModel', [childModel, childModel, childModel]);
 
       expect(model.serialize()).toEqual({
+        $Model: 'Model',
+        $version: '0.0.0',
+        $name: 'model',
+        $id: 'kumquat',
         someModel: [{
+          $Model: 'Model',
+          $version: '0.0.0',
+          $name: 'model',
+          $id: 'rutabaga',
           someProp: 8
-        },{
+        }, {
+          $Model: 'Model',
+          $version: '0.0.0',
+          $name: 'model',
+          $id: 'rutabaga',
           someProp: 8
-        },{
+        }, {
+          $Model: 'Model',
+          $version: '0.0.0',
+          $name: 'model',
+          $id: 'rutabaga',
           someProp: 8
         }]
       });
     });
+  });
 
+  describe('cloning', () => {
     //------------------------------------------------
     // should have a working clone method (1/x)
     //------------------------------------------------
@@ -447,7 +532,9 @@ describe('Model', () => {
       expect(clone.children[0].grandchild.parentModel.name).toBe(child1.name);
       expect(clone.children[1].grandchild.parentModel.name).toBe(child2.name);
     });
+  });
 
+  describe('indexing', () => {
     //------------------------------------------------
     // should have a working index() and addIndexedProperty() method (1/x)
     //------------------------------------------------
@@ -589,7 +676,9 @@ describe('Model', () => {
       expect(trieSearch.get('1234567')[1]).toBe(model);
       expect(trieSearch.get('12345678').length).toBe(0);
     });
+  });
 
+  describe('watch/notify', () => {
     //----------------------------------------
     // should properly watch and notify (1/x)
     //----------------------------------------
@@ -645,28 +734,6 @@ describe('Model', () => {
     });
 
     //----------------------------------------
-    // should properly call addModelChild
-    //----------------------------------------
-    it('should properly call addModelChild', (done) => {
-      model.addModelChild = (propertyName, child) => {
-        expect(propertyName).toBe('value');
-        expect(child).toBe(childModel);
-        done();
-      };
-
-      model.addProperty('value', childModel);
-    });
-
-    //----------------------------------------
-    // should properly call addModelChild and setup watcher
-    //----------------------------------------
-    it('should properly call addModelChild and setup watcher', () => {
-      model.addProperty('value', childModel);
-
-      expect(model.childIdToRef[childModel.id]).not.toBe(undefined);
-    });
-
-    //----------------------------------------
     // parent model should be notified on child model change
     //----------------------------------------
     it('parent model should be notified on child model change', (done) => {
@@ -713,7 +780,9 @@ describe('Model', () => {
 
       childModel2.subsubvalue = 456;
     });
+  });
 
+  describe('onChange', () => {
     //----------------------------------------
     // should provide an onChange option (1/x)
     //----------------------------------------
@@ -749,6 +818,146 @@ describe('Model', () => {
       model.prop = 'some new value';
 
       expect(count).toBe(2);
+    });
+  });
+
+  describe('properties', () => {
+    //----------------------------------------
+    // should have a working deserialize method (1/x)
+    //----------------------------------------
+    it('should have a working deserialize method (1/x)', () => {
+      let model = Model.deserialize({
+        $Model: 'Model',
+        $version: '0.0.0'
+      });
+
+      expect(model.constructor).toBe(Model);
+      expect(model.constructor.name).toBe('Model');
+      expect(model.$version).toBe('0.0.0');
+    });
+
+    //----------------------------------------
+    // should have a working deserialize method (2/x)
+    //----------------------------------------
+    it('should have a working deserialize method (2/x)', () => {
+      let model = Model.deserialize({
+        $Model: 'ModelDeserialize',
+        $version: '0.0.0'
+      });
+
+      expect(model).not.toBe(undefined);
+      expect(model.constructor).toBe(ModelDeserialize);
+      expect(model.constructor.name).toBe('ModelDeserialize');
+      expect(model.$version).toBe('0.0.0');
+    });
+
+    //----------------------------------------
+    // should have a working deserialize method (3/x)
+    //----------------------------------------
+    it('should have a working deserialize method (3/x)', () => {
+      let model = Model.deserialize({
+        $Model: 'ModelDeserialize',
+        $version: '0.0.0',
+        prop1: 'hello world',
+        prop2: 1,
+        prop3: [1, 2, 3],
+        prop4: {
+          someObject: {
+            yay: 'string'
+          }
+        }
+      });
+
+      expect(model.prop1).toBe('hello world');
+      expect(model.prop2).toBe(1);
+      expect(model.prop3).toEqual([1, 2, 3]);
+      expect(model.prop4).toEqual({
+        someObject: {
+          yay: 'string'
+        }
+      });
+    });
+
+    //----------------------------------------
+    // should have a working deserialize method (4/x)
+    //----------------------------------------
+    it('should have a working deserialize method (4/x)', () => {
+      let model = Model.deserialize({
+        $Model: 'ModelDeserialize',
+        $version: '0.0.0',
+        child: {
+          $Model: 'Model',
+          $version: '0.0.0'
+        }
+      });
+
+      expect(model.child).not.toBe(undefined);
+      expect(model.child).not.toBe(model);
+      expect(model.child.constructor).toBe(Model);
+    });
+
+    //----------------------------------------
+    // should have a working deserialize method (5/x)
+    //----------------------------------------
+    it('should have a working deserialize method (5/x)', () => {
+      let model = Model.deserialize({
+        $Model: 'ModelDeserialize',
+        $version: '0.0.0',
+        child: {
+          $Model: 'ModelDeserialize',
+          $version: '0.0.0',
+          prop1: 1,
+          prop2: 'hello world',
+          prop3: {
+            value: 'yay'
+          },
+          prop4: [3, 2, 1]
+        }
+      });
+
+      expect(model.child.prop1).toBe(1);
+      expect(model.child.prop2).toBe('hello world');
+      expect(model.child.prop3).toEqual({
+        value: 'yay'
+      });
+      expect(model.child.prop4).toEqual([3, 2, 1]);
+    });
+
+    //----------------------------------------
+    // should have a working deserialize method (6/x)
+    //----------------------------------------
+    it('should have a working deserialize method (6/x)', () => {
+      let childPojo = {
+        $Model: 'ModelDeserialize',
+        $version: '0.0.0',
+        prop1: 1,
+        prop2: 'hello world',
+        prop3: {
+          value: 'yay'
+        },
+        prop4: [3, 2, 'hello']
+      };
+
+      let model = Model.deserialize({
+        $Model: 'ModelDeserialize2',
+        $version: '0.0.0',
+        children: [childPojo, childPojo, childPojo, 4567]
+      });
+
+      expect(model.children.length).toBe(4);
+      expect(model.children[0].constructor).toBe(ModelDeserialize);
+      expect(model.children[1].constructor).toBe(ModelDeserialize);
+      expect(model.children[2].constructor).toBe(ModelDeserialize);
+      expect(model.children[3]).toBe(4567);
+
+      for (var i = 0; i < 3; i++) {
+        expect(model.children[i].prop1).toBe(1);
+        expect(model.children[i].prop2).toBe('hello world');
+        expect(model.children[i].prop3).toEqual({
+          value: 'yay'
+        });
+        expect(model.children[i].prop4).toEqual([3, 2, 'hello']);
+      }
     });
   });
 });

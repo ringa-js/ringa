@@ -70,6 +70,10 @@ export default class RingaObject {
     return this._id;
   }
 
+  set name(value) {
+    this._name = value;
+  }
+
   get name() {
     return this._name;
   }

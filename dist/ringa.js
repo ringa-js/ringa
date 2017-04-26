@@ -551,6 +551,9 @@ var RingaObject = function () {
     }
   }, {
     key: 'name',
+    set: function set(value) {
+      this._name = value;
+    },
     get: function get() {
       return this._name;
     }
@@ -1901,10 +1904,12 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-window.Model_notifications = {
+window.$ModelNotifications = {
   watchers: 0,
   modelWatchers: 0
 };
+
+window.$ModelNameToConstructorMap = {};
 
 /**
  * Serialize a Ringa Model object to a POJO by iterating over properties recursively on any
@@ -1978,6 +1983,9 @@ var Model = function (_RingaObject) {
     _this._modelWatchers = [];
     _this.watchers = [];
     _this.childIdToRef = {};
+    _this.$version = undefined; // Used when something is deserialized
+
+    window.$ModelNameToConstructorMap[_this.constructor.name] = _this.constructor;
     return _this;
   }
 
@@ -1987,33 +1995,22 @@ var Model = function (_RingaObject) {
 
 
   _createClass(Model, [{
-    key: 'deserialize',
+    key: 'serialize',
 
 
     //-----------------------------------
     // Methods
     //-----------------------------------
     /**
-     * Deserializes this object from a POJO only updating properties added with addProperty.
-     *
-     * @param values
-     */
-    value: function deserialize(values) {
-      var _this2 = this;
-
-      this.properties.forEach(function (key) {
-        _this2[key] = values[key];
-      });
-    }
-
-    /**
      * Serialize this model object for each property
      */
-
-  }, {
-    key: 'serialize',
     value: function serialize() {
-      var pojo = {};
+      var pojo = {
+        $Model: this.constructor.name,
+        $version: this.constructor.version,
+        $name: this.serializeName,
+        $id: this.serializeId
+      };
 
       _serialize(this, pojo);
 
@@ -2045,7 +2042,7 @@ var Model = function (_RingaObject) {
   }, {
     key: 'notify',
     value: function notify(signal, signaler, value, descriptor) {
-      var _this3 = this;
+      var _this2 = this;
 
       // If item isn't specified someone might just be triggering a signal themselves manually. So
       // we try to figure out what the property is ourselves.
@@ -2057,13 +2054,13 @@ var Model = function (_RingaObject) {
 
       // Notify all view objects through all injectors
       this._modelWatchers.forEach(function (mi) {
-        mi.notify(_this3, signal, signaler, value, descriptor);
-        window.Model_notifications.modelWatchers++;
+        mi.notify(_this2, signal, signaler, value, descriptor);
+        window.$ModelNotifications.modelWatchers++;
       });
 
       this.watchers.forEach(function (handler) {
         handler(signal, signaler, value, descriptor);
-        window.Model_notifications.watchers++;
+        window.$ModelNotifications.watchers++;
       });
     }
 
@@ -2296,7 +2293,7 @@ var Model = function (_RingaObject) {
   }, {
     key: 'clone',
     value: function clone() {
-      var _this4 = this;
+      var _this3 = this;
 
       var newInstance = new this.constructor(this.name);
 
@@ -2332,10 +2329,10 @@ var Model = function (_RingaObject) {
       this.properties.forEach(function (propName) {
         var newObj = void 0;
 
-        if (_this4.propertyOptions[propName].clone) {
-          newObj = _this4.propertyOptions[propName].clone(_this4[propName]);
+        if (_this3.propertyOptions[propName].clone) {
+          newObj = _this3.propertyOptions[propName].clone(_this3[propName]);
         } else {
-          newObj = _clone(propName, _this4[propName]);
+          newObj = _clone(propName, _this3[propName]);
         }
 
         newInstance[propName] = newObj;
@@ -2355,7 +2352,7 @@ var Model = function (_RingaObject) {
     value: function index() {
       var recurse = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-      var _this5 = this;
+      var _this4 = this;
 
       var trieSearchOptions = arguments[1];
       var trieSearch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
@@ -2382,7 +2379,7 @@ var Model = function (_RingaObject) {
       };
 
       this.indexProperties.forEach(function (prop) {
-        return _add(prop, _this5[prop]);
+        return _add(prop, _this4[prop]);
       });
 
       if (nonRecurseProperties.length) {
@@ -2396,10 +2393,102 @@ var Model = function (_RingaObject) {
     get: function get() {
       return this.parentModel ? this.parentModel.idPath + '.' + this.id : this.id;
     }
+  }, {
+    key: 'serializeId',
+    set: function set(value) {
+      this.id = value;
+    },
+    get: function get() {
+      return this._id;
+    }
+  }, {
+    key: 'serializeName',
+    set: function set(value) {
+      this.name = value;
+    },
+    get: function get() {
+      return this._name;
+    }
   }]);
 
   return Model;
 }(_RingaObject3.default);
+
+Model.version = '0.0.0'; // This can be customized for serialization and deserialization
+
+Model.isDeserializable = function (pojo) {
+  if (!pojo.$Model) {
+    console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $Model property', pojo);
+    return false;
+  } else if (!window.$ModelNameToConstructorMap[pojo.$Model]) {
+    console.warn('Model.isDeserializable: could not deserialize object because $Model property of \'' + pojo.$Model + '\' did not reference a valid model.', pojo);
+    return false;
+  }
+
+  if (!pojo.$version) {
+    console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $version property', pojo);
+    return false;
+  }
+
+  return true;
+};
+
+Model.getModelClassByName = function (name) {
+  return window.$ModelNameToConstructorMap[name];
+};
+
+/**
+ * Deserializes this object from a POJO only updating properties added with addProperty.
+ *
+ * @param values
+ */
+Model.deserialize = function (pojo) {
+  if (!Model.isDeserializable(pojo)) {
+    return undefined;
+  }
+
+  var _deserializePOJOValue = function _deserializePOJOValue(value) {
+    if (value instanceof Array) {
+      return value.map(_deserializePOJOValue);
+    } else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
+      if (value.hasOwnProperty('$Model')) {
+        return Model.getModelClassByName(value.$Model).deserialize(value);
+      }
+
+      return value;
+    }
+
+    return value;
+  };
+
+  var ModelClass = Model.getModelClassByName(pojo.$Model);
+
+  var newInstance = void 0;
+
+  // Is there a custom deserialize method?
+  if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
+    return ModelClass.deserialize(pojo);
+  } else {
+    newInstance = new ModelClass();
+  }
+
+  newInstance.deserializing = true;
+  newInstance.$version = pojo.$version;
+
+  newInstance.properties.forEach(function (key) {
+    if (pojo[key] && newInstance.propertyOptions[key].serialize !== false) {
+      newInstance[key] = _deserializePOJOValue(pojo[key]);
+    }
+  });
+
+  newInstance.deserializing = false;
+
+  if (newInstance.postDeserialize) {
+    newInstance.postDeserialize(pojo);
+  }
+
+  return newInstance;
+};
 
 exports.default = Model;
 
