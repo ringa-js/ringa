@@ -2,7 +2,7 @@
 
 window.__DEV__ = true;
 
-import TestUtils from 'react-addons-test-utils';
+import TestUtils from 'react-dom/test-utils';
 import React from 'react';
 import Ringa, {__hardReset, Model} from '../src/index';
 import ModelSimple from './shared/ModelSimple';

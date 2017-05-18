@@ -16,9 +16,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	function __webpack_require__(moduleId) {
 /******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-/******/
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
@@ -1927,19 +1927,13 @@ var _serialize = function _serialize(model, pojo) {
     var obj = model[key];
 
     if (obj instanceof Array) {
-      (function () {
-        var newArr = [];
+      var newArr = [];
 
-        obj.forEach(function (item) {
-          if (item instanceof Model) {
-            newArr.push(item.serialize());
-          } else {
-            newArr.push(item);
-          }
-        });
+      obj.forEach(function (item) {
+        newArr.push(item instanceof Model ? item.serialize() : item);
+      });
 
-        pojo[key] = newArr;
-      })();
+      pojo[key] = newArr;
     } else if (obj instanceof Model) {
       pojo[key] = obj.serialize();
     } else {
@@ -2173,6 +2167,10 @@ var Model = function (_RingaObject) {
 
         if (onChange) {
           skipNotify = onChange(oldValue, value);
+        }
+
+        if (this.propertyChange) {
+          this.propertyChange(subScriptName, oldValue, value);
         }
 
         if (!skipNotify) {
@@ -3123,21 +3121,19 @@ var Controller = function (_RingaObject) {
 
       var watchers = this.eventTypeToWatchers[eventType];
       if (watchers && watchers.length) {
-        (function () {
-          var executor = {
-            controller: _this3,
-            toString: function toString() {
-              return 'Controller::watch() for ' + eventType;
-            }
-          };
+        var executor = {
+          controller: this,
+          toString: function toString() {
+            return 'Controller::watch() for ' + eventType;
+          }
+        };
 
-          watchers.forEach(function (watcher) {
-            var argNames = _this3.watcherToArgNames[watcher];
-            var args = (0, _executors.buildArgumentsFromRingaEvent)(executor, argNames, ringaEvent);
+        watchers.forEach(function (watcher) {
+          var argNames = _this3.watcherToArgNames[watcher];
+          var args = (0, _executors.buildArgumentsFromRingaEvent)(executor, argNames, ringaEvent);
 
-            watcher.apply(undefined, args);
-          });
-        })();
+          watcher.apply(undefined, args);
+        });
       }
     }
   }, {
@@ -4537,57 +4533,53 @@ var ForEachExecutor = function (_ExecutorAbstract) {
       });
 
       if (this.sequential) {
-        (function () {
-          var ix = 0;
+        var ix = 0;
 
-          var _next = function _next() {
-            if (ix === _this2.executors.length) {
-              return _this2.done();
-            }
+        var _next = function _next() {
+          if (ix === _this2.executors.length) {
+            return _this2.done();
+          }
 
-            var executor = _this2.executors[ix];
-            executor._execute(function () {
-              _this2.killChildExecutor(executor);
-              setTimeout(_next, 0);
-            }, function (error) {
-              var kill = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-              _this2.killChildExecutor(executor);
-              _this2.fail(error, kill);
-
-              if (!kill) {
-                _next();
-              }
-            });
-
-            ix++;
-          };
-
-          _next();
-        })();
-      } else {
-        (function () {
-          var count = _this2.executors.length;
-
-          var _fin = function _fin() {
-            count--;
-            if (count === 0) {
-              _this2.done();
-            }
-          };
-
-          var _fail = function _fail(error) {
+          var executor = _this2.executors[ix];
+          executor._execute(function () {
+            _this2.killChildExecutor(executor);
+            setTimeout(_next, 0);
+          }, function (error) {
             var kill = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+            _this2.killChildExecutor(executor);
             _this2.fail(error, kill);
 
-            _fin();
-          };
-
-          _this2.executors.forEach(function (executor) {
-            executor._execute(_fin, _fail);
+            if (!kill) {
+              _next();
+            }
           });
-        })();
+
+          ix++;
+        };
+
+        _next();
+      } else {
+        var count = this.executors.length;
+
+        var _fin = function _fin() {
+          count--;
+          if (count === 0) {
+            _this2.done();
+          }
+        };
+
+        var _fail = function _fail(error) {
+          var kill = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+          _this2.fail(error, kill);
+
+          _fin();
+        };
+
+        this.executors.forEach(function (executor) {
+          executor._execute(_fin, _fail);
+        });
       }
     }
   }, {
@@ -4698,18 +4690,16 @@ var IifExecutor = function (_ExecutorAbstract) {
       var executor = !!conditionResult ? this.trueExecutor : this.falseExecutor;
 
       if (executor) {
-        (function () {
-          var executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
-          var executorInst = executorFactory.build(_this2.thread);
+        var executorFactory = (0, _type.wrapIfNotInstance)(executor, _ExecutorFactory2.default);
+        var executorInst = executorFactory.build(this.thread);
 
-          executorInst._execute(function () {
-            _this2.killChildExecutor(executorInst);
-            _this2.done();
-          }, function (event, kill) {
-            _this2.killChildExecutor(executorInst);
-            _this2.fail(event, kill);
-          });
-        })();
+        executorInst._execute(function () {
+          _this2.killChildExecutor(executorInst);
+          _this2.done();
+        }, function (event, kill) {
+          _this2.killChildExecutor(executorInst);
+          _this2.fail(event, kill);
+        });
       } else {
         this.done();
       }
@@ -5042,7 +5032,7 @@ function preserveCamelCase(str) {
 	var isLastLastCharUpper = false;
 
 	for (var i = 0; i < str.length; i++) {
-		var c = str.charAt(i);
+		var c = str[i];
 
 		if (isLastCharLower && /[a-zA-Z]/.test(c) && c.toUpperCase() === c) {
 			str = str.substr(0, i) + '-' + str.substr(i);
@@ -5065,12 +5055,16 @@ function preserveCamelCase(str) {
 	return str;
 }
 
-module.exports = function () {
-	var str = [].map.call(arguments, function (x) {
-		return x.trim();
-	}).filter(function (x) {
-		return x.length;
-	}).join('-');
+module.exports = function (str) {
+	if (arguments.length > 1) {
+		str = Array.from(arguments).map(function (x) {
+			return x.trim();
+		}).filter(function (x) {
+			return x.length;
+		}).join('-');
+	} else {
+		str = str.trim();
+	}
 
 	if (str.length === 0) {
 		return '';
@@ -5080,7 +5074,15 @@ module.exports = function () {
 		return str.toLowerCase();
 	}
 
-	str = preserveCamelCase(str);
+	if (/^[a-z0-9]+$/.test(str)) {
+		return str;
+	}
+
+	var hasUpperCase = str !== str.toLowerCase();
+
+	if (hasUpperCase) {
+		str = preserveCamelCase(str);
+	}
 
 	return str.replace(/^[_.\- ]+/, '').toLowerCase().replace(/[_.\- ]+(\w|$)/g, function (m, p1) {
 		return p1.toUpperCase();
@@ -6444,9 +6446,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     var stringProps = ['fileName', 'functionName', 'source'];
     var arrayProps = ['args'];
 
+    var props = booleanProps.concat(numericProps, stringProps, arrayProps);
+
     function StackFrame(obj) {
         if (obj instanceof Object) {
-            var props = booleanProps.concat(numericProps.concat(stringProps.concat(arrayProps)));
             for (var i = 0; i < props.length; i++) {
                 if (obj.hasOwnProperty(props[i]) && obj[props[i]] !== undefined) {
                     this['set' + _capitalize(props[i])](obj[props[i]]);

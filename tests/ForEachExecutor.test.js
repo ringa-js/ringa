@@ -3,7 +3,7 @@
 window.__DEV__ = true;
 window.__TEST__ = true;
 
-import TestUtils from 'react-addons-test-utils';
+import TestUtils from 'react-dom/test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Ringa, {forEach, forEachParallel, event, __hardReset} from '../src/index';

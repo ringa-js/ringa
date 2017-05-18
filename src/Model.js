@@ -27,11 +27,7 @@ let _serialize = function (model, pojo) {
       let newArr = [];
 
       obj.forEach(item => {
-        if (item instanceof Model) {
-          newArr.push(item.serialize());
-        } else {
-          newArr.push(item);
-        }
+        newArr.push(item instanceof Model ? item.serialize() : item);
       });
 
       pojo[key] = newArr;
@@ -256,6 +252,10 @@ class Model extends RingaObject {
 
       if (onChange) {
         skipNotify = onChange(oldValue, value);
+      }
+
+      if (this.propertyChange) {
+        this.propertyChange(subScriptName, oldValue, value);
       }
 
       if (!skipNotify) {
