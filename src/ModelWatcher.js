@@ -157,6 +157,22 @@ class ModelWatcher extends RingaObject {
   }
 
   /**
+   * Remove a model from being watched.
+   *
+   * @param model
+   */
+  removeModel(model) {
+    let ix = this.models.indexOf(model);
+
+    if (ix !== -1) {
+      this.models.splice(ix, 1);
+    }
+
+    delete this.nameToModel[model.name];
+    delete this.idToModel[model.id];
+  }
+
+  /**
    * See if a Model exists in this ModelWatcher and find a property on it (optional).
    *
    * @param classOrIdOrName A Class that extends Ringa.Model or an id or a name to lookup.

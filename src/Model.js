@@ -160,7 +160,7 @@ class Model extends RingaObject {
    *
    * @param handler The function to call when a notify signal is sent.
    */
-  watch(handler) {
+  watch(handler, signals) {
     if (this.watchers.indexOf(handler) === -1) {
       this.watchers.push(handler);
     }

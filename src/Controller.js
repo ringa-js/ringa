@@ -125,6 +125,17 @@ class Controller extends RingaObject {
   }
 
   /**
+   * Remove a model that was previously added.
+   *
+   * @param model The model to be removed.
+   */
+  removeModel(model) {
+    this.modelWatcher.removeModel(model, injectionId);
+
+    delete this.injections[injectionId || model.id];
+  }
+
+  /**
    * Called when there is safely an event bus to attach events to. This is where you could redispatch certain initialization
    * events.
    */

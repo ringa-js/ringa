@@ -5,6 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Ringa, {__hardReset, Bus} from '../src/index';
 import TestController from './shared/TestController';
+import Model from '../src/Model';
 
 const TEST_EVENT = 'testEvent';
 const TEST_EVENT2 = 'testEvent2';
@@ -266,6 +267,20 @@ describe('Controller', () => {
     expect(controller.hasListener('test')).toEqual(false);
 
     expect(ctf1).toEqual(ctf2);
+  });
+
+  it('should have a working addModel method', () => {
+    controller.bus = bus;
+
+    expect(controller.addModel).not.toEqual(undefined);
+
+    let m = new Model('whatever', {
+      id: 'helloWorld'
+    });
+
+    controller.addModel(m);
+
+    expect(controller.injections[m.id]).toBe(m);
   });
 
   it('should allow you to override the preInvokeHandler', (done) => {

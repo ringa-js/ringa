@@ -31,6 +31,23 @@ describe('ModelWatcher', () => {
   });
 
   //-----------------------------------
+  // Has a working removeModel() method (1)
+  //-----------------------------------
+  it('Has a working removeModel() method (1)', () => {
+    let callback = () => {};
+
+    expect(watcher.idToModel[model1.id]).not.toEqual(undefined);
+    expect(watcher.nameToModel[model1.name]).not.toEqual(undefined);
+    expect(watcher.models.indexOf(model1)).toEqual(0);
+
+    watcher.removeModel(model1);
+
+    expect(watcher.idToModel[model1.id]).toEqual(undefined);
+    expect(watcher.nameToModel[model1.name]).toEqual(undefined);
+    expect(watcher.models.indexOf(model1)).toEqual(-1);
+  });
+
+  //-----------------------------------
   // Has a working watch() method (1)
   //-----------------------------------
   it('Has a working watch() method (1)', () => {
