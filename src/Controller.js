@@ -452,7 +452,7 @@ class Controller extends RingaObject {
   }
 
   threadFailHandler(thread, error, kill) {
-    if (this.options.consoleLogFails) {
+    if (!this.options || this.options.consoleLogFails) {
       console.error(error, `In thread ${thread ? thread.toString() : ''}`);
     }
 
