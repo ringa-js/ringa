@@ -127,6 +127,10 @@ class ModelWatcher extends RingaObject {
    * @param id A custom id to assign if you so desire.
    */
   addModel(model) {
+    if (!model) {
+      throw new Error(`ModelWatcher::addModel(): the provided model was undefined!`);
+    }
+
     if (!(model instanceof Model)) {
       throw new Error(`ModelWatcher::addModel(): the provided model ${model.constructor.name} was not a valid Ringa Model!`);
     }

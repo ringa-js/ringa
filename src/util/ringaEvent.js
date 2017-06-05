@@ -1,5 +1,5 @@
 
-export function mergeRingaEventDetails(ringaEvent, detail, warnOnOverwrite = true) {
+export function mergeRingaEventDetails(ringaEvent, detail, warnOnOverwrite = true, assignToRingEvent = true) {
   let nextDetail = Object.assign({}, detail); // Make sure we clone!!
   let prevDetail = ringaEvent.detail || {};
   
@@ -15,6 +15,8 @@ export function mergeRingaEventDetails(ringaEvent, detail, warnOnOverwrite = tru
       }
     }
   }
-  ringaEvent.detail = nextDetail;
+  if (assignToRingEvent) {
+    ringaEvent.detail = nextDetail;
+  }
   return nextDetail;
 };

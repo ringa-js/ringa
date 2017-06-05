@@ -447,17 +447,12 @@ class Model extends RingaObject {
 
 Model.version = '0.0.0'; // This can be customized for serialization and deserialization
 
-Model.isDeserializable = function (pojo) {
-  if (!pojo.$Model) {
+Model.isDeserializable = function (pojo, options = {}) {
+  if (!pojo.$Model && !options.modelMapper) {
     console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $Model property', pojo);
     return false;
-  } else if (!window.$ModelNameToConstructorMap[pojo.$Model]) {
+  } else if (pojo.$Model && !window.$ModelNameToConstructorMap[pojo.$Model]) {
     console.warn(`Model.isDeserializable: could not deserialize object because $Model property of '${pojo.$Model}' did not reference a valid model.`, pojo);
-    return false;
-  }
-
-  if (!pojo.$version) {
-    console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $version property', pojo);
     return false;
   }
 
@@ -473,35 +468,53 @@ Model.getModelClassByName = function (name) {
  *
  * @param values
  */
-Model.deserialize = function(pojo) {
-  if (!Model.isDeserializable(pojo)) {
+Model.deserialize = function(pojo, options = {}) {
+  if (!Model.isDeserializable(pojo, options)) {
     return undefined;
   }
+
+  let construct = function(ModelClass) {
+    // Is there a custom deserialize method?
+    if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
+      return ModelClass.deserialize(pojo, options);
+    }
+
+    return new (ModelClass)();
+  };
 
   let _deserializePOJOValue = (value) => {
     if (value instanceof Array) {
       return value.map(_deserializePOJOValue);
     } else if (typeof value === 'object') {
       if (value.hasOwnProperty('$Model')) {
-        return Model.getModelClassByName(value.$Model).deserialize(value);
-      }
+        return Model.getModelClassByName(value.$Model).deserialize(value, options);
+      } else if (options.modelMapper) {
+        let PossibleModel = options.modelMapper(pojo, options);
 
-      return value;
+        if (PossibleModel !== value) {
+          return PossibleModel.deserialize(value, options);
+        }
+
+        return PossibleModel;
+      }
     }
 
     return value;
   };
 
-  const ModelClass = Model.getModelClassByName(pojo.$Model);
+  let ModelClass;
 
-  let newInstance;
+  if (pojo.$Model) {
+    ModelClass = Model.getModelClassByName(pojo.$Model);
+  } else if (options.modelMapper) {
+    ModelClass = options.modelMapper(pojo);
 
-  // Is there a custom deserialize method?
-  if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
-    return ModelClass.deserialize(pojo);
-  } else {
-    newInstance = new (ModelClass)();
+    if (ModelClass === pojo) {
+      return ModelClass;
+    }
   }
+
+  let newInstance = construct(ModelClass);
 
   newInstance.deserializing = true;
   newInstance.$version = pojo.$version;

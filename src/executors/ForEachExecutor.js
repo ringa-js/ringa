@@ -67,8 +67,10 @@ class ForEachExecutor extends ExecutorAbstract {
 
     this.executors = array.map((item, ix) => {
       let executor = executorFactory.build(this.thread);
-      executor._injections = {};
-      executor._injections[this.property] = item;
+
+      executor._customInjections = executor._customInjections || {};
+      executor._customInjections[this.property] = item;
+
       return executor;
     });
 

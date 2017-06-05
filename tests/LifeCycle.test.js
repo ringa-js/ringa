@@ -111,8 +111,8 @@ describe('LifeCycle', () => {
   it('RingaEvent -> 1 Function, modify event', (done) => {
     let obj = {};
 
-    threadFactory.add((ringaEvent) => {
-      ringaEvent.detail.itsWorking = true;
+    threadFactory.add(($ringaEvent) => {
+      $ringaEvent.detail.itsWorking = true;
     });
 
     let ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
@@ -129,12 +129,12 @@ describe('LifeCycle', () => {
   it('RingaEvent -> 2 Functions, modify event', (done) => {
     let obj = {};
 
-    threadFactory.add((ringaEvent) => {
-      ringaEvent.detail.test1 = true;
+    threadFactory.add(($ringaEvent) => {
+      $ringaEvent.detail.test1 = true;
     });
 
-    threadFactory.add((ringaEvent) => {
-      ringaEvent.detail.test2 = true;
+    threadFactory.add(($ringaEvent) => {
+      $ringaEvent.detail.test2 = true;
     });
 
     let ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
@@ -153,21 +153,21 @@ describe('LifeCycle', () => {
     let ringaEvent2, ringaEvent;
     let obj = {}, obj2 = {};
 
-    threadFactory.add((ringaEvent) => {
-      ringaEvent.detail.test1 = true;
+    threadFactory.add(($ringaEvent) => {
+      $ringaEvent.detail.test1 = true;
       ringaEvent2 = Ringa.dispatch(TEST_EVENT2, obj2, domNode);
 
       ringaEvent2.addDoneListener(() => {
         expect(obj.test1).toEqual(true);
         expect(obj2.test2).toEqual(true);
-        expect(ringaEvent.detail.test1).toEqual(true);
+        expect($ringaEvent.detail.test1).toEqual(true);
         expect(ringaEvent2.detail.test2).toEqual(true);
         done();
       });
     });
 
-    threadFactory2.add((ringaEvent) => {
-      ringaEvent.detail.test2 = true;
+    threadFactory2.add(($ringaEvent) => {
+      $ringaEvent.detail.test2 = true;
     });
 
     ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
@@ -182,10 +182,10 @@ describe('LifeCycle', () => {
 
     threadFactory.add(TEST_EVENT2);
 
-    threadFactory2.add((ringaEvent) => {
-      ringaEvent.detail.test2 = true;
+    threadFactory2.add(($ringaEvent) => {
+      $ringaEvent.detail.test2 = true;
 
-      ringaEvent2 = ringaEvent;
+      ringaEvent2 = $ringaEvent;
     });
 
     ringaEvent = Ringa.dispatch(TEST_EVENT, obj, domNode);
@@ -207,13 +207,13 @@ describe('LifeCycle', () => {
     threadFactory.add(TEST_EVENT2);
     threadFactory.add(TEST_EVENT2);
 
-    threadFactory2.add((ringaEvent) => {
-      ringaEvent.detail.test = true;
+    threadFactory2.add(($ringaEvent) => {
+      $ringaEvent.detail.test = true;
 
       if (ringaEvent2) {
-        ringaEvent3 = ringaEvent;
+        ringaEvent3 = $ringaEvent;
       } else {
-        ringaEvent2 = ringaEvent;
+        ringaEvent2 = $ringaEvent;
       }
 
       count++;

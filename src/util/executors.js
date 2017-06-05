@@ -38,6 +38,10 @@ export const getInjections = function(ringaEvent, executor = undefined) {
         $lastPromiseError: ringaEvent.lastPromiseError
       };
 
+    if (executor._customInjections) {
+      injections = Object.assign(injections, executor._customInjections);
+    }
+
     // Merge only injections for the controller that is the current context for the executor.
     mergeControllerInjections(injections, executor.controller);
   } else {
@@ -74,6 +78,8 @@ export const getInjections = function(ringaEvent, executor = undefined) {
   events.reverse().forEach(event => {
     if (event.detail) {
       for (let key in event.detail) {
+        if (key === 'ringaEvent')
+          continue;
         injections[key] = event.detail[key];
       }
     }

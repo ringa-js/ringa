@@ -8,6 +8,10 @@ class RingaEventFactory {
   // Constructor
   //-----------------------------------
   constructor(eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true, event = undefined) {
+    if (!eventType) {
+      console.error('RingaEventFactory(): eventType is undefined! Detail is: ', detail);
+    }
+
     this.eventType = eventType;
     this.detailOrig = detail;
     this.domNode = domNode;
@@ -31,7 +35,7 @@ class RingaEventFactory {
       detail = this.detailOrig;
     }
 
-    let newDetail = mergeRingaEventDetails(executor.ringaEvent, detail, executor.controller.options.warnOnDetailOverwrite);
+    let newDetail = mergeRingaEventDetails(executor.ringaEvent, detail, executor.controller.options.warnOnDetailOverwrite, false);
 
     newDetail._executor = executor;
 
