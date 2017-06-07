@@ -167,6 +167,39 @@ class Model extends RingaObject {
   }
 
   /**
+   * Watch this model and wait for a condition to be a true, then call the handler.
+   *
+   * @param condition
+   * @param handler
+   * @param autoUnwatch
+   */
+  watchUntil(condition, handler, autoUnwatch = true) {
+    let fn = (signal, signaler, value, descriptor) => {
+      if (condition(this, signal, signaler, value, descriptor)) {
+        handler(this, signal, signaler, value, descriptor);
+
+        if (autoUnwatch) {
+          this.unwatch(fn);
+        }
+
+        return true;
+      }
+
+      return false;
+    };
+
+    if (condition(this)) {
+      handler(this);
+
+      if (autoUnwatch) {
+        return;
+      }
+    }
+
+    this.watch(fn);
+  }
+
+  /**
    * Unwatch from the specified handler
    *
    * @param handler
@@ -477,6 +510,12 @@ Model.deserialize = function(pojo, options = {}) {
     // Is there a custom deserialize method?
     if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
       return ModelClass.deserialize(pojo, options);
+    }
+
+    if (pojo.id) {
+      return new (ModelClass)({
+        id: pojo.id
+      });
     }
 
     return new (ModelClass)();

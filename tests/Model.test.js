@@ -678,107 +678,49 @@ describe('Model', () => {
     });
   });
 
-  describe('watch/notify', () => {
+  describe('watchUntil', () => {
     //----------------------------------------
-    // should properly watch and notify (1/x)
+    // should properly watch and notify on condition reached
     //----------------------------------------
-    it('should properly watch and notify (1/x)', (done) => {
+    it('should properly watch and notify on condition reached', (done) => {
       model.addProperty('value', 123);
 
-      model.watch((signal, item, value, descriptor) => {
+      model.watchUntil((_model) => {
+        expect(_model).toBe(_model);
+        return _model.value === 456;
+      },(_model, signal, item, value, descriptor) => {
         expect(signal).toBe('value');
         expect(item).toBe(model);
+        expect(model).toBe(_model);
         expect(value).toBe(456);
         expect(descriptor).toBe(undefined);
-        done();
       });
 
       model.value = 456;
+      model.value = 789;
+
+      done();
     }, 25);
 
     //----------------------------------------
-    // should properly watch and notify (2/x)
+    // should properly watch for the first change (1/x)
     //----------------------------------------
-    it('should properly watch and notify (2/x)', (done) => {
-      model.addProperty('child', childModel);
+    it('should not notify for invalid condition', () => {
+      let conditionMet = false;
 
-      childModel.addProperty('value', 123);
+      model.addProperty('value', 123);
 
-      model.watch((signal, item, value, descriptor) => {
-        expect(signal).toBe('child.value');
-        expect(item).toBe(childModel);
-        expect(value).toBe(456);
-        expect(descriptor).toBe(undefined);
-        done();
+      model.watchUntil(_model => _model.value === 456, () => {
+        conditionMet = true;
       });
 
-      childModel.value = 456;
-    });
+      expect(conditionMet).toEqual(false);
+      model.value = 789;
 
-    //----------------------------------------
-    // should properly watch and notify (3/x)
-    //----------------------------------------
-    it('should properly watch and notify (3/x)', (done) => {
-      model.addProperty('child', childModel);
+      expect(conditionMet).toEqual(false);
+      model.value = 456;
 
-      childModel.addProperty('value', 123, {
-        descriptor: 'Value has changed!'
-      });
-
-      model.watch((signal, item, value, descriptor) => {
-        expect(descriptor).toBe('Value has changed!');
-        done();
-      });
-
-      childModel.value = 456;
-    });
-
-    //----------------------------------------
-    // parent model should be notified on child model change
-    //----------------------------------------
-    it('parent model should be notified on child model change', (done) => {
-      childModel.addProperty('subvalue', '', {
-        descriptor: 'Well the subvalue has been changed, by joe.'
-      });
-
-      model.addProperty('child', childModel);
-
-      expect(model.childIdToRef[childModel.id]).not.toBe(undefined);
-
-      model.notify = (signal, item, value, descriptor) => {
-        expect(signal).toBe('child.subvalue');
-        expect(item).toBe(childModel);
-        expect(value).toBe(123);
-        expect(descriptor).toBe('Well the subvalue has been changed, by joe.');
-        done();
-      };
-
-      childModel.subvalue = 123;
-    });
-
-    //----------------------------------------
-    // parent model should be notified on child model change
-    //----------------------------------------
-    it('parent model should be notified on child model change', (done) => {
-      childModel.addProperty('grandchild');
-
-      model.addProperty('child', childModel);
-
-      childModel2.addProperty('subsubvalue', '', {
-        descriptor: 'Well the subvalue has been changed, by joe.'
-      });
-
-      childModel.grandchild = childModel2;
-
-      model.notify = (signal, item, value, descriptor) => {
-        expect(signal).toBe('child.grandchild.subsubvalue');
-        expect(item).toBe(childModel2);
-        expect(value).toBe(456);
-        expect(descriptor).toBe('Well the subvalue has been changed, by joe.');
-        done();
-      };
-
-      childModel2.subsubvalue = 456;
+      expect(conditionMet).toEqual(true);
     });
   });
 
