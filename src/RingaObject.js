@@ -39,6 +39,8 @@ export default class RingaObject {
     if (__DEV__) {
       ids.constructorNames[this.constructor.name] = this.constructor.name;
     }
+
+    this.warnOnDuplicateId = false;
   }
 
   //-----------------------------------
@@ -53,7 +55,7 @@ export default class RingaObject {
       throw new Error(`RingaObject::id: must be a string! Was ${JSON.stringify(value)}`);
     }
 
-    if (ids.map.get(value)) {
+    if (this.warnOnDuplicateId && ids.map.get(value)) {
       console.warn(`Duplicate Ringa id discovered: ${JSON.stringify(value)} of type '${this.constructor.name}'. Call RingaObject::destroy() to clear up the id.`);
     }
 

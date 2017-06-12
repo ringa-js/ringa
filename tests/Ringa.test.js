@@ -15,12 +15,17 @@ describe('Core', () => {
   // Should warn on duplicate id!
   //-----------------------------------
   it('Should warn on duplicate id!', (done) => {
-    console.warn = (value) => {
-      expect(value).toEqual(`Duplicate Ringa id discovered: \"testId\" of type \'RingaObject\'. Call RingaObject::destroy() to clear up the id.`);
-      done();
-    };
+    // Removing this test for now as we have discovered it is essential to be able to have some objects
+    // with duplicate id when coming from the database.
 
-    new Ringa.RingaObject('name', 'testId');
-    new Ringa.RingaObject('name', 'testId');
+    // console.warn = (value) => {
+    //   expect(value).toEqual(`Duplicate Ringa id discovered: \"testId\" of type \'RingaObject\'. Call RingaObject::destroy() to clear up the id.`);
+    //   done();
+    // };
+    //
+    // new Ringa.RingaObject('name', 'testId');
+    // new Ringa.RingaObject('name', 'testId');
+
+    done();
   }, 50);
 });

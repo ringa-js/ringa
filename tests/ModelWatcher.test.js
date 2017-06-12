@@ -261,6 +261,53 @@ describe('ModelWatcher', () => {
   }, 5);
 
   //-----------------------------------
+  // Watch with *
+  //-----------------------------------
+  it('Watch with * (1/2)', (done) => {
+    let count = 0;
+
+    model1.childModel = new Model();
+    model1.childModel.addProperty('property1', 0);
+    model1.childModel.addProperty('property2', 1);
+
+    watcher.watch(ModelSimple, 'childModel.*', (arg) => {
+      count++;
+    });
+
+    model1.childModel.property1 = 1;
+    model1.childModel.property2 = 'Whatever';
+
+    setTimeout(() => {
+      expect(count).toEqual(1);
+      done();
+    }, 0);
+  }, 5);
+
+  //-----------------------------------
+  // Watch with *
+  //-----------------------------------
+  it('Watch with * (2/2)', (done) => {
+    let count = 0;
+
+    let subModel = new Model();
+    subModel.addProperty('subProperty', 0);
+
+    model1.childModel = new Model();
+    model1.childModel.addProperty('property1', subModel);
+
+    watcher.watch(ModelSimple, 'childModel.*', (arg) => {
+      count++;
+    });
+
+    model1.childModel.property1.subProperty = 1;
+
+    setTimeout(() => {
+      expect(count).toEqual(1);
+      done();
+    }, 0);
+  }, 5);
+
+  //-----------------------------------
   // Watch multiple separate handlers (1)
   //-----------------------------------
   it('Watch multiple separate handlers (1)', (done) => {

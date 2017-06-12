@@ -108,7 +108,7 @@ class Model extends RingaObject {
       $Model: this.constructor.name,
       $version: this.constructor.version,
       $name: this.serializeName,
-      $id: this.serializeId
+      id: this.serializeId
     };
 
     _serialize(this, pojo);
@@ -160,7 +160,7 @@ class Model extends RingaObject {
    *
    * @param handler The function to call when a notify signal is sent.
    */
-  watch(handler, signals) {
+  watch(handler) {
     if (this.watchers.indexOf(handler) === -1) {
       this.watchers.push(handler);
     }

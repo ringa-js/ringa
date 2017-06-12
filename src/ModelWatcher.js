@@ -389,11 +389,21 @@ class ModelWatcher extends RingaObject {
           //             Let's say that 'prop' is our propertyPath, then this should trigger.
           // Scenario 2: Let's say we are watching for 'prop.value' (watchPathKey)
           //             Let's say that 'prop.value.key' is our propertyPath, then this should NOT trigger.
+          // Scenario 3: Let's say we are watching for 'prop.value.*' (watchPathkey)
+          //             Let's say that 'prop.value.key' is our propertyPath, then this should trigger.
 
           paths = pathAll(watchPathKey); // ['prop', 'prop.value']
 
-          if (paths.indexOf(propertyPath) !== -1) {
-            watcheesByPath[propertyPath].forEach(addWatchee);
+          if (watchPathKey.endsWith('*')) {
+            let globalPath = watchPathKey.substr(0, watchPathKey.length - 2);
+
+            if (propertyPath.startsWith(globalPath)) {
+              watcheesByPath[watchPathKey].forEach(addWatchee);
+            }
+          } else {
+            if (paths.indexOf(propertyPath) !== -1) {
+              watcheesByPath[propertyPath].forEach(addWatchee);
+            }
           }
         }
       }

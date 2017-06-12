@@ -223,7 +223,7 @@ describe('Model', () => {
         $Model: 'Model',
         $version: '0.0.0',
         $name: 'model',
-        $id: 'kumquat',
+        id: 'kumquat',
         someProperty: 'defaultValue'
       });
     });
@@ -241,7 +241,7 @@ describe('Model', () => {
         $Model: 'Model',
         $version: '0.0.0',
         $name: 'model',
-        $id: 'kumquat',
+        id: 'kumquat',
         someProperty: 'defaultValue',
         someOtherProperty: {
           value: 1
@@ -260,7 +260,7 @@ describe('Model', () => {
         $Model: 'Model',
         $version: '0.0.0',
         $name: 'model',
-        $id: 'kumquat'
+        id: 'kumquat'
       });
     });
 
@@ -280,12 +280,12 @@ describe('Model', () => {
         $Model: 'Model',
         $version: '0.0.0',
         $name: 'model',
-        $id: 'kumquat',
+        id: 'kumquat',
         someModel: {
           $Model: 'Model',
           $version: '0.0.0',
           $name: 'model',
-          $id: 'rutabaga',
+          id: 'rutabaga',
           someProp: 8
         }
       });
@@ -308,12 +308,12 @@ describe('Model', () => {
         $Model: 'Model',
         $version: '0.0.0',
         $name: 'model',
-        $id: 'kumquat',
+        id: 'kumquat',
         someModel: [{
           $Model: 'Model',
           $version: '0.0.0',
           $name: 'model',
-          $id: 'rutabaga',
+          id: 'rutabaga',
           someProp: 8
         }]
       });
@@ -335,24 +335,24 @@ describe('Model', () => {
         $Model: 'Model',
         $version: '0.0.0',
         $name: 'model',
-        $id: 'kumquat',
+        id: 'kumquat',
         someModel: [{
           $Model: 'Model',
           $version: '0.0.0',
           $name: 'model',
-          $id: 'rutabaga',
+          id: 'rutabaga',
           someProp: 8
         }, {
           $Model: 'Model',
           $version: '0.0.0',
           $name: 'model',
-          $id: 'rutabaga',
+          id: 'rutabaga',
           someProp: 8
         }, {
           $Model: 'Model',
           $version: '0.0.0',
           $name: 'model',
-          $id: 'rutabaga',
+          id: 'rutabaga',
           someProp: 8
         }]
       });

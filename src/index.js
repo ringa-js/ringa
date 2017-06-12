@@ -22,12 +22,12 @@ import {injectionInfo} from './util/executors';
 import {ids} from './RingaObject';
 import {executorCounts} from './ExecutorAbstract';
 
-export function dispatch (eventType, detail, bus = document) {
+export function dispatch (eventType, detail, bus = document, bubbles = true, cancellable = true, requireCatch = true) {
   if (isDOMNode(detail)) {
     bus = detail;
     detail = undefined;
   }
-  return new RingaEvent(eventType, detail).dispatch(bus);
+  return new RingaEvent(eventType, detail, bubbles, cancellable, undefined, requireCatch).dispatch(bus);
 }
 
 export function forEach(arrayProperty, property, executor) {
