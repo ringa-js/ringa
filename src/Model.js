@@ -17,10 +17,12 @@ window.$ModelNameToConstructorMap = {};
  * @returns {*|{}}
  * @private
  */
-let _serialize = function (model, pojo) {
+let _serialize = function (model, pojo, options) {
   pojo = pojo || {};
 
-  model.properties.forEach(key => {
+  let props = model.serializeProperties || model.properties;
+
+  props.forEach(key => {
     let obj = model[key];
 
     if (obj instanceof Array) {
@@ -32,7 +34,7 @@ let _serialize = function (model, pojo) {
 
       pojo[key] = newArr;
     } else if (obj instanceof Model) {
-      pojo[key] = obj.serialize();
+      pojo[key] = obj.serialize(options);
     } else {
       pojo[key] = model[key];
     }
@@ -103,15 +105,17 @@ class Model extends RingaObject {
   /**
    * Serialize this model object for each property
    */
-  serialize() {
-    let pojo = {
-      $Model: this.constructor.name,
-      $version: this.constructor.version,
-      $name: this.serializeName,
-      id: this.serializeId
-    };
+  serialize(options = {}) {
+    let pojo = !options.useRingaDefaults ? {
+        id: this.serializeId
+      } : {
+        $Model: this.constructor.name,
+        $version: this.constructor.version,
+        $name: this.serializeName,
+        id: this.serializeId
+      };
 
-    _serialize(this, pojo);
+    _serialize(this, pojo, options);
 
     return pojo;
   }
@@ -288,7 +292,7 @@ class Model extends RingaObject {
       }
 
       if (this.propertyChange) {
-        this.propertyChange(subScriptName, oldValue, value);
+        this.propertyChange(name, oldValue, value);
       }
 
       if (!skipNotify) {
@@ -481,12 +485,14 @@ class Model extends RingaObject {
 Model.version = '0.0.0'; // This can be customized for serialization and deserialization
 
 Model.isDeserializable = function (pojo, options = {}) {
-  if (!pojo.$Model && !options.modelMapper) {
-    console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $Model property or does not contain options.modelMapper', pojo);
-    return false;
-  } else if (pojo.$Model && !window.$ModelNameToConstructorMap[pojo.$Model]) {
-    console.warn(`Model.isDeserializable: could not deserialize object because $Model property of '${pojo.$Model}' did not reference a valid model.`, pojo);
-    return false;
+  if (!options.ignore$Model) {
+    if (!pojo.$Model && !options.modelMapper) {
+      console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $Model property or does not contain options.modelMapper', pojo);
+      return false;
+    } else if (pojo.$Model && !window.$ModelNameToConstructorMap[pojo.$Model]) {
+      console.warn(`Model.isDeserializable: could not deserialize object because $Model property of '${pojo.$Model}' did not reference a valid model.`, pojo);
+      return false;
+    }
   }
 
   return true;
@@ -507,6 +513,10 @@ Model.deserialize = function(pojo, options = {}) {
   }
 
   let construct = function(ModelClass) {
+    if (!ModelClass) {
+      console.error('Could not deserialize due to inability to find a matching model: ', pojo, options);
+      return Model;
+    }
     // Is there a custom deserialize method?
     if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
       return ModelClass.deserialize(pojo, options);
@@ -530,7 +540,7 @@ Model.deserialize = function(pojo, options = {}) {
       // 2) If some specified the model in addProperty('blah', {}, {type: SomeModel})
       // 3) If the options passed into deserialize contain a modelMapper function to inspect the POJO and
       //    return the model type based on inspection.
-      if (value.hasOwnProperty('$Model')) {
+      if (value.hasOwnProperty('$Model') && !options.ignore$Model) {
         return Model.getModelClassByName(value.$Model).deserialize(value, options);
       } else if (parent.propertyOptions[parentKey].type) {
         let Clazz = parent.propertyOptions[parentKey].type;
@@ -539,7 +549,7 @@ Model.deserialize = function(pojo, options = {}) {
           model: Clazz
         }));
       } else if (options.modelMapper) {
-        let PossibleModel = options.modelMapper(pojo, options);
+        let PossibleModel = options.modelMapper(value, options);
 
         if (PossibleModel !== value) {
           return PossibleModel.deserialize(value, Object.assign(options, {
@@ -556,7 +566,7 @@ Model.deserialize = function(pojo, options = {}) {
 
   let ModelClass;
 
-  if (pojo.$Model) {
+  if (pojo.$Model && !options.ignore$Model) {
     ModelClass = Model.getModelClassByName(pojo.$Model);
   } else if (options.model) {
     ModelClass = options.model;
