@@ -416,6 +416,8 @@ class RingaEvent extends RingaObject {
     }
 
     if (reject) this.addFailListener(reject);
+
+    return this;
   }
 
   /**
@@ -425,6 +427,8 @@ class RingaEvent extends RingaObject {
    */
   catch(reject) {
     this.addFailListener(reject);
+
+    return this;
   }
 
   /**
