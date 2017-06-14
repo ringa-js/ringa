@@ -487,10 +487,10 @@ Model.version = '0.0.0'; // This can be customized for serialization and deseria
 Model.isDeserializable = function (pojo, options = {}) {
   if (!options.ignore$Model) {
     if (!pojo.$Model && !options.modelMapper) {
-      console.warn('Model.isDeserializable: could not deserialize object because it does not contain the $Model property or does not contain options.modelMapper', pojo);
+      console.error('Model.isDeserializable: could not deserialize object because it does not contain the $Model property or does not contain options.modelMapper', pojo);
       return false;
     } else if (pojo.$Model && !window.$ModelNameToConstructorMap[pojo.$Model]) {
-      console.warn(`Model.isDeserializable: could not deserialize object because $Model property of '${pojo.$Model}' did not reference a valid model.`, pojo);
+      console.error(`Model.isDeserializable: could not deserialize object because $Model property of '${pojo.$Model}' did not reference a valid model.`, pojo);
       return false;
     }
   }

@@ -43,8 +43,13 @@ class FunctionExecutor extends ExecutorAbstract {
     // function and let the function determine when it will call done.
     const donePassedAsArg = this.expectedArguments.indexOf('done') !== -1;
 
-    // Functions can return a promise and if they do, our Thread will wait for the promise to finish.
-    promise = this.func.apply(undefined, args);
+    try {
+      // Functions can return a promise and if they do, our Thread will wait for the promise to finish.
+      promise = this.func.apply(undefined, args);
+    } catch (error) {
+      console.error(`Error in ${this.controller.name} for event '${this.ringaEvent.type}' in Function ${this.func.toString().substr(0, 512)}`);
+      this.fail(error, true);
+    }
 
     // We call done if:
     // 1) A promise is not returned AND
