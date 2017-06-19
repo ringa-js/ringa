@@ -47,8 +47,9 @@ class FunctionExecutor extends ExecutorAbstract {
       // Functions can return a promise and if they do, our Thread will wait for the promise to finish.
       promise = this.func.apply(undefined, args);
     } catch (error) {
-      console.error(`Error in ${this.controller.name} for event '${this.ringaEvent.type}' in Function ${this.func.toString().substr(0, 512)}`);
+      console.error(`Error in ${this.controller.name} for event '${this.ringaEvent.type}' in FunctionExecutor ${this.func.toString().substr(0, 512)}.\nError Below:`);
       this.fail(error, true);
+      return;
     }
 
     // We call done if:
