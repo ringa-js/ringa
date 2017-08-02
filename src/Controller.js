@@ -122,6 +122,8 @@ class Controller extends RingaObject {
 
     this.injections[injectionId || model.id] = model;
     this.injections[model.name] = model;
+
+    return model;
   }
 
   /**

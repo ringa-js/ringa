@@ -285,6 +285,7 @@ class Model extends RingaObject {
       }
 
       let onChange = this.propertyOptions[name].onChange;
+      let doNotNotify = this.propertyOptions[name].doNotNotify;
       let skipNotify = false;
 
       if (onChange) {
@@ -295,7 +296,7 @@ class Model extends RingaObject {
         this.propertyChange(name, oldValue, value);
       }
 
-      if (!skipNotify) {
+      if (!skipNotify && !doNotNotify) {
         this.notify(name, this, value, this.getChangeDescriptor(name, oldValue, value));
       }
     };
@@ -310,8 +311,8 @@ class Model extends RingaObject {
 
     this.propertyOptions[name] = options;
 
-    if (this._values && this._values[name]) {
-      this[subScriptName] = this._values[name];
+    if (this._values && this._values[name] !== undefined) {
+      this[name] = this._values[name];
     } else {
       this[name] = defaultValue;
     }
@@ -589,8 +590,10 @@ Model.deserialize = function(pojo, options = {}) {
   newInstance.deserializing = true;
   newInstance.$version = pojo.$version;
 
-  newInstance.properties.forEach(key => {
-    if (pojo[key] && newInstance.propertyOptions[key].serialize !== false) {
+  let properties = newInstance.serializeProperties || newInstance.properties;
+
+  properties.forEach(key => {
+    if (pojo[key] && (!newInstance.propertyOptions[key] || newInstance.propertyOptions[key].serialize !== false)) {
       newInstance[key] = _deserializePOJOValue(newInstance, key, pojo[key]);
     }
   });
