@@ -590,7 +590,7 @@ Model.deserialize = function(pojo, options = {}) {
   newInstance.deserializing = true;
   newInstance.$version = pojo.$version;
 
-  let properties = newInstance.serializeProperties || newInstance.properties;
+  let properties = newInstance.properties;
 
   properties.forEach(key => {
     if (pojo[key] && (!newInstance.propertyOptions[key] || newInstance.propertyOptions[key].serialize !== false)) {
@@ -599,6 +599,8 @@ Model.deserialize = function(pojo, options = {}) {
   });
 
   newInstance.deserializing = false;
+
+  newInstance.$deserializedObject = pojo;
 
   if (newInstance.postDeserialize) {
     newInstance.postDeserialize(pojo);
