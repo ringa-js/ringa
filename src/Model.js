@@ -22,6 +22,8 @@ let _serialize = function (model, pojo, options) {
 
   let props = model.serializeProperties || model.properties;
 
+  props = props.filter(prop => (!model.propertyOptions[prop] || model.propertyOptions[prop].serialize !== false));
+
   props.forEach(key => {
     let obj = model[key];
 
@@ -593,7 +595,7 @@ Model.deserialize = function(pojo, options = {}) {
   let properties = newInstance.properties;
 
   properties.forEach(key => {
-    if (pojo[key] && (!newInstance.propertyOptions[key] || newInstance.propertyOptions[key].serialize !== false)) {
+    if (pojo.hasOwnProperty(key) && (!newInstance.propertyOptions[key] || newInstance.propertyOptions[key].serialize !== false)) {
       newInstance[key] = _deserializePOJOValue(newInstance, key, pojo[key]);
     }
   });
