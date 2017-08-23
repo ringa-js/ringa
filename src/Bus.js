@@ -22,7 +22,7 @@ class Bus extends RingaObject {
   // Constructor
   //-----------------------------------
   constructor(name, id) {
-    super(name || ('bus' + busses.count++), id);
+    super(name, id);
 
     this._map = {};
     this._captureMap = {};
@@ -105,6 +105,8 @@ class Bus extends RingaObject {
    * @param event A RingaEvent or similar.
    */
   dispatchEvent(event) {
+    event.target = this;
+
     // Capture Phase
     if (this.parent) {
       let pStack = [this.parent];

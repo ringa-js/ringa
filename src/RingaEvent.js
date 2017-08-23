@@ -99,7 +99,15 @@ class RingaEvent extends RingaObject {
   }
 
   get target() {
+    if (this._target) {
+      return this._target;
+    }
+
     return this.customEvent ? this.customEvent.target : undefined;
+  }
+
+  set target(value) {
+    this._target = value;
   }
 
   get currentTarget() {

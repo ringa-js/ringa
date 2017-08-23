@@ -1,4 +1,4 @@
-import RingaObject from './RingaObject';
+import Bus from './Bus';
 import TrieSearch from 'trie-search';
 
 window.$ModelNotifications = {
@@ -49,7 +49,7 @@ let _serialize = function (model, pojo, options) {
  * A Ringa Model provides functionality to watch lightweight event signals (just strings) and notify listeners when those events occur.
  * The event signals are designed by default to be correlated with properties changing, but technically could be used for anything.
  */
-class Model extends RingaObject {
+class Model extends Bus {
   //-----------------------------------
   // Constructor
   //-----------------------------------
@@ -546,7 +546,14 @@ Model.deserialize = function(pojo, options = {}) {
       if (value.hasOwnProperty('$Model') && !options.ignore$Model) {
         return Model.getModelClassByName(value.$Model).deserialize(value, options);
       } else if (parent.propertyOptions[parentKey].type) {
-        let Clazz = parent.propertyOptions[parentKey].type;
+        let type = parent.propertyOptions[parentKey].type;
+        let Clazz;
+
+        if (type.prototype instanceof Model) {
+          Clazz = type;
+        } else {
+          Clazz = type(parent, parentKey, value);
+        }
 
         return Clazz.deserialize(value, Object.assign(options, {
           model: Clazz

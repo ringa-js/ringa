@@ -30,7 +30,7 @@ export default class RingaObject {
     if (id) {
       this.id = id;
     } else {
-      this.id = this.constructor.name + ids.counts[this.constructor.name];
+      this.id = this.generateId();
       ids.counts[this.constructor.name]++;
     }
 
@@ -60,7 +60,11 @@ export default class RingaObject {
     }
 
     if (ids.map.get(this._id)) {
-      ids.map.remove(this);
+      try {
+        ids.map.remove(this);
+      } catch (error) {
+        console.error(error);
+      }
     }
 
     this._id = value;
@@ -83,6 +87,10 @@ export default class RingaObject {
   //-----------------------------------
   // Methods
   //-----------------------------------
+  generateId() {
+    return this.constructor.name + ids.counts[this.constructor.name];
+  }
+
   destroy(unsafeDestroy = false) {
     this.destroyed = true;
 
