@@ -37,7 +37,15 @@ class FunctionExecutor extends ExecutorAbstract {
 
     super._execute(doneHandler, failHandler);
 
-    const args = buildArgumentsFromRingaEvent(this, this.expectedArguments, this.ringaEvent);
+    let args;
+
+    try {
+      args = buildArgumentsFromRingaEvent(this, this.expectedArguments, this.ringaEvent);
+    } catch (error) {
+      console.error('FunctionExecutor::_execute: could not build arguments for ', this.func);
+
+      throw error;
+    }
 
     // If the function requested that 'done' be passed, we assume it is an asynchronous
     // function and let the function determine when it will call done.

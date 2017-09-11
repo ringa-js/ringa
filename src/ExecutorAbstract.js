@@ -114,8 +114,8 @@ class ExecutorAbstract extends RingaObject {
     if (isPromise(promise)) {
       this.ringaEvent.detail._promise = promise;
 
-      promise.then(result => {
-        this.ringaEvent.lastPromiseResult = result;
+      promise.then(_result => {
+        this.ringaEvent.lastPromiseResult = _result;
 
         this.done();
       });

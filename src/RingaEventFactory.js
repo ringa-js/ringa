@@ -9,7 +9,7 @@ class RingaEventFactory {
   //-----------------------------------
   constructor(eventType, detail, domNode, requireCatch = false, bubbles = true, cancellable = true, event = undefined) {
     if (!eventType) {
-      console.error('RingaEventFactory(): eventType is undefined! Detail is: ', detail);
+      console.error('RingaEventFactory(): eventType is undefined! This normally happens becuase you are referencing the EVENT_TYPE on a controller that has not been created yet. Detail is: ', detail);
     }
 
     this.eventType = eventType;

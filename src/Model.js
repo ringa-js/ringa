@@ -401,8 +401,10 @@ class Model extends Bus {
    *
    * @param parentModel Used to set the parentModel property when doing a clone.
    */
-  clone() {
-    let newInstance = new (this.constructor)(this.name);
+  clone(options = {cloneId: false}) {
+    let newInstance = new (this.constructor)(this.name, {
+      id: options.cloneId ? this.id : undefined
+    });
 
     newInstance.propertyOptions = this.propertyOptions;
 
@@ -411,7 +413,7 @@ class Model extends Bus {
         return obj.map(_clone.bind(undefined, propName));
       } else if (obj instanceof Model) {
         // Make sure we set the parentModel, which is our newInstance!
-        let childModel = obj.clone();
+        let childModel = obj.clone(options);
 
         if (childModel instanceof Model) {
           newInstance.addModelChild(propName, childModel);
@@ -612,7 +614,7 @@ Model.deserialize = function(pojo, options = {}) {
   newInstance.$deserializedObject = pojo;
 
   if (newInstance.postDeserialize) {
-    newInstance.postDeserialize(pojo);
+    newInstance.postDeserialize(pojo, options);
   }
 
   return newInstance;

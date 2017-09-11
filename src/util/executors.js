@@ -140,6 +140,8 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
   expectedArguments.forEach((argName) => {
     if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
+    } else if (argName.startsWith('_')) {
+      // We make an exception and don't try to inject for arguments that begin with _
     } else {
       let s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
 
@@ -152,8 +154,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
                 `\tDispatched from: ${s}`;
       console.error(str);
 
-      // TODO Determine desired behavior to silence console.error & throw (discuss)
-      throw Error('Injection failed. See console errors above.');
+      args.push(undefined);
     }
   });
 
