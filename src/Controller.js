@@ -469,6 +469,14 @@ class Controller extends RingaObject {
         throw Error(`Controller:threadFailHandler(): the CommandThread with the id ${thread.id} was not found.`)
       }
     }
+
+    if (!this.options || this.options.consoleLogFails) {
+      this.dispatch(Controller.THREAD_FAIL_ERROR, {
+        thread,
+        error,
+        kill
+      });
+    }
   }
 
   dispatch(eventType, details, requireCatch = true) {
@@ -530,5 +538,7 @@ class Controller extends RingaObject {
     });
   }
 }
+
+Controller.THREAD_FAIL_ERROR = 'threadFailError';
 
 export default Controller;
