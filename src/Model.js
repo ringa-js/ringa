@@ -564,6 +564,12 @@ Model.deserialize = function(pojo, options = {}) {
         let PossibleModel = options.modelMapper(value, options);
 
         if (PossibleModel !== value) {
+          if (!PossibleModel || !PossibleModel.deserialize) {
+            console.error(`Model.options.modelMapper: could not deserialize because provided modelMapper returned a model with no deserialize method.`)
+            console.error(`ModelMapper: ${options.modelMapper}`);
+            console.error(`Value to deserialize:`, value);
+            console.error(`PossibleModel:`, PossibleModel);
+          }
           return PossibleModel.deserialize(value, Object.assign(options, {
             model: PossibleModel
           }));
