@@ -15,6 +15,7 @@ import IifExecutor from './executors/IifExecutor';
 import ForEachExecutor from './executors/ForEachExecutor';
 import IntervalExecutor from './executors/IntervalExecutor';
 import SpawnExecutor from './executors/SpawnExecutor';
+import SleepExecutor from './executors/SleepExecutor';
 import {isDOMNode} from './util/type';
 import {injectionNames, constructorNames, uglifyWhitelist} from './util/debug';
 import {injectionInfo} from './util/executors';
@@ -52,6 +53,10 @@ export function loop (condition, executor, options) {
 
 export function spawn (executor) {
   return new ExecutorFactory(SpawnExecutor, executor);
+}
+
+export function sleep (milliseconds) {
+  return new ExecutorFactory(SleepExecutor, milliseconds);
 }
 
 const debugStyle = 'background: #660000; color: white; font-weight: bold;';
@@ -138,5 +143,6 @@ export default {
   event,
   assign,
   notify,
-  stop
+  stop,
+  sleep,
 };
