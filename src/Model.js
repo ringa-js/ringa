@@ -458,29 +458,32 @@ class Model extends Bus {
   index(recurse = false, trieSearchOptions, trieSearch = undefined) {
     trieSearch = trieSearch || new TrieSearch(undefined, trieSearchOptions);
 
-    let nonRecurseProperties = [];
-
     let _add = (prop, obj) => {
-      if (obj instanceof Array) {
-        if (recurse) {
-          obj.map(_add);
+      if (typeof obj === 'object') {
+        if (obj.indexValue) {
+          trieSearch.map(obj.indexValue, this);
+        } else {
+          console.warn('Model()::index() does not support indexing raw Object types that do not have an indexValue property.', this, prop, obj);
         }
-      } else if (obj instanceof Model) {
-        if (recurse) {
-
-          obj.index(recurse, trieSearchOptions, trieSearch);
-        }
-      } else if (typeof obj === 'object') {
-        console.warn('Model()::index() does not support indexing raw Object types.');
-      } else {
-        nonRecurseProperties.push(prop);
+      } else if (obj && obj.toString() !== '') {
+        trieSearch.map(obj.toString(), this);
       }
     };
 
-    this.indexProperties.forEach(prop => _add(prop, this[prop]));
+    let _recurse = (obj) => {
+      if (obj instanceof Array) {
+        obj.forEach(_recurse);
+      } else if (obj instanceof Model) {
+        obj.index(recurse, trieSearchOptions, trieSearch);
+      }
+    };
 
-    if (nonRecurseProperties.length) {
-      trieSearch.add(this, nonRecurseProperties);
+    if (this.indexProperties) {
+      this.indexProperties.forEach(prop => _add(prop, this[prop]));
+    }
+
+    if (recurse) {
+      this.properties.forEach(prop => _recurse(this[prop]));
     }
 
     return trieSearch;
