@@ -53,7 +53,7 @@ class ExecutorAbstract extends RingaObject {
   }
 
   get timeout() {
-    if (this._timeout === undefined && this.controller.options.timeout === undefined) {
+    if (!this._timeout && !this.controller.options.timeout) {
       return -1;
     }
 

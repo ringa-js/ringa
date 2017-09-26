@@ -43,7 +43,7 @@ class Controller extends RingaObject {
     this.modelWatcher = undefined;
 
     this.options = options || {};
-    this.options.timeout = this.options.timeout || 5000;
+    this.options.timeout = this.options.hasOwnProperty('timeout') ? this.options.timeout : 10000;
     this.options.throwKillsThread = this.options.throwKillsThread === undefined ? true : this.options.throwKillsThread;
     this.options.consoleLogFails = this.options.consoleLogFails === undefined ? true : this.options.consoleLogFails;
     this.options.injections = this.options.injections || {};
