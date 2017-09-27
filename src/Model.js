@@ -457,6 +457,13 @@ class Model extends Bus {
    */
   index(recurse = false, trieSearchOptions, trieSearch = undefined) {
     trieSearch = trieSearch || new TrieSearch(undefined, trieSearchOptions);
+    trieSearch.visitedById = trieSearch.visitedById || {};
+
+    if (trieSearch.visitedById[this.id]) {
+      return;
+    }
+
+    trieSearch.visitedById[this.id] = true;
 
     let _add = (prop, obj) => {
       if (typeof obj === 'object') {
