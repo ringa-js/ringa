@@ -455,8 +455,12 @@ class Model extends Bus {
    *
    * Returns the TrieSearch instance.
    */
-  index(recurse = false, trieSearchOptions, trieSearch = undefined) {
-    trieSearch = trieSearch || new TrieSearch(undefined, trieSearchOptions);
+  index(recurse = false, trieSearchOptions = {}, trieSearch = undefined) {
+    trieSearch = trieSearch || new TrieSearch(undefined, Object.assign(trieSearchOptions, {
+        keepAll: true,
+        keepAllKey: 'id'
+      }));
+
     trieSearch.visitedById = trieSearch.visitedById || {};
 
     if (trieSearch.visitedById[this.id]) {
