@@ -275,7 +275,7 @@ class Model extends Bus {
       }
 
       // Clear old child model
-      if (oldValue instanceof Model && oldValue.parentModel === this) {
+      if (oldValue && oldValue instanceof Model && oldValue.parentModel === this) {
         this.removeModelChild(oldValue);
       }
 
@@ -286,8 +286,10 @@ class Model extends Bus {
         this.addModelChild(name, value);
       }
 
-      let onChange = this.propertyOptions[name].onChange;
-      let doNotNotify = this.propertyOptions[name].doNotNotify;
+      let po = this.propertyOptions[name];
+
+      let onChange = po.onChange;
+      let doNotNotify = po.doNotNotify;
       let skipNotify = false;
 
       if (onChange) {
@@ -298,7 +300,7 @@ class Model extends Bus {
         this.propertyChange(name, oldValue, value);
       }
 
-      if (!skipNotify && !doNotNotify) {
+      if (!this.deserializing && !skipNotify && !doNotNotify) {
         this.notify(name, this, value, this.getChangeDescriptor(name, oldValue, value));
       }
     };
@@ -469,15 +471,11 @@ class Model extends Bus {
 
     trieSearch.visitedById[this.id] = true;
 
-    let _add = (prop, obj) => {
-      if (typeof obj === 'object') {
-        if (obj.indexValue) {
-          trieSearch.map(obj.indexValue, this);
-        } else {
-          console.warn('Model()::index() does not support indexing raw Object types that do not have an indexValue property.', this, prop, obj);
-        }
+    let _add = function(model, trieSearch, prop, obj) {
+      if (typeof obj === 'object' && obj.indexValue) {
+        trieSearch.map(obj.indexValue, model);
       } else if (obj && obj.toString() !== '') {
-        trieSearch.map(obj.toString(), this);
+        trieSearch.map(obj.toString(), model);
       }
     };
 
@@ -490,7 +488,7 @@ class Model extends Bus {
     };
 
     if (this.indexProperties) {
-      this.indexProperties.forEach(prop => _add(prop, this[prop]));
+      this.indexProperties.forEach(prop => _add(this, trieSearch, prop, this[prop]));
     }
 
     if (recurse) {
@@ -602,6 +600,10 @@ Model.deserialize = function(pojo, options = {}) {
     ModelClass = Model.getModelClassByName(pojo.$Model);
   } else if (options.model) {
     ModelClass = options.model;
+
+    // Make sure we don't pollute subsequent calls with the model object! Since options.model is temporary
+    // just for this first deserialize call.
+    delete options.model;
   } else if (options.modelMapper) {
     ModelClass = options.modelMapper(pojo);
 
@@ -610,22 +612,24 @@ Model.deserialize = function(pojo, options = {}) {
     }
   }
 
-  // Make sure we don't pollute subsequent calls with the model object! Since options.model is temporary
-  // just for this first deserialize call.
-  if (options.model) {
-    delete options.model;
-  }
-
   let newInstance = construct(ModelClass);
 
   newInstance.deserializing = true;
   newInstance.$version = pojo.$version;
 
-  let properties = newInstance.properties;
+  let properties = newInstance.properties.filter(key => {
+    return !newInstance.propertyOptions[key] || newInstance.propertyOptions[key].serialize !== false;
+  });
 
   properties.forEach(key => {
-    if (pojo.hasOwnProperty(key) && (!newInstance.propertyOptions[key] || newInstance.propertyOptions[key].serialize !== false)) {
-      newInstance[key] = _deserializePOJOValue(newInstance, key, pojo[key]);
+    if (pojo.hasOwnProperty(key)) {
+      let t = typeof pojo[key];
+
+      if (t === 'string' || t === 'number') {
+        newInstance[key] = pojo[key];
+      } else {
+        newInstance[key] = _deserializePOJOValue(newInstance, key, pojo[key]);
+      }
     }
   });
 
