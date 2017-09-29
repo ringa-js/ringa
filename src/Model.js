@@ -25,7 +25,15 @@ let _serialize = function (model, pojo, options) {
   props = props.filter(prop => (!model.propertyOptions[prop] || model.propertyOptions[prop].serialize !== false));
 
   props.forEach(key => {
-    let obj = model[key];
+    let obj;
+
+    let o = model.propertyOptions[key];
+
+    if (o && o.preSerialize) {
+      obj = o.preSerialize(options);
+    } else {
+      obj = model[key];
+    }
 
     if (obj instanceof Array) {
       let newArr = [];
@@ -38,7 +46,11 @@ let _serialize = function (model, pojo, options) {
     } else if (obj instanceof Model) {
       pojo[key] = obj.serialize(options);
     } else {
-      pojo[key] = model[key];
+      pojo[key] = obj;
+    }
+
+    if (o && o.postSerialize) {
+      o.postSerialize(options);
     }
   });
 
