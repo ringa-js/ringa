@@ -48,6 +48,7 @@ class Controller extends RingaObject {
     this.options.consoleLogFails = this.options.consoleLogFails === undefined ? true : this.options.consoleLogFails;
     this.options.injections = this.options.injections || {};
     this.options.warnOnDetailOverwrite = this.options.warnOnDetailOverwrite === undefined ? false : this.options.warnOnDetailOverwrite;
+    this.options.killOnErrorHandler = this.options.killOnErrorHandler === undefined ? this.killOnErrorHandler : this.options.killOnErrorHandler;
 
     this.threads = new HashArray('id');
 
@@ -536,6 +537,10 @@ class Controller extends RingaObject {
         this.eventTypeToWatchers[eventType].splice(ix, 1);
       }
     });
+  }
+
+  killOnErrorHandler(ringaEvent, error) {
+    return true;
   }
 }
 

@@ -94,7 +94,7 @@ class EventExecutor extends ExecutorAbstract {
       return;
     }
 
-    this.fail(error);
+    this.fail(error, this.controller.options.killOnErrorHandler(this.ringaEvent, error));
   }
 }
 

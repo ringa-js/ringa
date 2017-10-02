@@ -122,7 +122,7 @@ class ExecutorAbstract extends RingaObject {
       promise.catch(error => {
         this.ringaEvent.lastPromiseError = error;
 
-        this.fail(error, false);
+        this.fail(error, this.controller.options.killOnErrorHandler(this.ringaEvent, error));
       });
     } else if (__DEV__) {
       throw Error(`ExecutorAbstract::waitForPromise(): command ${this.toString()} returned something that is not a promise, ${promise}`);
