@@ -1,5 +1,13 @@
 import RingaObject from './RingaObject';
+import Model from './Model';
 
+/**
+ * Retrieves a property by a dot-delimited path on a provided object.
+ *
+ * @param obj The object to search.
+ * @param path A dot-delimited path like 'prop1.prop2.prop3'
+ * @returns {*}
+ */
 function objPath(obj, path) {
   if (!path) {
     return obj;
@@ -12,33 +20,50 @@ function objPath(obj, path) {
   return obj;
 }
 
+/**
+ * For a single dot-delimited path like 'when.harry.met.sally', returns:
+ *
+ * ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
+ *
+ * @param propertyPath A full dot-delimited path.
+ * @returns {*}
+ */
 function pathAll(propertyPath) {
-  // if propertyPath === 'when.harry.met.sally'
-  // then paths = ['when', 'when.harry', 'when.harry.met', 'when.harry.met.sally']
   return propertyPath.split('.').reduce((a, v, i) => {
     a[i] = i === 0 ? v : a[i-1] + '.' + v;
     return a;
   }, []);
 }
 
+/**
+ * A collection of watches that will be updated in one shot.
+ */
 class Watchees {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
   constructor() {
     this.watchees = [];
-    this.watcheesMap = new Map();
+    this.id = Math.random().toString();
   }
 
-  add(model, propertyPath, watchee) {
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  add(watchedModel, signalPath, signalModel, signalValue, descriptor, watchee) {
     let watcheeObj;
 
     let arg = {
-      model,
-      path: propertyPath,
-      value: objPath(model, propertyPath),
+      watchedModel,
       watchedPath: watchee.propertyPath,
-      watchedValue: objPath(model, watchee.propertyPath)
+      watchedValue: objPath(watchedModel, watchee.propertyPath),
+      signalModel,
+      signalPath,
+      signalValue,
+      descriptor
     };
 
-    if (watcheeObj = this.watcheesMap[watchee.handler]) {
+    if (watchee.handler.__watchees && (watcheeObj = watchee.handler.__watchees[this.id])) {
       watcheeObj.arg.push(arg);
 
       return;
@@ -50,44 +75,84 @@ class Watchees {
     };
 
     this.watchees.push(watcheeObj);
-    this.watcheesMap[watchee.handler] = watcheeObj;
+
+    watcheeObj.handler.__watchees = watcheeObj.handler.__watchees || {};
+    watcheeObj.handler.__watchees[this.id] = watcheeObj;
   }
 
   notify() {
-    this.watchees.forEach(watcheeObj => {
-      watcheeObj.handler.call(undefined, watcheeObj.arg);
-    });
-
+    let w = this.watchees;
     this.clear();
+
+    w.forEach(watcheeObj => {
+      watcheeObj.handler.call(undefined, watcheeObj.arg);
+      delete watcheeObj.handler.__watchees[this.id];
+    });
   }
 
   clear() {
-    this.watchees = [];
-    this.watcheesMap = new Map();
+    globalWatchee = undefined;
   }
 }
 
-class ModelInjector extends RingaObject {
-  constructor(id) {
-    super(id);
+let globalWatchee;
+let timeoutToken;
 
-    this.idToWatchees = {};
+/**
+ * This ModelWatcher watches for a model by id, Class/prototype in heirarchy, or name.
+ */
+class ModelWatcher extends RingaObject {
+  //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  constructor(name, id) {
+    super(name, id);
+
+    this.idNameToWatchees = {};
     this.classToWatchees = new Map();
 
     this.models = [];
-    this.idToModel = new Map();
-
-    // We always notify everyone at once and ensure that nobody gets notified more than once.
-    this.nextWatchees = new Watchees();
+    this.idToModel = new WeakMap();
+    this.nameToModel = new WeakMap();
+    this.classToModel = new WeakMap();
   }
 
-  addModel(model, id) {
+  //-----------------------------------
+  // Methods
+  //-----------------------------------
+  /**
+   * A model to be watched.
+   *
+   * @param model Assumed to be an extension of Ringa.Model.
+   * @param id A custom id to assign if you so desire.
+   */
+  addModel(model) {
+    if (!model) {
+      throw new Error(`ModelWatcher::addModel(): the provided model was undefined!`);
+    }
+
+    if (!(model instanceof Model)) {
+      throw new Error(`ModelWatcher::addModel(): the provided model ${model.constructor.name} was not a valid Ringa Model!`);
+    }
+
+    if (this.nameToModel[model.name]) {
+      throw new Error(`ModelWatcher::addModel(): a Model with the name ${model.name} has already been watched!`);
+    }
+
     this.models.push(model);
 
-    id = id || model.id;
+    this.idToModel[model.id] = model;
+    this.nameToModel[model.name] = model;
 
-    if (id) {
-      this.idToModel[id] = model;
+    let p = model.constructor;
+
+    while (p) {
+      // First come first serve for looking up by type!
+      if (!this.classToModel[p]) {
+        this.classToModel[p] = model;
+      }
+
+      p = p.__proto__;
     }
 
     if (typeof model.addInjector == 'function') {
@@ -95,7 +160,67 @@ class ModelInjector extends RingaObject {
     }
   }
 
-  watch(classOrId, propertyPath, handler = undefined) {
+  /**
+   * Remove a model from being watched.
+   *
+   * @param model
+   */
+  removeModel(model) {
+    let ix = this.models.indexOf(model);
+
+    if (ix !== -1) {
+      this.models.splice(ix, 1);
+    }
+
+    delete this.nameToModel[model.name];
+    delete this.idToModel[model.id];
+  }
+
+  /**
+   * See if a Model exists in this ModelWatcher and find a property on it (optional).
+   *
+   * @param classOrIdOrName A Class that extends Ringa.Model or an id or a name to lookup.
+   * @param propertyPath A dot-delimited path deep into a property.
+   * @returns {*} The model (if not propertyPath provided) or the property on the model.
+   */
+  find(classOrIdOrName, propertyPath = undefined) {
+    let model;
+
+    // By ID (e.g. 'myModel' or 'constructor_whatever')
+    if (typeof classOrIdOrName === 'string' && this.idToModel[classOrIdOrName]) {
+      model = this.idToModel[classOrIdOrName];
+    } if (typeof classOrIdOrName === 'string' && this.nameToModel[classOrIdOrName]) {
+      model = this.nameToModel[classOrIdOrName];
+    } else {
+      // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
+      let p = classOrIdOrName;
+
+      while (p) {
+        if (this.classToModel[p]) {
+          model = this.classToModel[p];
+          break;
+        }
+
+        p = p.prototype;
+      }
+    }
+
+    if (model) {
+      return propertyPath ? objPath(model, propertyPath) : model;
+    }
+
+    return null;
+  }
+
+  /**
+   * Watch a model or specific property on a model for changes.
+   *
+   * @param classOrIdOrName A Ringa.Model extension, id, or name of a model to watch.
+   * @param propertyPath A dot-delimiated path into a property.
+   * @param handler Function to callback when the property changes.
+   */
+  watch(classOrIdOrName, propertyPath, handler = undefined) {
+    // If handler is second property...
     if (typeof propertyPath === 'function') {
       handler = propertyPath;
       propertyPath = undefined;
@@ -107,10 +232,10 @@ class ModelInjector extends RingaObject {
       byPath: {}
     };
 
-    if (typeof classOrId === 'function') {
-      group = this.classToWatchees[classOrId] = this.classToWatchees[classOrId] || defaultGroup;
-    } else if (typeof classOrId === 'string') {
-      group = this.idToWatchees[classOrId] = this.idToWatchees[classOrId] || defaultGroup;
+    if (typeof classOrIdOrName === 'function') {
+      group = this.classToWatchees[classOrIdOrName] = this.classToWatchees[classOrIdOrName] || defaultGroup;
+    } else if (typeof classOrIdOrName === 'string') {
+      group = this.idNameToWatchees[classOrIdOrName] = this.idNameToWatchees[classOrIdOrName] || defaultGroup;
     } else if (__DEV__) {
       throw new Error(`ModelWatcher::watch(): can only watch by Class or id`);
     }
@@ -128,6 +253,56 @@ class ModelInjector extends RingaObject {
       paths.forEach(path => {
         group.byPath[path] = group.byPath[path] || []
         group.byPath[path].push(watchee);
+      });
+    }
+  }
+
+  unwatch(classOrIdOrName, propertyPath, handler) {
+    // If handler is second property...
+    if (typeof propertyPath === 'function') {
+      handler = propertyPath;
+      propertyPath = undefined;
+    }
+
+    let group;
+
+    if (typeof classOrIdOrName === 'function') {
+      group = this.classToWatchees[classOrIdOrName];
+    } else if (typeof classOrIdOrName === 'string') {
+      group = this.idNameToWatchees[classOrIdOrName];
+    } else if (__DEV__) {
+      throw new Error(`ModelWatcher::unwatch(): can only unwatch by Class or id`);
+    }
+
+    if (!group) {
+      console.warn(`ModelWatcher::unwatch(): could not unwatch because reference was not found: ${classOrIdOrName}`);
+      return;
+    }
+
+    if (!propertyPath) {
+      for (var i = 0; i < group.all.length; i++) {
+        let watchee = group.all[i];
+
+        if (watchee.handler === handler) {
+          group.all.splice(i, 1);
+          return;
+        }
+      }
+    } else {
+      let paths = pathAll(propertyPath);
+
+      paths.forEach(path => {
+        let groupByPath = group.byPath[path];
+        if (groupByPath) {
+          for (var i = 0; i < groupByPath.length; i++) {
+            let watchee = groupByPath[i];
+
+            if (watchee.handler === handler) {
+              groupByPath.splice(i, 1);
+              return;
+            }
+          }
+        }
       });
     }
   }
@@ -174,12 +349,20 @@ class ModelInjector extends RingaObject {
    * that if multiple properties get set on a model back to back and notify() is called over and over that the
    * handlers do not get called over and over for each property. Set to -1 to skip the timeout.
    */
-  notify(model, propertyPath, timeout = 0) {
-    let n = this.nextWatchees;
+  notify(model, propertyPath, item, value, descriptor) {
+    let foundAtLeastOneWatchee = false;
+
+    if (!globalWatchee) {
+      globalWatchee = new Watchees();
+    }
+
+    let n = globalWatchee;
     let paths, byPathFor = () => {};
 
     let addWatchee = watchee => {
-      n.add(model, propertyPath, watchee);
+      foundAtLeastOneWatchee = true;
+
+      n.add(model, propertyPath, item, value, descriptor, watchee);
     };
 
     let watcheeGroup = watchees => {
@@ -193,11 +376,34 @@ class ModelInjector extends RingaObject {
       byPathFor = (watcheesByPath) => {
         // If an watchee has requested 'when.harry.met.sally' there is no point to call for 'when.harry.met', 'when.harry',
         // or 'when'. So we go backwards through the array. I would do paths.reverse() but, well, performance and all.
-        for (let i = paths.length - 1; i >= 0; i--) {
-          let path = paths[i];
-          if (watcheesByPath[path]) {
-            watcheesByPath[path].forEach(addWatchee);
-            break;
+        // for (let i = paths.length - 1; i >= 0; i--) {
+        //   let path = paths[i];
+        //   if (watcheesByPath[path]) {
+        //     watcheesByPath[path].forEach(addWatchee);
+        //     break;
+        //   }
+        // }
+
+        for (var watchPathKey in watcheesByPath) {
+          // Scenario 1: Let's say we are watching for 'prop.value' (watchPathKey)
+          //             Let's say that 'prop' is our propertyPath, then this should trigger.
+          // Scenario 2: Let's say we are watching for 'prop.value' (watchPathKey)
+          //             Let's say that 'prop.value.key' is our propertyPath, then this should NOT trigger.
+          // Scenario 3: Let's say we are watching for 'prop.value.*' (watchPathkey)
+          //             Let's say that 'prop.value.key' is our propertyPath, then this should trigger.
+
+          paths = pathAll(watchPathKey); // ['prop', 'prop.value']
+
+          if (watchPathKey.endsWith('*')) {
+            let globalPath = watchPathKey.substr(0, watchPathKey.length - 2);
+
+            if (propertyPath.startsWith(globalPath)) {
+              watcheesByPath[watchPathKey].forEach(addWatchee);
+            }
+          } else {
+            if (paths.indexOf(propertyPath) !== -1) {
+              watcheesByPath[propertyPath].forEach(addWatchee);
+            }
           }
         }
       }
@@ -212,9 +418,14 @@ class ModelInjector extends RingaObject {
       }
     }
 
-    // By ID (e.g. 'myModel' or 'constructor_whatever')
-    if (this.idToWatchees[model.id]) {
-      watcheeGroup(this.idToWatchees[model.id]);
+    // By ID (e.g. 'MyModel1' or 'MyController10')
+    if (this.idNameToWatchees[model.id]) {
+      watcheeGroup(this.idNameToWatchees[model.id]);
+    }
+
+    // By ID (e.g. 'MyModel1' or 'MyController10')
+    if (this.idNameToWatchees[model.name]) {
+      watcheeGroup(this.idNameToWatchees[model.name]);
     }
 
     // By Type (e.g. MyModel, MyModelBase, MyModelAbstract, etc.)
@@ -231,18 +442,15 @@ class ModelInjector extends RingaObject {
       p = p.__proto__;
     }
 
-    if (timeout !== -1) {
-      if (this.timeoutToken) {
-        return;
-      }
-      this.timeoutToken = setTimeout(() => {
-        this.nextWatchees.notify();
-        this.timeoutToken = undefined;
-      }, timeout);
-    } else {
-      this.nextWatchees.notify();
+    if (timeoutToken || !foundAtLeastOneWatchee) {
+      return;
     }
+
+    timeoutToken = setTimeout(function() {
+      timeoutToken = undefined;
+      globalWatchee.notify();
+    }, 0);
   }
 }
 
-export default ModelInjector;
+export default ModelWatcher;

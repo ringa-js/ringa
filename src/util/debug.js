@@ -1,4 +1,6 @@
 import dateformat from 'dateformat';
+import {injectionInfo} from './executors';
+import {ids} from '../RingaObject';
 
 export function now() {
   return new Date();
@@ -46,4 +48,16 @@ export function ringaEventToDebugString(ringaEvent) {
   }
 
   return out;
+}
+
+export function injectionNames() {
+  return Object.keys(injectionInfo.byName);
+}
+
+export function constructorNames() {
+  return Object.keys(ids.constructorNames);
+}
+
+export function uglifyWhitelist() {
+  return JSON.stringify(injectionNames().concat(constructorNames()).sort());
 }

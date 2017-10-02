@@ -1,8 +1,8 @@
 {
   "name": "ringa",
-  "version": "0.0.12",
-  "description": "Ringa is a highly extensible ES6 MVC-inspired library designed to help you build scalable and highly debuggable applications.",
-  "main": "./dist/ringa.min.js",
+  "version": "0.0.48",
+  "description": "Ringa is an ES6 MVC-inspired library designed to manage your asynchronous code and state as your project scales.",
+  "main": "./src/index.js",
   "directories": {
     "example": "example",
     "src": "src"
@@ -11,7 +11,10 @@
     "test": "jest --config jest.json",
     "build": "npm run dist && npm run dev",
     "dist": "webpack --progress --colors --config build/webpack.dist.js",
-    "dev": "webpack --progress --colors --config build/webpack.dev.js"
+    "dev": "webpack --progress --colors --config build/webpack.dev.js",
+    "release:major": "npm test && npm run build && npm version major && npm publish && git push --follow-tags",
+    "release:minor": "npm test && npm run build && npm version minor && npm publish && git push --follow-tags",
+    "release:patch": "npm test && npm run build && npm version patch && npm publish && git push --follow-tags"
   },
   "repository": {
     "type": "git",
@@ -53,11 +56,18 @@
       ]
     }
   ],
+  "peerDependencies": {
+    "react-dom": "15.5.4"
+  },
   "dependencies": {
+    "camelcase": "^4.0.0",
     "dateformat": "^2.0.0",
     "error-stack-parser": "^2.0.0",
-    "hasharray": "^1.0.0",
-    "snake-case": "^2.1.0"
+    "hasharray": "^1.1.0",
+    "jsdoc": "^3.4.3",
+    "react": "15.5.4",
+    "snake-case": "^2.1.0",
+    "trie-search": "^1.0.1"
   },
   "devDependencies": {
     "babel-core": "^6.22.1",
@@ -66,13 +76,16 @@
     "babel-polyfill": "^6.22.0",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-react": "^6.22.0",
+    "babel-preset-stage-0": "^6.24.1",
     "jest": "^18.1.0",
     "jest-cli": "^18.1.0",
-    "react": "^15.4.2",
-    "react-addons-test-utils": "^15.4.2",
-    "react-dom": "^15.4.2",
     "react-hot-loader": "^1.3.1",
-    "react-test-renderer": "^15.4.2",
+    "react-test-renderer": "15.4.2",
     "webpack": "^2.2.0"
+  },
+  "jest": {
+    "globals": {
+      "__DEV__": true
+    }
   }
 }

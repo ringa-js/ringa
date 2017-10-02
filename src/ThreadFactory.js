@@ -1,22 +1,25 @@
 import RingaHashArray from './RingaHashArray';
 import Thread from './Thread';
 import ExecutorFactory from './ExecutorFactory';
+import {wrapIfNotInstance} from './util/type';
 
 class ThreadFactory extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id, executorFactories, options) {
-    super(id || 'commandFactory');
+  constructor(name, executorFactories, options) {
+    super(name || 'commandFactory');
 
     options = options || {};
     options.synchronous = options.synchronous === undefined ? false : options.synchronous;
 
     let addOne = this._hashArray.addOne;
     this._hashArray.addOne = function(obj) {
-      if (!(obj instanceof ExecutorFactory)) {
-        obj = new ExecutorFactory(obj);
+      if (!obj) {
+        console.error(`ThreadFactory():: Attempting to add an empty executee to '${name}'! This probably happened because you attempted to add an event (e.g. SomeController.MY_EVENT) before SomeController::addListener('myEvent') was called. Or the event just does not exist. Or you passed in undefined in a moment of intellectual struggle.`, executorFactories);
       }
+
+      obj = wrapIfNotInstance(obj, ExecutorFactory);
 
       addOne.call(this, obj);
     }

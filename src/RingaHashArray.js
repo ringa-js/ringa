@@ -5,8 +5,8 @@ import RingaObject from './RingaObject';
  * This is a proxy class for HashArray that extends RingaObject.
  */
 class RingaHashArray extends RingaObject {
-  constructor(id = '[ID]', key = 'id', changeHandler = undefined, options = undefined) {
-    super(id);
+  constructor(name = '[name]', key = 'id', changeHandler = undefined, options = undefined) {
+    super(name);
 
     this._hashArray = new HashArray(key, changeHandler, options);
   }

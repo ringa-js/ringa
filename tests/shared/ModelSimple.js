@@ -2,6 +2,15 @@ import Model from '../../src/Model';
 
 export default class ModelSimple extends Model {
   //-----------------------------------
+  // Constructor
+  //-----------------------------------
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('childModel');
+  }
+
+  //-----------------------------------
   // prop1
   //-----------------------------------
   set prop1(value) {

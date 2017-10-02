@@ -2,7 +2,7 @@
 
 window.__DEV__ = true;
 
-import TestUtils from 'react-addons-test-utils';
+import TestUtils from 'react-dom/test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Ringa, {__hardReset} from '../src/index';
@@ -10,7 +10,7 @@ import TestController from './shared/TestController';
 
 const TEST_EVENT = 'testEvent';
 
-describe('CommandFunctionWrapper', () => {
+describe('FunctionExecutor', () => {
   let command, domNode, reactNode, controller;
 
   beforeEach(() => {
@@ -36,11 +36,10 @@ describe('CommandFunctionWrapper', () => {
   });
 
   it('injection should work', (done) => {
-    let _ringaEvent;
     let _controller = controller;
 
     controller.addListener(TEST_EVENT, [(val1, $ringaEvent, val2, $controller, val3) => {
-      expect(_ringaEvent).toEqual($ringaEvent);
+      expect($ringaEvent.type).toEqual(TEST_EVENT);
       expect(_controller).toEqual($controller);
 
       expect(val1).toEqual(1);
@@ -50,7 +49,7 @@ describe('CommandFunctionWrapper', () => {
       done();
     }]);
 
-    _ringaEvent = controller.dispatch(TEST_EVENT, {
+    controller.dispatch(TEST_EVENT, {
       val1: 1,
       val2: 2,
       val3: '3'

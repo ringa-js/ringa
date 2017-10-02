@@ -37,20 +37,38 @@ class FunctionExecutor extends ExecutorAbstract {
 
     super._execute(doneHandler, failHandler);
 
-    const args = buildArgumentsFromRingaEvent(this, this.expectedArguments, this.ringaEvent);
+    let args;
+
+    try {
+      args = buildArgumentsFromRingaEvent(this, this.expectedArguments, this.ringaEvent);
+    } catch (error) {
+      console.error('FunctionExecutor::_execute: could not build arguments for ', this.func);
+
+      throw error;
+    }
 
     // If the function requested that 'done' be passed, we assume it is an asynchronous
     // function and let the function determine when it will call done.
     const donePassedAsArg = this.expectedArguments.indexOf('done') !== -1;
 
-    // Functions can return a promise and if they do, our Thread will wait for the promise to finish.
-    promise = this.func.apply(undefined, args);
+    try {
+      // Functions can return a promise and if they do, our Thread will wait for the promise to finish.
+      promise = this.func.apply(undefined, args);
+    } catch (error) {
+      console.error(`Error in ${this.controller.name} for event '${this.ringaEvent.type}' in FunctionExecutor ${this.func.toString().substr(0, 512)}.\nError Below:`);
+      this.fail(error, true);
+      return;
+    }
 
     // We call done if:
     // 1) A promise is not returned AND
     // 2) 'done' was not passed as an argument
     if (!promise && !donePassedAsArg) {
       this.done();
+    }
+
+    if (promise) {
+      this.waitForPromise(promise);
     }
 
     return promise;

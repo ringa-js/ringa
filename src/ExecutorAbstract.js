@@ -1,5 +1,7 @@
 import RingaObject from './RingaObject';
+import {inspectorDispatch} from './debug/InspectorController';
 import {now} from './util/debug';
+import {isPromise} from './util/type';
 
 export const executorCounts = {
   map: new Map()
@@ -20,12 +22,14 @@ class ExecutorAbstract extends RingaObject {
   constructor(thread) {
     super();
 
+    this.hasBeenRun = false;
+
     if (__DEV__ && !thread.controller) {
-      throw Error('ExecutorAbstract(): attempting to build a command connected to a Thread that has no attached controller.');
+      throw Error('ExecutorAbstract(): attempting to build an executor connected to a Thread without a controller.');
     }
 
-    let i = executorCounts.map[this.constructor] = executorCounts.map[this.constructor] ? executorCounts.map[this.constructor] + 1 : 1;
-    this.id = thread.controller.id + '_' + this.constructor.name + '_' + i;
+    let i = executorCounts.map[this.constructor] = (executorCounts.map[this.constructor] ? executorCounts.map[this.constructor] + 1 : 1);
+    this.id = thread.controller.id + '_' + this.constructor.name + i;
 
     this.thread = thread;
 
@@ -33,6 +37,8 @@ class ExecutorAbstract extends RingaObject {
 
     this.done = this.done.bind(this);
     this.fail = this.fail.bind(this);
+    this.stop = this.stop.bind(this);
+    this.resume = this.resume.bind(this);
   }
 
   //-----------------------------------
@@ -47,7 +53,7 @@ class ExecutorAbstract extends RingaObject {
   }
 
   get timeout() {
-    if (this._timeout === undefined && this.controller.options.timeout === undefined) {
+    if (!this._timeout && !this.controller.options.timeout) {
       return -1;
     }
 
@@ -80,6 +86,18 @@ class ExecutorAbstract extends RingaObject {
    * @private
    */
   _execute(doneHandler, failHandler) {
+    if (this.hasBeenRun) {
+      throw new Error('ExecutorAbstract::_execute(): an executor has been run twice!');
+    }
+
+    if (__DEV__ && !this.controller.__blockRingaEvents) {
+      inspectorDispatch('ringaExecutorStart', {
+        executor: this
+      });
+    }
+
+    this.hasBeenRun = true;
+
     this.doneHandler = doneHandler;
     this.failHandler = failHandler;
 
@@ -89,18 +107,70 @@ class ExecutorAbstract extends RingaObject {
   }
 
   /**
+   * Tells this executor to suspend its normal timeout operation and done/fail handler and wait for a promise instead.
+   * @param promise
+   */
+  waitForPromise(promise) {
+    if (isPromise(promise)) {
+      this.ringaEvent.detail._promise = promise;
+
+      promise.then(_result => {
+        this.ringaEvent.lastPromiseResult = _result;
+
+        this.done();
+      });
+      promise.catch(error => {
+        this.ringaEvent.lastPromiseError = error;
+
+        this.fail(error, this.controller.options.killOnErrorHandler(this.ringaEvent, error));
+      });
+    } else if (__DEV__) {
+      throw Error(`ExecutorAbstract::waitForPromise(): command ${this.toString()} returned something that is not a promise, ${promise}`);
+    }
+  }
+
+  /**
    * Call this method when the Command is ready to hand off control back to the parent Thread.
    */
   done() {
     if (__DEV__ && this.error) {
-      throw new Error('ExecutorAbstract::done(): called done on a executor that has already errored!');
+      console.error('ExecutorAbstract::done(): called done on a executor that has already failed! Original error:', this.error);
     }
 
-    this.endTimeoutCheck();
+    let _done = () => {
+      this.endTimeoutCheck();
 
-    this.endTime = now();
+      this.endTime = now();
 
-    this.doneHandler(true);
+      this.doneHandler(true);
+    };
+
+    if (__DEV__ && this.controller.options.throttle) {
+      this.doneThrottled(_done);
+    } else {
+      _done();
+    }
+  }
+
+  doneThrottled(done) {
+    let elapsed = new Date().getTime() - this.startTime;
+    let { min, max } = this.controller.options.throttle;
+
+    if (min && max && !isNaN(min) && !isNaN(max) && max > min) {
+      let millis = (Math.random() * (max - min)) + min - elapsed;
+
+      // Make sure in a state of extra zeal we don't throttle ourselves into a timeout
+      if (millis < 5) {
+        done();
+      } else {
+        setTimeout(done, millis);
+      }
+    } else {
+      if (__DEV__ && min && max && !isNaN(min) && !isNaN(max)) {
+        console.warn(`${this} invalid throttle settings! ${min} - ${max} ${typeof min} ${typeof max}`);
+      }
+      done();
+    }
   }
 
   /**
@@ -120,6 +190,20 @@ class ExecutorAbstract extends RingaObject {
   }
 
   /**
+   * Stops the timeout check.
+   */
+  stop() {
+    this.endTimeoutCheck();
+  }
+
+  /**
+   * Resumes the timeout check.
+   */
+  resume() {
+    this.startTimeoutCheck();
+  }
+
+  /**
    * By default is this executors id.
    *
    * @returns {string|*}
@@ -132,14 +216,33 @@ class ExecutorAbstract extends RingaObject {
     let message;
 
     if (__DEV__) {
-      message = 'ExecutorAbstract::_timeoutHandler(): the timeout for this command was exceeded ' + this.toString();
+      message = `ExecutorAbstract::_timeoutHandler(): the timeout (${this.timeout} ms) for this executor was exceeded:\n\t${this.toString()}`;
     }
 
     if (!__DEV__) {
-      message = 'Ringa: command timeout exceeded ' + this.toString();
+      message = `Ringa: executor timeout (${this.timeout} ms) exceeded:\n\t${this.toString()}`;
     }
 
-    this.fail(new Error(message), this);
+    this.ringaEvent._threadTimedOut = true;
+
+    this.error = new Error(message);
+
+    this.failHandler(this.error, true);
+  }
+
+  /**
+   * This method is used to destroy a child executor that is *not* attached to the original thread. For example,
+   * the IifExecutor runs a child executor and manages its done and fail.
+   *
+   * @param childExecutor
+   */
+  killChildExecutor(childExecutor) {
+    if (__DEV__ && !this.controller.__blockRingaEvents) {
+      inspectorDispatch('ringaExecutorEnd', {
+        executor: childExecutor
+      });
+    }
+    childExecutor.destroy(true);
   }
 }
 

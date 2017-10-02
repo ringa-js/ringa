@@ -38,3 +38,9 @@ jspm_packages
 
 # IDE
 .idea
+
+# coverage
+tests/coverage
+
+.DS_Store
+presentations

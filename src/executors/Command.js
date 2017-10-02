@@ -44,7 +44,7 @@ class Command extends ExecutorAbstract {
    * @private
    */
   _execute(doneHandler, failHandler) {
-    let ret;
+    let promise;
 
     super._execute(doneHandler, failHandler);
 
@@ -52,7 +52,7 @@ class Command extends ExecutorAbstract {
 
     const donePassedAsArg = this.argNames.indexOf('done') !== -1;
 
-    ret = this.execute.apply(this, args);
+    promise = this.execute.apply(this, args);
 
     if (this.error) {
       return undefined;
@@ -61,11 +61,15 @@ class Command extends ExecutorAbstract {
     // If the function returns true, we continue on the next immediate cycle assuming it didn't return a promise.
     // If, however the function requested that 'done' be passed, we assume it is an asynchronous
     // function and let the function determine when it will call done.
-    if (!ret && !donePassedAsArg) {
+    if (!promise && !donePassedAsArg) {
       this.done();
     }
 
-    return ret;
+    if (promise) {
+      this.waitForPromise(promise);
+    }
+
+    return promise;
   }
 
   /**
@@ -86,6 +90,15 @@ class Command extends ExecutorAbstract {
    */
   fail(error, kill = false) {
     super.fail(error, kill);
+  }
+
+  /**
+   * By default is this executors id.
+   *
+   * @returns {string|*}
+   */
+  toString() {
+    return this.id;
   }
 }
 

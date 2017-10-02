@@ -2,7 +2,7 @@
 
 window.__DEV__ = true;
 
-import TestUtils from 'react-addons-test-utils';
+import TestUtils from 'react-dom/test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Ringa, {__hardReset} from '../src/index';
@@ -38,16 +38,16 @@ describe('operators', () => {
     };
 
     controller.addListener(TEST_EVENT, [
-      Ringa.assign((prop, ringaEvent) => {
+      Ringa.assign((prop, $ringaEvent) => {
         expect(prop).toEqual(assignee.prop);
-        expect(ringaEvent.detail.prop).toEqual(assignee.prop);
+        expect($ringaEvent.detail.prop).toEqual(assignee.prop);
 
         done();
       }, assignee)
     ]);
 
     Ringa.dispatch(TEST_EVENT, undefined, domNode);
-  }, 50);
+  }, 100);
 
 
 });

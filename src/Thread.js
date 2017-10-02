@@ -1,19 +1,19 @@
 import RingaHashArray from './RingaHashArray';
-import {isPromise} from './util/type';
+import {inspectorDispatch} from './debug/InspectorController';
 
 class Thread extends RingaHashArray {
   //-----------------------------------
   // Constructor
   //-----------------------------------
-  constructor(id, threadFactory, options) {
-    super(id);
+  constructor(name, threadFactory, options) {
+    super(name);
 
     this.options = options;
     this.threadFactory = threadFactory;
 
     this.running = false;
 
-    // TODO: a command thread can potentially spawn child command threads
+    // TODO: a executor thread can potentially spawn child executor threads
     this.children = [];
   }
 
@@ -51,37 +51,23 @@ class Thread extends RingaHashArray {
 
     this.buildExecutors();
 
-    // The current command we are running
+    // The current executor we are running
     this.index = 0;
 
     this.executeNext();
   }
 
   executeNext() {
-    let command = this.all[this.index];
-    let promise;
+    let executor = this.all[this.index];
 
+    if (this.index > 0) {
+      let previousExecutor = this.all[this.index-1];
+      this.removeExecutor(previousExecutor);
+    }
     try {
-      promise = command._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
+      this.ringaEvent.addDebug(`Executing: ${executor}`);
 
-      if (promise) {
-        if (isPromise(promise)) {
-          this.ringaEvent.detail._promise = promise;
-
-          promise.then((result) => {
-            this.ringaEvent.lastPromiseResult = result;
-
-            this._executorDoneHandler();
-          });
-          promise.catch((error) => {
-            this.ringaEvent.lastPromiseError = error;
-
-            this._executorFailHandler(error);
-          });
-        } else if (__DEV__) {
-          throw Error(`Thread::executeNext(): command ${command.toString()} returned something that is not a promise, ${promise}`);
-        }
-      }
+      executor._execute(this._executorDoneHandler.bind(this), this._executorFailHandler.bind(this));
     } catch (error) {
       this._executorFailHandler(error);
     }
@@ -91,11 +77,31 @@ class Thread extends RingaHashArray {
     this.running = false;
   }
 
+  removeExecutor(executor) {
+    if (__DEV__ && !this.controller.__blockRingaEvents) {
+      inspectorDispatch('ringaExecutorEnd', {
+        executor
+      });
+    }
+
+    if (this.has(executor)) {
+      this.remove(executor);
+    }
+  }
+
   //-----------------------------------
   // Events
   //-----------------------------------
   _executorDoneHandler() {
-    this.all[this.index].destroy();
+    let executor;
+
+    if (!this.all[this.index]) {
+      this._finCouldNotFindError();
+    } else {
+      executor = this.all[this.index].destroy(true);
+    }
+
+    this.ringaEvent.addDebug(`Done: ${executor}`);
 
     this.index++;
 
@@ -107,11 +113,20 @@ class Thread extends RingaHashArray {
       setTimeout(this.executeNext.bind(this), 0);
     } else {
       this.doneHandler(this);
+      this.removeExecutor(executor);
     }
   }
 
   _executorFailHandler(error, kill) {
-    this.all[this.index].destroy();
+    let executor;
+
+    if (!this.all[this.index]) {
+      this._finCouldNotFindError(error);
+    } else {
+      executor = this.all[this.index].destroy(true);
+    }
+
+    this.ringaEvent.addDebug(`Fail: ${executor}`);
 
     this.error = error;
 
@@ -123,7 +138,33 @@ class Thread extends RingaHashArray {
 
     if (!kill) {
       this._executorDoneHandler();
+    } else {
+      this.removeExecutor(executor);
     }
+  }
+
+  _finCouldNotFindError(error) {
+    /**
+     * During unit tests, __hardReset() is called at the end of the test. After that point, its possible
+     * for some of the executors to finish up and then because all the threads have been destroyed this
+     * object is going to try to kill the executor that Ringa already cleaned up during a __hardReset. Since
+     * we are moving onto the next unit test, we can just ignore that issue.
+     */
+    if (this.destroyed) {
+      return;
+    }
+
+    let e = (this.all && this.all.length) ? this.all.map(e => {
+        return e.toString();
+      }).join(', ') : `No executors found on thread ${this.toString()}`;
+
+    console.error(`Thread: could not find executor to destroy it! This could be caused by an internal Ringa error or an error in an executor. All information below:\n` +
+      `\t- Executor Index: ${this.index}\n` +
+      `\t- All Executors: ${e}\n` +
+      (error ? `\t- Executor Failure that triggered this was:\n` +
+      (error.stack ? `\t${error.stack}\n` : `${error}`) : '') +
+      `\t- Failure Dispatch Stack Trace:\n` +
+      `\t${new Error().stack}`);
   }
 }
 

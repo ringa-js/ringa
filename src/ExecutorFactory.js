@@ -3,6 +3,7 @@ import FunctionExecutor from './executors/FunctionExecutor';
 import PromiseExecutor from './executors/PromiseExecutor';
 import EventExecutor from './executors/EventExecutor';
 import ParallelExecutor from './executors/ParallelExecutor';
+import SleepExecutor from './executors/SleepExecutor';
 import RingaEventFactory from './RingaEventFactory';
 import {getArgNames} from './util/function';
 
@@ -17,6 +18,10 @@ class ExecutorFactory {
    *   ExecutorAbstract to build based on what is passed in. This makes things extensible.
    */
   constructor(executee, executeeOptions) {
+    if (!executee) {
+      throw new Error('ExecutorFactory::build(): an internal error occurred and an executee was undefined!');
+    }
+
     this.executee = executee;
     this.executeeOptions = executeeOptions;
   }
@@ -29,6 +34,8 @@ class ExecutorFactory {
     if (typeof this.executee === 'string') {
       let ringaEventFactory = new RingaEventFactory(this.executee);
       return new EventExecutor(thread, ringaEventFactory);
+    } else if (typeof this.executee === 'number') {
+      return new SleepExecutor(thread, this.executee);
     } else if (typeof this.executee.then === 'function') {
       return new PromiseExecutor(thread, this.executee);
     } else if (typeof this.executee === 'function') {
