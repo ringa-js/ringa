@@ -43,7 +43,7 @@ describe('Controller', () => {
   it('should default options properly', () => {
     expect(controller.options).toBeDefined();
     expect(controller.options.injections).toBeDefined();
-    expect(controller.options.timeout).toEqual(5000);
+    expect(controller.options.timeout).toEqual(10000);
     expect(controller.options.throwKillsThread).toEqual(true);
   });
 

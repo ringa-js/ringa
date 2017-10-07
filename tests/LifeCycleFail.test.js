@@ -5,7 +5,7 @@ window.__DEV__ = true;
 import TestUtils from 'react-dom/test-utils';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Ringa, {__hardReset} from '../src/index';
+import Ringa, {__hardReset, RingaEvent} from '../src/index';
 import TestController from './shared/TestController';
 import CommandThrow from './shared/CommandThrow';
 import CommandFail from './shared/CommandFail';
@@ -38,19 +38,22 @@ describe('LifeCycleFail', () => {
   //-----------------------------------
   // RingaEvent -> 1 Command throw
   //-----------------------------------
-  it('RingaEvent -> 1 Command throw', (done) => {
+  it('RingaEvent -> 1 Command throw (do not kill)', (done) => {
     threadFactory.add(CommandThrow);
 
     controller.options.consoleLogFails = false;
 
-    let ringaEvent = Ringa.dispatch(TEST_EVENT, {
+    let ringaEvent = new RingaEvent(TEST_EVENT, {
       error: 'some error'
-    }, domNode).addDoneListener(() => {
-      done('Unexpectedly called done when an error was thrown!');
-    }).addFailListener((event) => {
-      expect(event.error.message).toEqual('some error');
-      done();
     });
+
+    ringaEvent
+      .catch((event) => {
+        expect(event.error.message).toEqual('some error');
+        done();
+      });
+
+    ringaEvent.dispatch(domNode);
   }, 200);
 
   //----------------------------------------------

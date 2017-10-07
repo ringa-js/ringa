@@ -75,7 +75,7 @@ describe('FunctionExecutor', () => {
         else resolve({someValue: 'someValue'});
       }, 10);
     });
-  }
+  };
 
   it('should work properly when a promise is returned', (done) => {
 
@@ -96,16 +96,13 @@ describe('FunctionExecutor', () => {
 
     controller.options.consoleLogFails = false;
 
-    controller.addListener('promiseTest', [
-      promiseTest,
-      $lastPromiseError => {
-        expect($lastPromiseError).toEqual('someError');
-        done();
-      }
-    ]);
+    controller.addListener('promiseTest', promiseTest);
 
     Ringa.dispatch('promiseTest', {
       shouldFail: true
-    }, domNode);
+    }, domNode).catch($lastPromiseError => {
+      expect($lastPromiseError.error).toEqual('someError');
+      done();
+    });
   });
 });

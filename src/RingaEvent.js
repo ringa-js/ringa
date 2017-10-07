@@ -419,6 +419,7 @@ class RingaEvent extends RingaObject {
    * @param reject A function to call when any triggered thread has a failure.
    */
   then(resolve, reject) {
+    // TODO need to add resolution if then is added AFTER the event has already completed!
     if (resolve) {
       this.addDoneListener(resolve);
     }
@@ -434,6 +435,8 @@ class RingaEvent extends RingaObject {
    * @param reject A function to call when any triggered thread has a failure.
    */
   catch(reject) {
+    // TODO need to add resolution if then is added AFTER the event has already completed!
+
     this.addFailListener(reject);
 
     return this;

@@ -220,9 +220,6 @@ describe('Model', () => {
       model.addProperty('someProperty', 'defaultValue');
 
       expect(model.serialize()).toEqual({
-        $Model: 'Model',
-        $version: '0.0.0',
-        $name: 'model',
         id: 'kumquat',
         someProperty: 'defaultValue'
       });
@@ -238,9 +235,6 @@ describe('Model', () => {
       model.addProperty('someOtherProperty', {value: 1});
 
       expect(model.serialize()).toEqual({
-        $Model: 'Model',
-        $version: '0.0.0',
-        $name: 'model',
         id: 'kumquat',
         someProperty: 'defaultValue',
         someOtherProperty: {
@@ -257,9 +251,6 @@ describe('Model', () => {
       model.id = 'kumquat';
 
       expect(model.serialize()).toEqual({
-        $Model: 'Model',
-        $version: '0.0.0',
-        $name: 'model',
         id: 'kumquat'
       });
     });
@@ -277,14 +268,8 @@ describe('Model', () => {
       model.addProperty('someModel', childModel);
 
       expect(model.serialize()).toEqual({
-        $Model: 'Model',
-        $version: '0.0.0',
-        $name: 'model',
         id: 'kumquat',
         someModel: {
-          $Model: 'Model',
-          $version: '0.0.0',
-          $name: 'model',
           id: 'rutabaga',
           someProp: 8
         }
@@ -305,14 +290,8 @@ describe('Model', () => {
       model.addProperty('someModel', [childModel]);
 
       expect(model.serialize()).toEqual({
-        $Model: 'Model',
-        $version: '0.0.0',
-        $name: 'model',
         id: 'kumquat',
         someModel: [{
-          $Model: 'Model',
-          $version: '0.0.0',
-          $name: 'model',
           id: 'rutabaga',
           someProp: 8
         }]
@@ -332,26 +311,14 @@ describe('Model', () => {
       model.addProperty('someModel', [childModel, childModel, childModel]);
 
       expect(model.serialize()).toEqual({
-        $Model: 'Model',
-        $version: '0.0.0',
-        $name: 'model',
         id: 'kumquat',
         someModel: [{
-          $Model: 'Model',
-          $version: '0.0.0',
-          $name: 'model',
           id: 'rutabaga',
           someProp: 8
         }, {
-          $Model: 'Model',
-          $version: '0.0.0',
-          $name: 'model',
           id: 'rutabaga',
           someProp: 8
         }, {
-          $Model: 'Model',
-          $version: '0.0.0',
-          $name: 'model',
           id: 'rutabaga',
           someProp: 8
         }]
@@ -660,20 +627,20 @@ describe('Model', () => {
 
       let trieSearch = model.index(true);
 
-      expect(trieSearch.get('1')[0]).toBe(childModel);
-      expect(trieSearch.get('1')[1]).toBe(model);
-      expect(trieSearch.get('12')[0]).toBe(childModel);
-      expect(trieSearch.get('12')[1]).toBe(model);
-      expect(trieSearch.get('123')[0]).toBe(childModel);
-      expect(trieSearch.get('123')[1]).toBe(model);
-      expect(trieSearch.get('1234')[0]).toBe(childModel);
-      expect(trieSearch.get('1234')[1]).toBe(model);
-      expect(trieSearch.get('12345')[0]).toBe(childModel);
-      expect(trieSearch.get('12345')[1]).toBe(model);
-      expect(trieSearch.get('123456')[0]).toBe(childModel);
-      expect(trieSearch.get('123456')[1]).toBe(model);
-      expect(trieSearch.get('1234567')[0]).toBe(childModel);
-      expect(trieSearch.get('1234567')[1]).toBe(model);
+      expect(trieSearch.get('1')[0]).toBe(model);
+      expect(trieSearch.get('1')[1]).toBe(childModel);
+      expect(trieSearch.get('12')[0]).toBe(model);
+      expect(trieSearch.get('12')[1]).toBe(childModel);
+      expect(trieSearch.get('123')[0]).toBe(model);
+      expect(trieSearch.get('123')[1]).toBe(childModel);
+      expect(trieSearch.get('1234')[0]).toBe(model);
+      expect(trieSearch.get('1234')[1]).toBe(childModel);
+      expect(trieSearch.get('12345')[0]).toBe(model);
+      expect(trieSearch.get('12345')[1]).toBe(childModel);
+      expect(trieSearch.get('123456')[0]).toBe(model);
+      expect(trieSearch.get('123456')[1]).toBe(childModel);
+      expect(trieSearch.get('1234567')[0]).toBe(model);
+      expect(trieSearch.get('1234567')[1]).toBe(childModel);
       expect(trieSearch.get('12345678').length).toBe(0);
     });
   });

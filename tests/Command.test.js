@@ -99,17 +99,22 @@ describe('Command', () => {
       b: 'b'
     });
 
-    expect(() => {
-      buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
-    }).toThrow();
+    let args = buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
+    expect(args[4]).toEqual('test');
+    expect(args[5]).toEqual('a');
+    expect(args[6]).toEqual('b');
+    expect(args[7]).toEqual(undefined);
   });
 
   it('should have a working buildArgumentsFromRingaEvent function (2/X)', () => {
     let ringaEvent = new Ringa.Event('testEvent', undefined);
 
-    expect(() => {
-      buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
-    }).toThrow();
+    let args = buildArgumentsFromRingaEvent(commandComplex, commandComplex.argNames, ringaEvent);
+
+    expect(args[4]).toEqual(undefined);
+    expect(args[5]).toEqual(undefined);
+    expect(args[6]).toEqual(undefined);
+    expect(args[7]).toEqual(undefined);
   });
 
   it('should work properly when a promise is returned', (done) => {
@@ -131,16 +136,13 @@ describe('Command', () => {
 
     controller.options.consoleLogFails = false;
 
-    controller.addListener('promiseTest', [
-      CommandPromise,
-      $lastPromiseError => {
-        expect($lastPromiseError).toEqual('CommandPromise:someError');
-        done();
-      }
-    ]);
+    controller.addListener('promiseTest', CommandPromise);
 
     Ringa.dispatch('promiseTest', {
       shouldFail: true
-    }, domNode);
+    }, domNode).catch($lastPromiseError => {
+      expect($lastPromiseError.error).toEqual('CommandPromise:someError');
+      done();
+    });
   }, 500);
 });
