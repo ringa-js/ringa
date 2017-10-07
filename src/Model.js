@@ -179,6 +179,7 @@ class Model extends Bus {
    * @param handler The function to call when a notify signal is sent.
    */
   watch(handler) {
+    // TODO add ability to watch specific signals
     if (this.watchers.indexOf(handler) === -1) {
       this.watchers.push(handler);
     }
@@ -282,6 +283,7 @@ class Model extends Bus {
     let defaultSet = function(value) {
       const oldValue = this[subScriptName];
 
+      // TODO: add custom comparison options function
       if (oldValue === value) {
         return;
       }

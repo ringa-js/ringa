@@ -47,9 +47,3 @@ Right now RingaJS is being developed for an ES6+ development environment and has
 
 * `npm install --save-dev ringa` - Install Ringa into
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.

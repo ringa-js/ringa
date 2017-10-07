@@ -49,19 +49,10 @@
                         <a href="..">Home</a>
                     </li>
                     <li >
-                        <a href="../whyRinga/">Why Ringa?</a>
-                    </li>
-                    <li >
-                        <a href="../overview/">Overview</a>
+                        <a href="../whyRinga/">Why Ringa</a>
                     </li>
                     <li class="active">
                         <a href="./">Model</a>
-                    </li>
-                    <li >
-                        <a href="../controller/">Controllers</a>
-                    </li>
-                    <li >
-                        <a href="../executors/">Executors</a>
                     </li>
                 </ul>
 
@@ -72,12 +63,12 @@
                     </a>
                 </li>
                     <li >
-                        <a rel="next" href="../overview/">
+                        <a rel="next" href="../whyRinga/">
                             <i class="fa fa-arrow-left"></i> Previous
                         </a>
                     </li>
-                    <li >
-                        <a rel="prev" href="../controller/">
+                    <li class="disabled">
+                        <a rel="prev" >
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -89,11 +80,250 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#model">Model</a></li>
+            <li><a href="#example">Example</a></li>
+            <li><a href="#11-watching-observing">1.1 Watching / Observing</a></li>
+            <li><a href="#12-model-property-defaults">1.2 Model Property Defaults</a></li>
+            <li><a href="#13-model-property-options-propertyoptions">1.3 Model Property Options (propertyOptions)</a></li>
+            <li><a href="#14-custom-getters-setters">1.4 Custom Getters / Setters</a></li>
+            <li><a href="#2-notifications">2. Notifications</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-</div>
+<h1 id="model">Model</h1>
+<p>The Ringa Model class is a core part of the framework that is not necessary to use but provides a significant
+amount of powerful functionality.</p>
+<p>The Ringa Model class provides:</p>
+<ul>
+<li>Property management</li>
+<li>Property watching</li>
+<li>Built in tree structure (optional)</li>
+<li>Cloning (recursive)</li>
+<li>Serialization / deserialization (recursive)</li>
+<li>Trie-based indexing for search (recursive)</li>
+</ul>
+<h2 id="example">Example</h2>
+<pre><code>import {Model} from 'ringa';
+
+class UserModel extends Model {
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('firstName');
+    this.addProperty('lastName');
+    this.addProperty('email');
+  }
+}
+</code></pre>
+<p>In this example, the <code>UserModel</code> is configured with three properties that by default:</p>
+<ol>
+<li>Can be watched for changes</li>
+<li>Will be included when serializing / deserializing</li>
+</ol>
+<h2 id="11-watching-observing">1.1 Watching / Observing</h2>
+<p>Using the above Class <code>UserModel</code>, we could do the following:</p>
+<pre><code>let user = new UserModel();
+
+user.watch(signal =&gt; {
+  console.log(`A property has changed '${signal}': ${user[signal]}`);
+});
+
+user.firstName = 'Saajan';
+</code></pre>
+<p>The console will now output:</p>
+<pre><code>A property has changed 'firstName': Saajan
+</code></pre>
+<h2 id="12-model-property-defaults">1.2 Model Property Defaults</h2>
+<p>You can specify default values for <code>Model</code> properties easily:</p>
+<pre><code>class Airplane extends Model {
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('altitude', 0);
+  }
+}
+</code></pre>
+<p>All properties in the <code>Model</code> default to <code>undefined</code>. In this case, we are saying the altitude should start, as it should, at <code>0</code>.</p>
+<pre><code>let airplane = new Airplane();
+
+console.log(airplane.altitude);
+</code></pre>
+<p>Output:</p>
+<pre><code>0
+</code></pre>
+<h2 id="13-model-property-options-propertyoptions">1.3 Model Property Options (<code>propertyOptions</code>)</h2>
+<p>The third parameter to <code>addProperty</code> is an optional options <code>Object</code>:</p>
+<pre><code>class Airplane extends Model {
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('altitude', 0, {
+      description: 'This is the altitude of the airplane.'
+    });
+  }
+}
+</code></pre>
+<p>All property options can be accessed through the <code>propertyOptions</code> dictionary:</p>
+<pre><code>let airplane = new Airplane();
+
+console.log(airplane.propertyOptions.altitude.description);
+</code></pre>
+<p>Output:</p>
+<pre><code>This is the altitude of the airplane.
+</code></pre>
+<p><strong>Be careful! If you accidentally pass the property options as the second parameter to <code>addProperty</code> they will be treated as the default value.</strong></p>
+<p>Note: the following propertyOptions are reserved and used by Ringa:</p>
+<ul>
+<li><code>descriptor</code></li>
+<li><code>setParentModel</code></li>
+<li><code>autowatch</code></li>
+<li><code>doNotNotify</code></li>
+<li><code>clone</code></li>
+<li><code>type</code></li>
+<li><code>serialize</code></li>
+<li><code>get</code></li>
+<li><code>set</code></li>
+</ul>
+<h2 id="14-custom-getters-setters">1.4 Custom Getters / Setters</h2>
+<p>By default, Ringa uses <code>Object.defineProperty</code> every time you call <code>addProperty()</code> to create a custom getter / setter on your model.</p>
+<p>However, you can override this quite easily:</p>
+<pre><code>import {Model} from 'ringa';
+
+class UserModel extends Model {
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('address', undefined, {
+      set: value =&gt; {
+        this._address = value ? value.toUpperCase();
+        this.notify('address');
+      },
+      get: () =&gt; {
+        return this._address;
+      }
+    });
+  }
+}
+</code></pre>
+<p><em>Note: if you override the internal setter you will not get any of the built in notification features unless you call them yourself!</em></p>
+<h2 id="2-notifications">2. Notifications</h2>
+<p>By default, Ringa Models automatically dispatch (notify) a new signal that matches the property name when that property changes in value.</p>
+<pre><code>user.watch(signal =&gt; console.log);
+
+user.firstName = 'Josh');
+</code></pre>
+<p>Output:</p>
+<pre><code>firstName
+</code></pre>
+<p>But if the property does not change in value, then no signal is dispatched:</p>
+<pre><code>// Signal 'firstName' is dispatched first time!
+user.firstName = 'Saajan';
+
+// Signal 'firstName' is NOT dispatched, because property has not changed
+user.firstName = 'Saajan';
+</code></pre>
+<h3 id="21-custom-notifications">2.1. Custom Notifications</h3>
+<p>One cool feature of the Ringa <code>Model</code> is that you can notify your own custom signals:</p>
+<pre><code>let user = new UserModel();
+
+user.watch(signal =&gt; {
+  if (signal === 'update') {
+    doSomeHugeTask();
+  }
+});
+
+user.firstName = 'Saajan';
+user.lastName = 'Smith';
+user.email = 'saajan@somewhere.com';
+
+user.notify('update');
+</code></pre>
+<h3 id="22-turning-off-notifications">2.2. Turning off Notifications</h3>
+<p>Another cool feature of the Model is that you can turn off notifications to improve performance by using the property options:</p>
+<pre><code>import {Model} from 'ringa';
+
+class UserModel extends Model {
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('firstName', {doNotNotify: true});
+    this.addProperty('lastName', {doNotNotify: true});
+  }
+
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+}
+
+...
+
+user = new UserModel();
+
+user.watch(signal =&gt; {
+  if (signal === 'change') {
+    console.log('The name has changed! ${user.fullName}');
+  }
+});
+
+user.firstName = 'Saajan';
+user.lastName = 'Smith';
+
+user.notify('change');
+</code></pre>
+<p>In the above example, to increase performance we notify a special event when either the <code>firstName</code> or <code>lastName</code> has changed.</p>
+<h3 id="23-aggregating-complex-properties">2.3 Aggregating Complex Properties</h3>
+<p>A lot of observable frameworks like MobX and Angular attempt to deduce what you want updated by reading complex strings that combine filtering, sorting, etc. Many of
+them do this by parsing the string, breaking it down into variable names, and then watching all the variables for updates.</p>
+<p>Unfortunately, at the beginning of a smaller project this is really helpful but it causes several problems especially as a project scales:</p>
+<ol>
+<li>Bindings can begin to cause unpredicable performance drops when updating a single variable causes a huge tree of observables to be triggered.</li>
+<li>Including complex math or array reduce / map / filters inside of strings limits your IDEs ability to parse some of your most important code.</li>
+</ol>
+<p>My goal with Ringa was to avoid these two problems as much as possible. As a result, the Models in Ringa give most of the power of these updates to you, the developer.</p>
+<p>Nothing in Ringa updates unless you explicitly tell it to.</p>
+<p>See the next section (2.4) for an example of how to more complex operations triggered by a property change. </p>
+<h3 id="24-watching-changes-with-onchange">2.4 Watching changes with <code>onChange</code></h3>
+<p>If you want to do complex operations, you can do so like this:</p>
+<pre><code>import {Model} from 'ringa';
+
+class Collection extends Model {
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('data');  // Input array (immutable)
+    this.addProperty('items', {
+      get: () {
+        return this.data ? this.data.filter(this.filter) : [];
+      }
+    }); // Output array (determined by filter)
+
+    this.addProperty('filter', {
+      onChange: (oldValue, newValue) =&gt; {
+        this.notify('items');
+      }
+    });
+  }
+}
+</code></pre>
+<p><em>Note: <code>onChange</code> only gets called if the value of the property <code>filter</code> above actually changes to a new value.</em></p>
+<p>Now, when <code>filter</code> changes, an <code>items</code> signal will be dispatched:</p>
+<pre><code>let collection = new Collection();
+
+collection.watch(signal =&gt; {
+  if (signal === 'items') {
+    console.log("Items are now: ${collection.items.join(',')}");
+  }
+});
+
+collection.data = [1, 2, 3];
+collection.filter = value =&gt; value !== 2;
+</code></pre>
+<p>Output:</p>
+<pre><code>1, 3
+</code></pre>
+<p>This notification feature of models is the foundation of the high performance of Ringa because nothing happens that you do not 
+explicitly tell Ringa to do, so you can avoid all the performance bottlenecks from the beginning that tend to bog down enterprise software.</p></div>
         </div>
 
         <footer class="col-md-12">

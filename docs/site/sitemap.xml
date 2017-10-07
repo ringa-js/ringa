@@ -19,31 +19,7 @@
 
     
     <url>
-     <loc>/overview/</loc>
-     <lastmod>2017-10-07</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-    
-
-    
-    <url>
      <loc>/model/</loc>
-     <lastmod>2017-10-07</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-    
-
-    
-    <url>
-     <loc>/controller/</loc>
-     <lastmod>2017-10-07</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-    
-
-    
-    <url>
-     <loc>/executors/</loc>
      <lastmod>2017-10-07</lastmod>
      <changefreq>daily</changefreq>
     </url>

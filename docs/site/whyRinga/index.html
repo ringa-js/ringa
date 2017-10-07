@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Why Ringa? - RingaJS Documentation</title>
+        <title>Why Ringa - RingaJS Documentation</title>
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -49,19 +49,10 @@
                         <a href="..">Home</a>
                     </li>
                     <li class="active">
-                        <a href="./">Why Ringa?</a>
-                    </li>
-                    <li >
-                        <a href="../overview/">Overview</a>
+                        <a href="./">Why Ringa</a>
                     </li>
                     <li >
                         <a href="../model/">Model</a>
-                    </li>
-                    <li >
-                        <a href="../controller/">Controllers</a>
-                    </li>
-                    <li >
-                        <a href="../executors/">Executors</a>
                     </li>
                 </ul>
 
@@ -77,7 +68,7 @@
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../overview/">
+                        <a rel="prev" href="../model/">
                             Next <i class="fa fa-arrow-right"></i>
                         </a>
                     </li>
@@ -89,11 +80,38 @@
         <div class="container">
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#advantages">Advantages</a></li>
+        <li class="main "><a href="#developing-with-ringa">Developing with Ringa</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
 
-</div>
+<p>When designing Ringa we asked the following questions:</p>
+<ol>
+<li>What is the development problem?</li>
+<li>What would be the most enjoyable code to write to solve it?</li>
+<li>Is this going to scale and not impact the <em>computers performance</em>?</li>
+<li>Is this going to scale and not impact the <em>next developers performance</em>?</li>
+</ol>
+<p>We went back to the drawing board and put on our computer scientist caps to solve each problem and answer each of the 4 Questions. As a result, to understand why Ringa is so powerful a basic understanding of trees, graphs, algorithms, and software design patterns like singletons, factories, decorators, and dependency injection is a huge plus.</p>
+<h1 id="advantages">Advantages</h1>
+<p>Ringa provides the following high-level architectural advantages:</p>
+<ul>
+<li><strong>Uses DOM event system</strong></li>
+<li>Controllers are attached to a DOM node so there are no God objects</li>
+<li>Use 'bubble' and 'capture' to communicate between controllers through the DOM</li>
+<li>Intercept events at a higher level in the DOM so that the root of your application always has complete control</li>
+<li>All RingaEvents include information on the view that dispatched them, the line of code they were dispatched from, the controller that is handling them, the commands that are responding, and much, much more</li>
+<li><strong>Follows the Best MVC principles</strong></li>
+<li>Controllers are designed to keep your view, API, control, and model separated</li>
+<li><strong>Asynchronous Syntax</strong></li>
+<li>Writing complicated trees of asynchronous and synchronous processes is simple</li>
+<li>Reading someone else's complex tree of asynchronous tasks is straightforward</li>
+<li>Extending, intercepting, or injecting into an existing asynchronous process is easy, but never interferes with debugging so there are no surprises</li>
+<li>Debugging when something fails in a complex tree of asynchronous tasks is at your fingertips</li>
+</ul>
+<h1 id="developing-with-ringa">Developing with Ringa</h1>
+<p>Ringa is designed for enterprise-level applications and scales with your team to keep everyone happy. It is designed with the idea that you will eventually have a large application with a lot of library dependencies and also so that your code can be cordoned off into discrete sections so that there is less developer conflict during development.</p></div>
         </div>
 
         <footer class="col-md-12">

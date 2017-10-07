@@ -1,8 +1,5 @@
 site_name: RingaJS Documentation
 pages:
     - Home: index.md
-    - 'Why Ringa?': whyRinga.md
-    - Overview: overview.md
+    - Why Ringa: whyRinga.md
     - Model: model.md
-    - Controllers: controller.md
-    - Executors: executors.md
