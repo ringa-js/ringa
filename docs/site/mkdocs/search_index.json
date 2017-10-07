@@ -1,0 +1,74 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Welcome to RingaJS\n\n\nWhat is it\n\n\nRingaJS is a single page application framework that includes:\n\n\n\n\nMVC / MVVM hybrid\n structure with little boilerplate\n\n\nState management\n with no singletons\n\n\nPerformance centered \nobserver pattern\n\n\nDependency injection\n\n\nAsynchronous toolset\n with branching, looping, and error handling\n\n\n\n\nIt is hard to explain what Ringa is in a single sentence because it just does so much. This was built in my spare time the last year as a way to shift all the most difficult\nconcepts to rapid application development into a core set of Classes to improve my own development speed. It was also designed as a way to organize large enterprise\napplications in a way that made it extremely easy to monitor large teams as they work in a growing codebase.\n\n\nRinga's philosophy can be summed up with a few mantras:\n\n\n\n\nShield new developers from concepts they do not need to know... yet\n\n\nLet seasoned developers configure or extend anything\n\n\nGive everyone easy to understand error messages and warnings\n\n\nNever sacrifice performance\n\n\nNo fancy string parsing for observers\n\n\nGive developers 100% control over their observables\n\n\n\n\nLatest Version\n\n\nTesting\n\n\nRinga currently has around 200 unit tests to ensure its core features are running smoothly.\n\n\nUnder Construction\n\n\nRingaJS is currently in Alpha version and has been so since Janary 2017, and while being used live, has not been battle-tested on a large scale quite yet. We would\nlove your input and your bug reports.\n\n\nRequirements\n\n\nRight now RingaJS is being developed for an ES6+ development environment and has been tested on:\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 11+\n\n\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa into\n\n\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#welcome-to-ringajs", 
+            "text": "", 
+            "title": "Welcome to RingaJS"
+        }, 
+        {
+            "location": "/#what-is-it", 
+            "text": "RingaJS is a single page application framework that includes:   MVC / MVVM hybrid  structure with little boilerplate  State management  with no singletons  Performance centered  observer pattern  Dependency injection  Asynchronous toolset  with branching, looping, and error handling   It is hard to explain what Ringa is in a single sentence because it just does so much. This was built in my spare time the last year as a way to shift all the most difficult\nconcepts to rapid application development into a core set of Classes to improve my own development speed. It was also designed as a way to organize large enterprise\napplications in a way that made it extremely easy to monitor large teams as they work in a growing codebase.  Ringa's philosophy can be summed up with a few mantras:   Shield new developers from concepts they do not need to know... yet  Let seasoned developers configure or extend anything  Give everyone easy to understand error messages and warnings  Never sacrifice performance  No fancy string parsing for observers  Give developers 100% control over their observables", 
+            "title": "What is it"
+        }, 
+        {
+            "location": "/#latest-version", 
+            "text": "", 
+            "title": "Latest Version"
+        }, 
+        {
+            "location": "/#testing", 
+            "text": "Ringa currently has around 200 unit tests to ensure its core features are running smoothly.", 
+            "title": "Testing"
+        }, 
+        {
+            "location": "/#under-construction", 
+            "text": "RingaJS is currently in Alpha version and has been so since Janary 2017, and while being used live, has not been battle-tested on a large scale quite yet. We would\nlove your input and your bug reports.", 
+            "title": "Under Construction"
+        }, 
+        {
+            "location": "/#requirements", 
+            "text": "Right now RingaJS is being developed for an ES6+ development environment and has been tested on:   Chrome  Firefox  Safari  IE 11+", 
+            "title": "Requirements"
+        }, 
+        {
+            "location": "/#installation", 
+            "text": "npm install --save-dev ringa  - Install Ringa into", 
+            "title": "Installation"
+        }, 
+        {
+            "location": "/#project-layout", 
+            "text": "mkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Project layout"
+        }, 
+        {
+            "location": "/whyRinga/", 
+            "text": "", 
+            "title": "Why Ringa?"
+        }, 
+        {
+            "location": "/overview/", 
+            "text": "", 
+            "title": "Overview"
+        }, 
+        {
+            "location": "/model/", 
+            "text": "", 
+            "title": "Model"
+        }, 
+        {
+            "location": "/controller/", 
+            "text": "", 
+            "title": "Controllers"
+        }, 
+        {
+            "location": "/executors/", 
+            "text": "", 
+            "title": "Executors"
+        }
+    ]
+}
