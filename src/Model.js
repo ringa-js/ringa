@@ -484,7 +484,7 @@ class Model extends Bus {
     trieSearch.visitedById[this.id] = true;
 
     let _add = function(model, trieSearch, prop, obj) {
-      if (typeof obj === 'object' && obj.indexValue) {
+      if (typeof obj === 'object' && obj !== null && obj.indexValue) {
         trieSearch.map(obj.indexValue, model);
       } else if (obj && obj.toString() !== '') {
         trieSearch.map(obj.toString(), model);
@@ -508,6 +508,16 @@ class Model extends Bus {
     }
 
     return trieSearch;
+  }
+
+  /**
+   * Deserializes POJO data directly into this object.
+   */
+  deserialize(pojo, options = {}) {
+    this.constructor.deserialize(pojo, Object.assign(options, {
+      instance: this,
+      ignore$Model: true
+    }));
   }
 }
 
@@ -606,25 +616,35 @@ Model.deserialize = function(pojo, options = {}) {
     return value;
   };
 
-  let ModelClass;
+  let newInstance;
 
-  if (pojo.$Model && !options.ignore$Model) {
-    ModelClass = Model.getModelClassByName(pojo.$Model);
-  } else if (options.model) {
-    ModelClass = options.model;
+  if (!options.instance) {
+    let ModelClass;
 
-    // Make sure we don't pollute subsequent calls with the model object! Since options.model is temporary
-    // just for this first deserialize call.
-    delete options.model;
-  } else if (options.modelMapper) {
-    ModelClass = options.modelMapper(pojo);
+    if (pojo.$Model && !options.ignore$Model) {
+      ModelClass = Model.getModelClassByName(pojo.$Model);
+    } else if (options.model) {
+      ModelClass = options.model;
 
-    if (ModelClass === pojo) {
-      return ModelClass;
+      // Make sure we don't pollute subsequent calls with the model object! Since options.model is temporary
+      // just for this first deserialize call.
+      delete options.model;
+    } else if (options.modelMapper) {
+      ModelClass = options.modelMapper(pojo);
+
+      if (ModelClass === pojo) {
+        return ModelClass;
+      }
     }
-  }
 
-  let newInstance = construct(ModelClass);
+    newInstance = construct(ModelClass);
+  } else {
+    newInstance = options.instance;
+
+    // Make sure we don't pollute subsequent calls with the instance in our root deserialize call! Since options.instance is temporary
+    // just for this first deserialize call.
+    delete options.instance;
+  }
 
   newInstance.deserializing = true;
   newInstance.$version = pojo.$version;
@@ -636,11 +656,12 @@ Model.deserialize = function(pojo, options = {}) {
   properties.forEach(key => {
     if (pojo.hasOwnProperty(key)) {
       let t = typeof pojo[key];
+      let v = pojo[key];
 
-      if (t === 'string' || t === 'number') {
-        newInstance[key] = pojo[key];
+      if (t === 'string' || t === 'number' || v === undefined || v === null) {
+        newInstance[key] = v;
       } else {
-        newInstance[key] = _deserializePOJOValue(newInstance, key, pojo[key]);
+        newInstance[key] = _deserializePOJOValue(newInstance, key, v);
       }
     }
   });
