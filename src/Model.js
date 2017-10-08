@@ -119,7 +119,7 @@ class Model extends Bus {
   /**
    * Serialize this model object for each property
    */
-  serialize(options = {}) {
+  serialize(options = {useRingaDefaults: false}) {
     let pojo = !options.useRingaDefaults ? {
         id: this.serializeId
       } : {
