@@ -19,6 +19,14 @@
 
     
     <url>
+     <loc>/demo/</loc>
+     <lastmod>2017-10-09</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
      <loc>/helloWorld/</loc>
      <lastmod>2017-10-09</lastmod>
      <changefreq>daily</changefreq>
@@ -28,6 +36,14 @@
     
     <url>
      <loc>/model/</loc>
+     <lastmod>2017-10-09</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>/links/</loc>
      <lastmod>2017-10-09</lastmod>
      <changefreq>daily</changefreq>
     </url>

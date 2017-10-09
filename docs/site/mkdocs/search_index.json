@@ -56,6 +56,16 @@
             "title": "Developing with Ringa"
         }, 
         {
+            "location": "/demo/", 
+            "text": "Demo\n\n\nA full demo of the majority of Ringa's features can be found \nhere\n.\n\n\nSource Code (Web)\n\n\nSource Code (Server)", 
+            "title": "Demo"
+        }, 
+        {
+            "location": "/demo/#demo", 
+            "text": "A full demo of the majority of Ringa's features can be found  here .  Source Code (Web)  Source Code (Server)", 
+            "title": "Demo"
+        }, 
+        {
             "location": "/helloWorld/", 
             "text": "'Hello World' in Ringa\n\n\nIn this walkthrough we will guide you to building your first \nHello world\n application in Ringa using React and the \nreact-ringa\n plugin.", 
             "title": "Hello World"
@@ -199,6 +209,11 @@
             "location": "/model/#27-indexing-trie-and-the-index-option-for-search", 
             "text": "The Ringa  Model  object allows you to index your models (recursively) using a fast-lookup  Trie search . This is especially useful for type-ahead\nsearches:  class TextModel extends Model {\n  constructor(name, values) {\n    super(name, values);\n\n    this.addProperty('text', {index: true});\n\n    this.addProperty('children', {type: TextModel});\n  }\n}\n\n...\n\n// Assume that tree is a deeplyl nested tree of TextModel objects\n\ntree.index(true);\n\nlet arrayOfModelsThatHaveHello = tree.get('hello');  In this example, the call to  index()  builds a new Trie internal to the root  tree  model. It indexes every single property that has been added with  index  set to true.  The index method has the following signature:  index(recurse = false, trieSearchOptions = {}, trieSearch = undefined)   recurse : whether to recurse into child models and their indexed properties.  trieSearchOptions : these options will be passed into the Trie search. See the  documentation  for details.  trieSearch : if you want to provide your own instance of the Trie, you may pass it in here. If none is passed, a new one is constructed automatically.   Indexing is not performed automatically, you must call  index()  yourself. Also please do not call  index()  more often than is necessary as building the indexing structure\nis time-intensive on large model trees.  **Note: the  addIndexedPropery()  method can be used instead of  addProperty(name, {index:true}) .", 
             "title": "2.7 Indexing (Trie) and the index option for search"
+        }, 
+        {
+            "location": "/links/", 
+            "text": "", 
+            "title": "Links"
         }
     ]
 }
