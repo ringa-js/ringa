@@ -25,11 +25,7 @@ Ringa's philosophy can be summed up with a few mantras:
 
 ## Latest Version
 
-## Testing
-
-Ringa currently has around 200 unit tests to ensure its core features are running smoothly.
-
-## Under Construction
+The latest version is `0.1.0` Alpha.
 
 RingaJS is currently in Alpha version and has been so since Janary 2017, and while being used live, has not been battle-tested on a large scale quite yet. We would
 love your input and your bug reports.
@@ -45,5 +41,19 @@ Right now RingaJS is being developed for an ES6+ development environment and has
 
 ## Installation
 
-* `npm install --save-dev ringa` - Install Ringa into
+* `npm install --save-dev ringa` - Install Ringa into your project
+
+## Testing
+
+Ringa currently has around 200 unit tests to ensure its core features are running smoothly. Test can be run with:
+
+`npm run test`
+
+My personal goal is 100% coverage so there is a little work to do! Results as of Oct. 9th, 2017 are:
+
+![Test Results](https://i.imgur.com/G564KCy.png)
+
+## License
+
+MIT
 

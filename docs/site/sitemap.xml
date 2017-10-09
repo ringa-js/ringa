@@ -4,7 +4,7 @@
     
     <url>
      <loc>/</loc>
-     <lastmod>2017-10-08</lastmod>
+     <lastmod>2017-10-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -12,7 +12,15 @@
     
     <url>
      <loc>/whyRinga/</loc>
-     <lastmod>2017-10-08</lastmod>
+     <lastmod>2017-10-09</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>/helloWorld/</loc>
+     <lastmod>2017-10-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -20,7 +28,7 @@
     
     <url>
      <loc>/model/</loc>
-     <lastmod>2017-10-08</lastmod>
+     <lastmod>2017-10-09</lastmod>
      <changefreq>daily</changefreq>
     </url>
     

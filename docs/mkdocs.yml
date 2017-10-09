@@ -2,4 +2,5 @@ site_name: RingaJS Documentation
 pages:
     - Home: index.md
     - Why Ringa: whyRinga.md
+    - Hello World: helloWorld.md
     - Model: model.md
