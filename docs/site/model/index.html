@@ -93,13 +93,15 @@
             <li><a href="#example-usermodel">Example UserModel</a></li>
             <li><a href="#1-basics">1. Basics</a></li>
             <li><a href="#11-model-properties">1.1. Model Properties</a></li>
-            <li><a href="#114-property-getters-setters">1.1.4. Property Getters / Setters</a></li>
             <li><a href="#12-watching-observing-models">1.2. Watching / Observing Models</a></li>
         <li class="main "><a href="#2-advanced-features">2. Advanced Features</a></li>
             <li><a href="#21-cloning">2.1. Cloning</a></li>
             <li><a href="#22-serialization">2.2. Serialization</a></li>
             <li><a href="#23-model-trees">2.3. Model Trees</a></li>
             <li><a href="#24-notifications-notify">2.4. Notifications / notify()</a></li>
+            <li><a href="#25-aggregate-properties">2.5. Aggregate Properties</a></li>
+            <li><a href="#26-watching-property-changes-with-onchange">2.6. Watching property changes with onChange</a></li>
+            <li><a href="#27-indexing-trie-and-the-index-option-for-search">2.7 Indexing (Trie) and the index option for search</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -261,7 +263,7 @@ console.log(airplane.propertyOptions.altitude.description);
 <li><code>get</code></li>
 <li><code>set</code></li>
 </ul>
-<h2 id="114-property-getters-setters">1.1.4. Property Getters / Setters</h2>
+<h3 id="114-property-getters-setters">1.1.4. Property Getters / Setters</h3>
 <p>By default, Ringa uses <code>Object.defineProperty</code> every time you call <code>addProperty()</code> to create a custom getter / setter on your model.</p>
 <p>However, you can override this quite easily:</p>
 <pre><code>import {Model} from 'ringa';
@@ -574,7 +576,7 @@ user.notify('change');
 in deeply nested trees of Models.</p>
 <p>Also note that the property <code>fullName</code> - which may be useful in your view - is not included in the serialization / deserialization or cloning.</p>
 <p>This is the standard way that I recommend implementing aggregate properties. </p>
-<h3 id="25-aggregate-properties">2.5. Aggregate Properties</h3>
+<h2 id="25-aggregate-properties">2.5. Aggregate Properties</h2>
 <p>A lot of observable frameworks like MobX and Angular attempt to deduce what you want updated by reading complex strings that combine filtering, sorting, etc. Many of
 them do this by parsing the string, breaking it down into variable names, and then watching all the variables for updates.</p>
 <p>Unfortunately, at the beginning of a smaller project this is really helpful but it causes several problems especially as a project scales:</p>
@@ -583,7 +585,7 @@ them do this by parsing the string, breaking it down into variable names, and th
 <li>Including complex math or array reduce / map / filters inside of strings limits your IDEs ability to parse some of your most important code.</li>
 </ol>
 <p>My goal with Ringa was to avoid these two problems as much as possible. As a result, the Models in Ringa give most of the power of these updates to you, the developer.</p>
-<h3 id="26-watching-property-changes-with-onchange">2.6. Watching property changes with <code>onChange</code></h3>
+<h2 id="26-watching-property-changes-with-onchange">2.6. Watching property changes with <code>onChange</code></h2>
 <p>If you want to do complex operations, you can do so like this:</p>
 <pre><code>import {Model} from 'ringa';
 
@@ -624,7 +626,7 @@ collection.filter = value =&gt; value !== 2;
 </code></pre>
 <p>This notification feature of models is the foundation of the high performance of Ringa because nothing happens that you do not 
 explicitly tell Ringa to do, so you can avoid all the performance bottlenecks from the beginning that tend to bog down enterprise software.</p>
-<h3 id="27-indexing-trie-and-the-index-option-for-search">2.7 Indexing (Trie) and the <code>index</code> option for search</h3>
+<h2 id="27-indexing-trie-and-the-index-option-for-search">2.7 Indexing (Trie) and the <code>index</code> option for search</h2>
 <p>The Ringa <code>Model</code> object allows you to index your models (recursively) using a fast-lookup <a href="https://www.npmjs.org/trie-search">Trie search</a>. This is especially useful for type-ahead
 searches:</p>
 <pre><code>class TextModel extends Model {

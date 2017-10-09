@@ -179,7 +179,7 @@ Note: the following propertyOptions are reserved and used by Ringa:
 * `get`
 * `set`
 
-## 1.1.4. Property Getters / Setters
+### 1.1.4. Property Getters / Setters
 
 By default, Ringa uses `Object.defineProperty` every time you call `addProperty()` to create a custom getter / setter on your model.
 
@@ -555,7 +555,7 @@ Also note that the property `fullName` - which may be useful in your view - is n
 
 This is the standard way that I recommend implementing aggregate properties. 
 
-### 2.5. Aggregate Properties
+## 2.5. Aggregate Properties
 
 A lot of observable frameworks like MobX and Angular attempt to deduce what you want updated by reading complex strings that combine filtering, sorting, etc. Many of
 them do this by parsing the string, breaking it down into variable names, and then watching all the variables for updates.
@@ -567,7 +567,7 @@ Unfortunately, at the beginning of a smaller project this is really helpful but 
 
 My goal with Ringa was to avoid these two problems as much as possible. As a result, the Models in Ringa give most of the power of these updates to you, the developer.
 
-### 2.6. Watching property changes with `onChange`
+## 2.6. Watching property changes with `onChange`
 
 If you want to do complex operations, you can do so like this:
 
@@ -614,7 +614,7 @@ Output:
 This notification feature of models is the foundation of the high performance of Ringa because nothing happens that you do not 
 explicitly tell Ringa to do, so you can avoid all the performance bottlenecks from the beginning that tend to bog down enterprise software.
 
-### 2.7 Indexing (Trie) and the `index` option for search
+## 2.7 Indexing (Trie) and the `index` option for search
 
 The Ringa `Model` object allows you to index your models (recursively) using a fast-lookup [Trie search](https://www.npmjs.org/trie-search). This is especially useful for type-ahead
 searches:
