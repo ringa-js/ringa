@@ -47,12 +47,10 @@ export default class RingaObject {
   // Properties
   //-----------------------------------
   set id(value) {
+    value = value.toString();
+
     if (value === this._id) {
       return;
-    }
-
-    if (typeof value !== 'string') {
-      throw new Error(`RingaObject::id: must be a string! Was ${JSON.stringify(value)}`);
     }
 
     if (this.warnOnDuplicateId && ids.map.get(value)) {

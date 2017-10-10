@@ -631,7 +631,7 @@ searches:
     
     ...
     
-    // Assume that tree is a deeplyl nested tree of TextModel objects
+    // Assume that tree is a deeply nested tree of TextModel objects
     
     tree.index(true);
     
@@ -650,4 +650,4 @@ The index method has the following signature:
 Indexing is not performed automatically, you must call `index()` yourself. Also please do not call `index()` more often than is necessary as building the indexing structure
 is time-intensive on large model trees.
 
-**Note: the `addIndexedPropery()` method can be used instead of `addProperty(name, {index:true})`.
+**Note: the `addIndexedPropery()` method can be used instead of `addProperty(name, {index:true})`.**
