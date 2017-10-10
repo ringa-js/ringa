@@ -39,7 +39,7 @@ In this example, the `UserModel` is configured with three properties that by def
 2. Will be included when serializing / deserializing
 3. Will be cloned if `clone()` is called
 
-## 1. Basics
+## 1. Construction
 
     Model(name, values)
     
@@ -85,7 +85,19 @@ If you desire to have your properties initialized immediately with different val
       firstName: "Joshua",
       lastName: "Jung"
     });
+
+## 1.0.1. `Model.construct` convenience syntax
+
+    Model.construct(className, propertyArray)
     
+When building smaller models, a convenience method is provided which allows you to construct a `class` from an array of properties.
+
+To construct our `UserModel` class above we could do:
+
+    import {Model} from 'ringa';
+    
+    const UserModel = Model.construct('UserModel', ['firstName', 'lastName', 'email']);
+
 ## 1.1. Model Properties
 
 You add properties to a Model with the `addProperty` method:
