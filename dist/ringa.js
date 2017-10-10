@@ -701,12 +701,10 @@ var RingaObject = function () {
   }, {
     key: 'id',
     set: function set(value) {
+      value = value.toString();
+
       if (value === this._id) {
         return;
-      }
-
-      if (typeof value !== 'string') {
-        throw new Error('RingaObject::id: must be a string! Was ' + JSON.stringify(value));
       }
 
       if (this.warnOnDuplicateId && ids.map.get(value)) {
@@ -1782,6 +1780,37 @@ var RingaEvent = function (_RingaObject) {
 
       return undefined;
     }
+
+    /**
+     * Sets the last promise error of this particular event.
+     *
+     * @param value
+     */
+
+  }, {
+    key: 'lastPromiseError',
+    set: function set(value) {
+      this._lastPromiseError = value;
+    }
+
+    /**
+     * Gets the last promise error of this event. If this event triggered another event, then returns that events
+     * lastPromiseError. Hence this method is recursive.
+     *
+     * @returns {*} A Promise error.
+     */
+    ,
+    get: function get() {
+      if (this._lastPromiseError) {
+        return this._lastPromiseError;
+      }
+
+      if (this.lastEvent) {
+        return this.lastEvent.lastPromiseError;
+      }
+
+      return undefined;
+    }
   }]);
 
   return RingaEvent;
@@ -2050,7 +2079,7 @@ var Model = function (_Bus) {
      * Serialize this model object for each property
      */
     value: function serialize() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { useRingaDefaults: false };
 
       var pojo = !options.useRingaDefaults ? {
         id: this.serializeId
@@ -2122,6 +2151,7 @@ var Model = function (_Bus) {
   }, {
     key: 'watch',
     value: function watch(handler) {
+      // TODO add ability to watch specific signals
       if (this.watchers.indexOf(handler) === -1) {
         this.watchers.push(handler);
       }
@@ -2241,6 +2271,7 @@ var Model = function (_Bus) {
       var defaultSet = function defaultSet(value) {
         var oldValue = this[subScriptName];
 
+        // TODO: add custom comparison options function
         if (oldValue === value) {
           return;
         }
@@ -2546,6 +2577,8 @@ Model.version = '0.0.0'; // This can be customized for serialization and deseria
 Model.isDeserializable = function (pojo) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+  options.ignore$Model = options.ignore$Model !== undefined ? options.ignore$Model : true;
+
   if (!options.ignore$Model) {
     if (!pojo.$Model && !options.modelMapper) {
       console.error('Model.isDeserializable: could not deserialize object because it does not contain the $Model property or does not contain options.modelMapper', pojo);
@@ -2699,6 +2732,38 @@ Model.deserialize = function (pojo) {
   }
 
   return newInstance;
+};
+
+Model.construct = function (className, propertyArray) {
+  return function (_Model) {
+    _inherits(M, _Model);
+
+    _createClass(M, null, [{
+      key: 'name',
+      get: function get() {
+        return className;
+      }
+    }]);
+
+    function M(name, values) {
+      _classCallCheck(this, M);
+
+      var _this6 = _possibleConstructorReturn(this, (M.__proto__ || Object.getPrototypeOf(M)).call(this, name, values));
+
+      for (var key in propertyArray) {
+        var v = propertyArray[key];
+
+        if (typeof v === 'string') {
+          _this6.addProperty(v);
+        } else {
+          _this6.addProperty(v.name, v.default, v.options);
+        }
+      }
+      return _this6;
+    }
+
+    return M;
+  }(Model);
 };
 
 exports.default = Model;

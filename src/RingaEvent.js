@@ -177,6 +177,33 @@ class RingaEvent extends RingaObject {
     return undefined;
   }
 
+  /**
+   * Sets the last promise error of this particular event.
+   *
+   * @param value
+   */
+  set lastPromiseError(value) {
+    this._lastPromiseError = value;
+  }
+
+  /**
+   * Gets the last promise error of this event. If this event triggered another event, then returns that events
+   * lastPromiseError. Hence this method is recursive.
+   *
+   * @returns {*} A Promise error.
+   */
+  get lastPromiseError() {
+    if (this._lastPromiseError) {
+      return this._lastPromiseError;
+    }
+
+    if (this.lastEvent) {
+      return this.lastEvent.lastPromiseError;
+    }
+
+    return undefined;
+  }
+
   //-----------------------------------
   // Methods
   //-----------------------------------
