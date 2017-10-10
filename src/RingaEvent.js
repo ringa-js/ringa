@@ -310,7 +310,7 @@ class RingaEvent extends RingaObject {
 
     this.addDebug('Fail');
 
-    this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+    this._dispatchEvent(RingaEvent.FAIL, undefined, error, killed);
   }
 
   /**
@@ -362,7 +362,7 @@ class RingaEvent extends RingaObject {
    * @param error And error, if there is one.
    * @private
    */
-  _dispatchEvent(type, detail, error) {
+  _dispatchEvent(type, detail, error, kill) {
     let listeners = this.listeners[type];
 
     this.dispatchedEvents.push({
@@ -376,7 +376,8 @@ class RingaEvent extends RingaObject {
         listener({
           type,
           detail,
-          error
+          error,
+          kill
         });
       });
     }
