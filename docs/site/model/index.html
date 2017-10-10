@@ -91,7 +91,8 @@
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#model">Model</a></li>
             <li><a href="#example-usermodel">Example UserModel</a></li>
-            <li><a href="#1-basics">1. Basics</a></li>
+            <li><a href="#1-construction">1. Construction</a></li>
+            <li><a href="#101-modelconstruct-convenience-syntax">1.0.1. Model.construct convenience syntax</a></li>
             <li><a href="#11-model-properties">1.1. Model Properties</a></li>
             <li><a href="#12-watching-observing-models">1.2. Watching / Observing Models</a></li>
         <li class="main "><a href="#2-advanced-features">2. Advanced Features</a></li>
@@ -144,7 +145,7 @@ class UserModel extends Model {
 <li>Will be included when serializing / deserializing</li>
 <li>Will be cloned if <code>clone()</code> is called</li>
 </ol>
-<h2 id="1-basics">1. Basics</h2>
+<h2 id="1-construction">1. Construction</h2>
 <pre><code>Model(name, values)
 </code></pre>
 <p>The Ringa <code>Model</code> constructor takes in an optional <code>name</code> string and optional <code>values</code> object. If the first property is an <code>Object</code> then it is assumed to be the <code>values</code> object.</p>
@@ -183,6 +184,15 @@ _values: {id: 'someCustomId'}
   firstName: "Joshua",
   lastName: "Jung"
 });
+</code></pre>
+<h2 id="101-modelconstruct-convenience-syntax">1.0.1. <code>Model.construct</code> convenience syntax</h2>
+<pre><code>Model.construct(className, propertyArray)
+</code></pre>
+<p>When building smaller models, a convenience method is provided which allows you to construct a <code>class</code> from an array of properties.</p>
+<p>To construct our <code>UserModel</code> class above we could do:</p>
+<pre><code>import {Model} from 'ringa';
+
+const UserModel = Model.construct('UserModel', ['firstName', 'lastName', 'email']);
 </code></pre>
 <h2 id="11-model-properties">1.1. Model Properties</h2>
 <p>You add properties to a Model with the <code>addProperty</code> method:</p>
@@ -641,7 +651,7 @@ searches:</p>
 
 ...
 
-// Assume that tree is a deeplyl nested tree of TextModel objects
+// Assume that tree is a deeply nested tree of TextModel objects
 
 tree.index(true);
 
@@ -658,7 +668,7 @@ let arrayOfModelsThatHaveHello = tree.get('hello');
 </ul>
 <p>Indexing is not performed automatically, you must call <code>index()</code> yourself. Also please do not call <code>index()</code> more often than is necessary as building the indexing structure
 is time-intensive on large model trees.</p>
-<p>**Note: the <code>addIndexedPropery()</code> method can be used instead of <code>addProperty(name, {index:true})</code>.</p></div>
+<p><strong>Note: the <code>addIndexedPropery()</code> method can be used instead of <code>addProperty(name, {index:true})</code>.</strong></p></div>
         </div>
 
         <footer class="col-md-12">
