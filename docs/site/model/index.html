@@ -91,15 +91,27 @@
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#model">Model</a></li>
             <li><a href="#example-usermodel">Example UserModel</a></li>
-            <li><a href="#1-construction">1. Construction</a></li>
-            <li><a href="#101-modelconstruct-convenience-syntax">1.0.1. Model.construct convenience syntax</a></li>
-            <li><a href="#11-model-properties">1.1. Model Properties</a></li>
-            <li><a href="#12-watching-observing-models">1.2. Watching / Observing Models</a></li>
-        <li class="main "><a href="#2-advanced-features">2. Advanced Features</a></li>
+        <li class="main "><a href="#1-construction">1. Construction</a></li>
+            <li><a href="#11-modelconstruct-convenience-syntax">1.1. Model.construct convenience syntax</a></li>
+            <li><a href="#12-properties">1.2. Properties</a></li>
+            <li><a href="#121-property-names">1.2.1. Property Names</a></li>
+            <li><a href="#122-property-defaults">1.2.2. Property Defaults</a></li>
+            <li><a href="#123-property-options">1.2.3. Property Options</a></li>
+            <li><a href="#13-watching">1.3. Watching</a></li>
+        <li class="main "><a href="#2-advanced">2. Advanced</a></li>
             <li><a href="#21-cloning">2.1. Cloning</a></li>
             <li><a href="#22-serialization">2.2. Serialization</a></li>
-            <li><a href="#23-model-trees">2.3. Model Trees</a></li>
+            <li><a href="#221-serializing">2.2.1. Serializing</a></li>
+            <li><a href="#222-deserializing">2.2.2. Deserializing</a></li>
+            <li><a href="#2221-deserializing-type-option">2.2.2.1. Deserializing: type option</a></li>
+            <li><a href="#2222-deserializing-type-property-option">2.2.2.2. Deserializing: type property option</a></li>
+            <li><a href="#2223-deserializing-modelmapper-option">2.2.2.3. Deserializing: modelMapper option</a></li>
+            <li><a href="#23-trees">2.3. Trees</a></li>
+            <li><a href="#231-autowatching-and-linking-child-models">2.3.1. Autowatching and linking child Models</a></li>
+            <li><a href="#232-watching-child-models-in-arrays-or-objects">2.3.2. Watching child Models in Arrays or Objects</a></li>
             <li><a href="#24-notifications-notify">2.4. Notifications / notify()</a></li>
+            <li><a href="#241-custom-notifications">2.4.1. Custom Notifications</a></li>
+            <li><a href="#242-turning-off-notifications">2.4.2. Turning off Notifications</a></li>
             <li><a href="#25-aggregate-properties">2.5. Aggregate Properties</a></li>
             <li><a href="#26-watching-property-changes-with-onchange">2.6. Watching property changes with onChange</a></li>
             <li><a href="#27-indexing-trie-and-the-index-option-for-search">2.7 Indexing (Trie) and the index option for search</a></li>
@@ -145,7 +157,7 @@ class UserModel extends Model {
 <li>Will be included when serializing / deserializing</li>
 <li>Will be cloned if <code>clone()</code> is called</li>
 </ol>
-<h2 id="1-construction">1. Construction</h2>
+<h1 id="1-construction">1. Construction</h1>
 <pre><code>Model(name, values)
 </code></pre>
 <p>The Ringa <code>Model</code> constructor takes in an optional <code>name</code> string and optional <code>values</code> object. If the first property is an <code>Object</code> then it is assumed to be the <code>values</code> object.</p>
@@ -185,7 +197,7 @@ _values: {id: 'someCustomId'}
   lastName: "Jung"
 });
 </code></pre>
-<h2 id="101-modelconstruct-convenience-syntax">1.0.1. <code>Model.construct</code> convenience syntax</h2>
+<h2 id="11-modelconstruct-convenience-syntax">1.1. <code>Model.construct</code> convenience syntax</h2>
 <pre><code>Model.construct(className, propertyArray)
 </code></pre>
 <p>When building smaller models, a convenience method is provided which allows you to construct a <code>class</code> from an array of properties.</p>
@@ -194,7 +206,7 @@ _values: {id: 'someCustomId'}
 
 const UserModel = Model.construct('UserModel', ['firstName', 'lastName', 'email']);
 </code></pre>
-<h2 id="11-model-properties">1.1. Model Properties</h2>
+<h2 id="12-properties">1.2. Properties</h2>
 <p>You add properties to a Model with the <code>addProperty</code> method:</p>
 <pre><code>addProperty(name, defaultValue, options);
 </code></pre>
@@ -203,7 +215,7 @@ const UserModel = Model.construct('UserModel', ['firstName', 'lastName', 'email'
 <li><strong>defaultValue</strong>: the default value of the property.</li>
 <li><strong>options</strong>: a variety of options on how the property works. Discussed in the following sections.</li>
 </ul>
-<h3 id="111-model-property-name">1.1.1. Model Property Name</h3>
+<h2 id="121-property-names">1.2.1. Property Names</h2>
 <p><code>addProperty</code> automatically constructs a getter / setter on your Model instance and internally stores the value of the property in the underscored name:</p>
 <pre><code>class MyModel extends Model {
   constructor(name, values) {
@@ -222,7 +234,7 @@ console.log(myModel._someProperty);
 <pre><code>to be or not to be
 </code></pre>
 <p><strong>Node: a future version of Ringa should attach the getter / setter for properties to the internal <code>prototype</code> for performance if possible.</strong></p>
-<h3 id="112-model-property-defaults">1.1.2. Model Property Defaults</h3>
+<h2 id="122-property-defaults">1.2.2. Property Defaults</h2>
 <p>You can specify default values for <code>Model</code> properties easily:</p>
 <pre><code>class Airplane extends Model {
   constructor(name, values) {
@@ -240,7 +252,7 @@ console.log(airplane.altitude);
 <p>Output:</p>
 <pre><code>0
 </code></pre>
-<h3 id="113-model-property-options-propertyoptions">1.1.3. Model Property Options (<code>propertyOptions</code>)</h3>
+<h2 id="123-property-options">1.2.3. Property Options</h2>
 <p>The third parameter to <code>addProperty</code> is an optional options <code>Object</code>:</p>
 <pre><code>class Airplane extends Model {
   constructor(name, values) {
@@ -273,7 +285,7 @@ console.log(airplane.propertyOptions.altitude.description);
 <li><code>get</code></li>
 <li><code>set</code></li>
 </ul>
-<h3 id="114-property-getters-setters">1.1.4. Property Getters / Setters</h3>
+<h3 id="124-property-getters-setters">1.2.4. Property Getters / Setters</h3>
 <p>By default, Ringa uses <code>Object.defineProperty</code> every time you call <code>addProperty()</code> to create a custom getter / setter on your model.</p>
 <p>However, you can override this quite easily:</p>
 <pre><code>import {Model} from 'ringa';
@@ -295,7 +307,7 @@ class UserModel extends Model {
 }
 </code></pre>
 <p><em>Note: if you override the internal setter you will not get any of the built in notification features unless you call them yourself!</em></p>
-<h2 id="12-watching-observing-models">1.2. Watching / Observing Models</h2>
+<h2 id="13-watching">1.3. Watching</h2>
 <p>Model's can be watched for property value changes or even custom signals.</p>
 <p><em>Note: signals are similar to lightweight events but are not the same! Signals are only a string and do not contain a detail object. In addition signals are automatically dispatched through the ancestors of a model so that parent models can listen when properties of their children change.</em></p>
 <p>Using the Example Class <code>UserModel</code> defined at the beginning of this page, we could do the following:</p>
@@ -310,7 +322,7 @@ user.firstName = 'Saajan';
 <p>The console will now output:</p>
 <pre><code>A property has changed 'firstName': Saajan
 </code></pre>
-<h1 id="2-advanced-features">2. Advanced Features</h1>
+<h1 id="2-advanced">2. Advanced</h1>
 <p>While all the following features are optional, they are all designed to work together seamlessly to serve every need you could have for a Model. For the best results, I recommend reading on each of the following features to get the most mileage and reuse from your Ringa models.</p>
 <h2 id="21-cloning">2.1. Cloning</h2>
 <p>Ringa <code>Models</code> can easily be cloned:</p>
@@ -332,7 +344,7 @@ console.log(clonee.id);
 <h2 id="22-serialization">2.2. Serialization</h2>
 <p>Every Ringa <code>Model</code> has highly customizable built-in serialization and deserialization. By default both serialization and deserialization are recursive in a <code>Model</code> tree (see section 2.3).</p>
 <p>By default, only properties that have been added with <code>addProperty</code> are serialized or deserialized. </p>
-<h3 id="221-serializing">2.2.1. Serializing</h3>
+<h2 id="221-serializing">2.2.1. Serializing</h2>
 <p>To serialize a Ringa <code>Model</code>:</p>
 <pre><code>let pojo = myModel.serialize();
 </code></pre>
@@ -367,7 +379,7 @@ console.log(new MyModel().serialize());
   "text": "hello world"
 }
 </code></pre>
-<h3 id="222-deserializing">2.2.2. Deserializing</h3>
+<h2 id="222-deserializing">2.2.2. Deserializing</h2>
 <p>Basic deserialization is easy. Assuming the <code>UserModel</code> example used at the beginning of this page:</p>
 <pre><code>let pojo = {
   id: "12345678",
@@ -389,14 +401,14 @@ to provide the information yourself.</p>
 <li>Set <code>type</code> on the property option (for properties)</li>
 <li>Provide a <code>modelMapper</code> <code>Function</code> to the deserialize options.</li>
 </ol>
-<h4 id="2221-deserializing-type-option">2.2.2.1. Deserializing: <code>type</code> option</h4>
+<h2 id="2221-deserializing-type-option">2.2.2.1. Deserializing: <code>type</code> option</h2>
 <p>As shown above, you can provide a <code>type</code> property to the deserialize options:</p>
 <pre><code>let myModel = Model.deserialize(pojo, {
   type: MyModel
 });
 </code></pre>
 <p>Note that the type provided must extend <code>Model</code>.</p>
-<h4 id="2222-deserializing-type-property-option">2.2.2.2. Deserializing: <code>type</code> property option</h4>
+<h2 id="2222-deserializing-type-property-option">2.2.2.2. Deserializing: <code>type</code> property option</h2>
 <p>For individual properties, you can specify the type when calling <code>addProperty</code> (including Arrays) and deserialization will instantiate a new <code>Model</code> of that type and deserialize into it:</p>
 <pre><code>class FamilyTreeNode extends Model {
   constructor(name, values) {
@@ -424,7 +436,7 @@ let myModel = Model.deserialize(pojo, {
 });
 </code></pre>
 <p>In this case, three instances of <code>FamilyTreeNode</code> will be constructed, and two of them will exist inside of the <code>children</code> property of the parent node.</p>
-<h4 id="2223-deserializing-modelmapper-option">2.2.2.3. Deserializing: <code>modelMapper</code> option</h4>
+<h2 id="2223-deserializing-modelmapper-option">2.2.2.3. Deserializing: <code>modelMapper</code> option</h2>
 <p>In some cases, you may have a large tree of models and you are not sure beforehand what the types passed in will be. As a result you may
 need to inspect the JSON object for custom indicators to determine its type.</p>
 <p>For this situation, you can use the <code>modelMapper</code> <code>Function</code> option:</p>
@@ -445,10 +457,10 @@ let myModel = Model.deserialize(somePojo, {modelMapper});
 <p>In this example, if <code>somePojo</code> has a property named <code>text</code> then the deserializer will make a new <code>TextModel</code>. If it has a property named <code>number</code> then the deserializer will
 make a <code>NumberModel</code>.</p>
 <p><strong>Note: the <code>modelMapper</code> is passed recursively in the same options object to all descendants that are deserialized as well.</strong></p>
-<h2 id="23-model-trees">2.3. Model Trees</h2>
+<h2 id="23-trees">2.3. Trees</h2>
 <p>Ringa Models are designed to be linked together in tree structures to make monitoring changes in a large collection of models easier.</p>
 <p>In addition, this structure allows you to serialize, deserialize, index, and clone large recursive model structures with ease.</p>
-<h3 id="231-autowatching-and-linking-child-models">2.3.1. Autowatching and linking child <code>Models</code></h3>
+<h2 id="231-autowatching-and-linking-child-models">2.3.1. Autowatching and linking child <code>Models</code></h2>
 <p>Every <code>Model</code> object watches each property for changes and if a property is set to another <code>Model</code> object then an internal tree structure is automatically created:</p>
 <pre><code>class TreeNode extends Model {
   constructor(name, values) {
@@ -487,7 +499,7 @@ child.text = 'Hello World';
 </code></pre>
 <p>The purpose of this structure is so that you can create incredibly complex model trees (like an intricate layered form) and listen for changes from any node in the entire tree and respond to the change.</p>
 <p>For example, imagine a complex Form with groups and nodes. If you watch the root node, anytime a property anywhere in the tree changes at any node, you could trigger a validation method or an auto-save to the database without having to explicitly watch every single node in the tree or even know the size of the tree.</p>
-<h3 id="232-watching-child-models-in-arrays-or-objects">2.3.2. Watching child <code>Models</code> in Arrays or Objects</h3>
+<h2 id="232-watching-child-models-in-arrays-or-objects">2.3.2. Watching child <code>Models</code> in Arrays or Objects</h2>
 <p>Note that for Arrays or Objects, in the current version you will need to manually link children to their parents. To do so you call <code>addModelChild</code>:</p>
 <pre><code>class TreeNode extends Model {
   constructor(name, values) {
@@ -533,7 +545,7 @@ user.firstName = 'Saajan';
 <li><strong>value</strong>: the value of the property that changed (if associated with a property).</li>
 <li><strong>descriptor</strong>: a plain-text description of the signal (intended for use with a history feature).</li>
 </ul>
-<h3 id="241-custom-notifications">2.4.1. Custom Notifications</h3>
+<h2 id="241-custom-notifications">2.4.1. Custom Notifications</h2>
 <p>One cool feature of the Ringa <code>Model</code> is that you can notify your own custom signals:</p>
 <pre><code>let user = new UserModel();
 
@@ -549,7 +561,7 @@ user.email = 'saajan@somewhere.com';
 
 user.notify('update');
 </code></pre>
-<h3 id="242-turning-off-notifications">2.4.2. Turning off Notifications</h3>
+<h2 id="242-turning-off-notifications">2.4.2. Turning off Notifications</h2>
 <p>For the sake of performance, you can turn off notifications by using the property option <code>doNotNotify</code>:</p>
 <pre><code>import {Model} from 'ringa';
 

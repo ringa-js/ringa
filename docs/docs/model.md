@@ -39,7 +39,7 @@ In this example, the `UserModel` is configured with three properties that by def
 2. Will be included when serializing / deserializing
 3. Will be cloned if `clone()` is called
 
-## 1. Construction
+# 1. Construction
 
     Model(name, values)
     
@@ -86,7 +86,7 @@ If you desire to have your properties initialized immediately with different val
       lastName: "Jung"
     });
 
-## 1.0.1. `Model.construct` convenience syntax
+## 1.1. `Model.construct` convenience syntax
 
     Model.construct(className, propertyArray)
     
@@ -98,7 +98,7 @@ To construct our `UserModel` class above we could do:
     
     const UserModel = Model.construct('UserModel', ['firstName', 'lastName', 'email']);
 
-## 1.1. Model Properties
+## 1.2. Properties
 
 You add properties to a Model with the `addProperty` method:
 
@@ -108,7 +108,7 @@ You add properties to a Model with the `addProperty` method:
 * **defaultValue**: the default value of the property.
 * **options**: a variety of options on how the property works. Discussed in the following sections.
 
-### 1.1.1. Model Property Name
+## 1.2.1. Property Names
 
 `addProperty` automatically constructs a getter / setter on your Model instance and internally stores the value of the property in the underscored name:
 
@@ -131,7 +131,7 @@ Output:
 
 **Node: a future version of Ringa should attach the getter / setter for properties to the internal `prototype` for performance if possible.**
 
-### 1.1.2. Model Property Defaults
+## 1.2.2. Property Defaults
 
 You can specify default values for `Model` properties easily:
 
@@ -153,7 +153,7 @@ Output:
 
     0
 
-### 1.1.3. Model Property Options (`propertyOptions`)
+## 1.2.3. Property Options
 
 The third parameter to `addProperty` is an optional options `Object`:
 
@@ -191,7 +191,7 @@ Note: the following propertyOptions are reserved and used by Ringa:
 * `get`
 * `set`
 
-### 1.1.4. Property Getters / Setters
+### 1.2.4. Property Getters / Setters
 
 By default, Ringa uses `Object.defineProperty` every time you call `addProperty()` to create a custom getter / setter on your model.
 
@@ -217,7 +217,7 @@ However, you can override this quite easily:
 
 *Note: if you override the internal setter you will not get any of the built in notification features unless you call them yourself!*
 
-## 1.2. Watching / Observing Models
+## 1.3. Watching
 
 Model's can be watched for property value changes or even custom signals.
 
@@ -237,7 +237,7 @@ The console will now output:
 
     A property has changed 'firstName': Saajan
 
-# 2. Advanced Features
+# 2. Advanced
 
 While all the following features are optional, they are all designed to work together seamlessly to serve every need you could have for a Model. For the best results, I recommend reading on each of the following features to get the most mileage and reuse from your Ringa models.
 
@@ -269,7 +269,7 @@ Every Ringa `Model` has highly customizable built-in serialization and deseriali
 
 By default, only properties that have been added with `addProperty` are serialized or deserialized. 
 
-### 2.2.1. Serializing
+## 2.2.1. Serializing
 
 To serialize a Ringa `Model`:
 
@@ -308,7 +308,7 @@ Output
       "text": "hello world"
     }
 
-### 2.2.2. Deserializing
+## 2.2.2. Deserializing
 
 Basic deserialization is easy. Assuming the `UserModel` example used at the beginning of this page:
 
@@ -334,7 +334,7 @@ This can be done in several ways:
 2. Set `type` on the property option (for properties)
 3. Provide a `modelMapper` `Function` to the deserialize options.
 
-#### 2.2.2.1. Deserializing: `type` option
+## 2.2.2.1. Deserializing: `type` option
 
 As shown above, you can provide a `type` property to the deserialize options:
 
@@ -344,7 +344,7 @@ As shown above, you can provide a `type` property to the deserialize options:
     
 Note that the type provided must extend `Model`.
 
-#### 2.2.2.2. Deserializing: `type` property option
+## 2.2.2.2. Deserializing: `type` property option
 
 For individual properties, you can specify the type when calling `addProperty` (including Arrays) and deserialization will instantiate a new `Model` of that type and deserialize into it:
 
@@ -375,7 +375,7 @@ For individual properties, you can specify the type when calling `addProperty` (
     
 In this case, three instances of `FamilyTreeNode` will be constructed, and two of them will exist inside of the `children` property of the parent node.
 
-#### 2.2.2.3. Deserializing: `modelMapper` option
+## 2.2.2.3. Deserializing: `modelMapper` option
 
 In some cases, you may have a large tree of models and you are not sure beforehand what the types passed in will be. As a result you may
 need to inspect the JSON object for custom indicators to determine its type.
@@ -401,13 +401,13 @@ make a `NumberModel`.
 
 **Note: the `modelMapper` is passed recursively in the same options object to all descendants that are deserialized as well.**
  
-## 2.3. Model Trees
+## 2.3. Trees
 
 Ringa Models are designed to be linked together in tree structures to make monitoring changes in a large collection of models easier.
 
 In addition, this structure allows you to serialize, deserialize, index, and clone large recursive model structures with ease.
 
-### 2.3.1. Autowatching and linking child `Models`
+## 2.3.1. Autowatching and linking child `Models`
 
 Every `Model` object watches each property for changes and if a property is set to another `Model` object then an internal tree structure is automatically created:
 
@@ -453,7 +453,7 @@ The purpose of this structure is so that you can create incredibly complex model
 
 For example, imagine a complex Form with groups and nodes. If you watch the root node, anytime a property anywhere in the tree changes at any node, you could trigger a validation method or an auto-save to the database without having to explicitly watch every single node in the tree or even know the size of the tree.
 
-### 2.3.2. Watching child `Models` in Arrays or Objects
+## 2.3.2. Watching child `Models` in Arrays or Objects
 
 Note that for Arrays or Objects, in the current version you will need to manually link children to their parents. To do so you call `addModelChild`:
 
@@ -507,7 +507,7 @@ The handler method for a notification has the following signature:
 * **value**: the value of the property that changed (if associated with a property).
 * **descriptor**: a plain-text description of the signal (intended for use with a history feature).
 
-### 2.4.1. Custom Notifications
+## 2.4.1. Custom Notifications
 
 One cool feature of the Ringa `Model` is that you can notify your own custom signals:
 
@@ -525,7 +525,7 @@ One cool feature of the Ringa `Model` is that you can notify your own custom sig
     
     user.notify('update');
 
-### 2.4.2. Turning off Notifications
+## 2.4.2. Turning off Notifications
 
 For the sake of performance, you can turn off notifications by using the property option `doNotNotify`:
 
