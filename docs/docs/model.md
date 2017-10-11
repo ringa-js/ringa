@@ -39,7 +39,7 @@ In this example, the `UserModel` is configured with three properties that by def
 2. Will be included when serializing / deserializing
 3. Will be cloned if `clone()` is called
 
-## 1. Basics
+# 1. Construction
 
     Model(name, values)
     
@@ -79,20 +79,36 @@ Output:
     id: someCustomId
     _values: {id: 'someCustomId'}
 
-## 1.1. Model Properties
+If you desire to have your properties initialized immediately with different values than the Class defaults, you can provide those properties through the `values` object as well:
+
+    let me = new UserModel('joshuaJung', {
+      firstName: "Joshua",
+      lastName: "Jung"
+    });
+
+## 1.1. `Model.construct` convenience syntax
+
+    Model.construct(className, propertyArray)
+    
+When building smaller models, a convenience method is provided which allows you to construct a `class` from an array of properties.
+
+To construct our `UserModel` class above we could do:
+
+    import {Model} from 'ringa';
+    
+    const UserModel = Model.construct('UserModel', ['firstName', 'lastName', 'email']);
+
+## 1.2. Properties
 
 You add properties to a Model with the `addProperty` method:
 
     addProperty(name, defaultValue, options);
 
-In addition to `addProperty` there are a few convenience methods that automatically pass in some custom options for you:
+* **name**: the name of the property.
+* **defaultValue**: the default value of the property.
+* **options**: a variety of options on how the property works. Discussed in the following sections.
 
-    // Sets options.index to true.
-    addIndexedProperty(name, defaultValue, options);
-
-More information on indexing can be found below.
-
-### 1.1.1. Model Property Name
+## 1.2.1. Property Names
 
 `addProperty` automatically constructs a getter / setter on your Model instance and internally stores the value of the property in the underscored name:
 
@@ -115,7 +131,7 @@ Output:
 
 **Node: a future version of Ringa should attach the getter / setter for properties to the internal `prototype` for performance if possible.**
 
-### 1.1.2. Model Property Defaults
+## 1.2.2. Property Defaults
 
 You can specify default values for `Model` properties easily:
 
@@ -137,7 +153,7 @@ Output:
 
     0
 
-### 1.1.3. Model Property Options (`propertyOptions`)
+## 1.2.3. Property Options
 
 The third parameter to `addProperty` is an optional options `Object`:
 
@@ -175,7 +191,7 @@ Note: the following propertyOptions are reserved and used by Ringa:
 * `get`
 * `set`
 
-## 1.1.4. Property Getters / Setters
+### 1.2.4. Property Getters / Setters
 
 By default, Ringa uses `Object.defineProperty` every time you call `addProperty()` to create a custom getter / setter on your model.
 
@@ -201,7 +217,7 @@ However, you can override this quite easily:
 
 *Note: if you override the internal setter you will not get any of the built in notification features unless you call them yourself!*
 
-## 1.2. Watching / Observing Models
+## 1.3. Watching
 
 Model's can be watched for property value changes or even custom signals.
 
@@ -221,7 +237,7 @@ The console will now output:
 
     A property has changed 'firstName': Saajan
 
-# 2. Advanced Features
+# 2. Advanced
 
 While all the following features are optional, they are all designed to work together seamlessly to serve every need you could have for a Model. For the best results, I recommend reading on each of the following features to get the most mileage and reuse from your Ringa models.
 
@@ -253,7 +269,7 @@ Every Ringa `Model` has highly customizable built-in serialization and deseriali
 
 By default, only properties that have been added with `addProperty` are serialized or deserialized. 
 
-### 2.2.1. Serializing
+## 2.2.1. Serializing
 
 To serialize a Ringa `Model`:
 
@@ -292,7 +308,7 @@ Output
       "text": "hello world"
     }
 
-### 2.2.2. Deserializing
+## 2.2.2. Deserializing
 
 Basic deserialization is easy. Assuming the `UserModel` example used at the beginning of this page:
 
@@ -318,7 +334,7 @@ This can be done in several ways:
 2. Set `type` on the property option (for properties)
 3. Provide a `modelMapper` `Function` to the deserialize options.
 
-#### 2.2.2.1. Deserializing: `type` option
+## 2.2.2.1. Deserializing: `type` option
 
 As shown above, you can provide a `type` property to the deserialize options:
 
@@ -328,7 +344,7 @@ As shown above, you can provide a `type` property to the deserialize options:
     
 Note that the type provided must extend `Model`.
 
-#### 2.2.2.2. Deserializing: `type` property option
+## 2.2.2.2. Deserializing: `type` property option
 
 For individual properties, you can specify the type when calling `addProperty` (including Arrays) and deserialization will instantiate a new `Model` of that type and deserialize into it:
 
@@ -359,15 +375,39 @@ For individual properties, you can specify the type when calling `addProperty` (
     
 In this case, three instances of `FamilyTreeNode` will be constructed, and two of them will exist inside of the `children` property of the parent node.
 
-#### 2.2.2.3. Deserializing: `modelMapper` option
+## 2.2.2.3. Deserializing: `modelMapper` option
 
-## 2.3. Model Trees
+In some cases, you may have a large tree of models and you are not sure beforehand what the types passed in will be. As a result you may
+need to inspect the JSON object for custom indicators to determine its type.
+
+For this situation, you can use the `modelMapper` `Function` option:
+
+    class TextModel {...};
+    class NumberModel {...};
+    
+    let modelMapper = (pojo, options) => {
+      if (pojo.hasOwnProperty('text') {
+        return TextModel;
+      } else if (pojo.hasOwnProperty('number') {
+        return NumberModel;
+      }
+    };
+    
+    let somePojo = {...};
+    let myModel = Model.deserialize(somePojo, {modelMapper});
+
+In this example, if `somePojo` has a property named `text` then the deserializer will make a new `TextModel`. If it has a property named `number` then the deserializer will
+make a `NumberModel`.
+
+**Note: the `modelMapper` is passed recursively in the same options object to all descendants that are deserialized as well.**
+ 
+## 2.3. Trees
 
 Ringa Models are designed to be linked together in tree structures to make monitoring changes in a large collection of models easier.
 
 In addition, this structure allows you to serialize, deserialize, index, and clone large recursive model structures with ease.
 
-### 2.3.1. Autowatching and linking child `Models`
+## 2.3.1. Autowatching and linking child `Models`
 
 Every `Model` object watches each property for changes and if a property is set to another `Model` object then an internal tree structure is automatically created:
 
@@ -413,7 +453,7 @@ The purpose of this structure is so that you can create incredibly complex model
 
 For example, imagine a complex Form with groups and nodes. If you watch the root node, anytime a property anywhere in the tree changes at any node, you could trigger a validation method or an auto-save to the database without having to explicitly watch every single node in the tree or even know the size of the tree.
 
-### 2.3.2. Watching child `Models` in Arrays or Objects
+## 2.3.2. Watching child `Models` in Arrays or Objects
 
 Note that for Arrays or Objects, in the current version you will need to manually link children to their parents. To do so you call `addModelChild`:
 
@@ -438,7 +478,7 @@ The first argument to `addModelChild` is the property that the parent can find t
 
 The reason I left this to you as a manual exercise is so that no loops over children are done without your knowledge.
 
-## 2.4. Notifications
+## 2.4. Notifications / `notify()`
 
 By default, Ringa Models automatically dispatch (notify) a new signal that matches the property name when that property changes in value.
 
@@ -456,14 +496,23 @@ But if the property does not change in value, then no signal is dispatched:
     user.firstName = 'Saajan'; 
 
     // Signal 'firstName' is NOT dispatched, because property has not changed
-    user.firstName = 'Saajan'; 
+    user.firstName = 'Saajan';
+    
+The handler method for a notification has the following signature:
 
-### 2.4.1. Custom Notifications
+    myModel.watch((signal, signaler, value, descriptor) => {});
+
+* **signal**: the String signal (e.g. `'firstName'`). Will match the property name that has changed by default.
+* **signaler**: the `Model` that dispatched the signal. Useful in Model trees.
+* **value**: the value of the property that changed (if associated with a property).
+* **descriptor**: a plain-text description of the signal (intended for use with a history feature).
+
+## 2.4.1. Custom Notifications
 
 One cool feature of the Ringa `Model` is that you can notify your own custom signals:
 
     let user = new UserModel();
-        
+    
     user.watch(signal => {
       if (signal === 'update') {
         doSomeHugeTask();
@@ -476,9 +525,9 @@ One cool feature of the Ringa `Model` is that you can notify your own custom sig
     
     user.notify('update');
 
-### 2.4.2. Turning off Notifications
+## 2.4.2. Turning off Notifications
 
-Another cool feature of the Model is that you can turn off notifications to improve performance by using the property options:
+For the sake of performance, you can turn off notifications by using the property option `doNotNotify`:
 
     import {Model} from 'ringa';
         
@@ -510,9 +559,15 @@ Another cool feature of the Model is that you can turn off notifications to impr
     
     user.notify('change');
     
-In the above example, to increase performance we notify a special event when either the `firstName` or `lastName` has changed.
+In the above example, we notify a special event when either the `firstName` or `lastName` has changed. This structure keeps the properties
+`firstName` and `lastName` in the serialization, indexing, and cloning while reducing the overhead of notifications for each one which is especially noticeable
+in deeply nested trees of Models.
 
-### 2.5. Complex Properties (math / map / reduce)
+Also note that the property `fullName` - which may be useful in your view - is not included in the serialization / deserialization or cloning.
+
+This is the standard way that I recommend implementing aggregate properties. 
+
+## 2.5. Aggregate Properties
 
 A lot of observable frameworks like MobX and Angular attempt to deduce what you want updated by reading complex strings that combine filtering, sorting, etc. Many of
 them do this by parsing the string, breaking it down into variable names, and then watching all the variables for updates.
@@ -524,11 +579,7 @@ Unfortunately, at the beginning of a smaller project this is really helpful but 
 
 My goal with Ringa was to avoid these two problems as much as possible. As a result, the Models in Ringa give most of the power of these updates to you, the developer.
 
-Nothing in Ringa updates unless you explicitly tell it to.
-
-See the next section (2.4) for an example of how to more complex operations triggered by a property change. 
-
-### 2.6. Watching changes with `onChange`
+## 2.6. Watching property changes with `onChange`
 
 If you want to do complex operations, you can do so like this:
 
@@ -574,3 +625,41 @@ Output:
 
 This notification feature of models is the foundation of the high performance of Ringa because nothing happens that you do not 
 explicitly tell Ringa to do, so you can avoid all the performance bottlenecks from the beginning that tend to bog down enterprise software.
+
+## 2.7 Indexing (Trie) and the `index` option for search
+
+The Ringa `Model` object allows you to index your models (recursively) using a fast-lookup [Trie search](https://www.npmjs.org/trie-search). This is especially useful for type-ahead
+searches:
+
+    class TextModel extends Model {
+      constructor(name, values) {
+        super(name, values);
+        
+        this.addProperty('text', {index: true});
+        
+        this.addProperty('children', {type: TextModel});
+      }
+    }
+    
+    ...
+    
+    // Assume that tree is a deeply nested tree of TextModel objects
+    
+    tree.index(true);
+    
+    let arrayOfModelsThatHaveHello = tree.get('hello');
+    
+In this example, the call to `index()` builds a new Trie internal to the root `tree` model. It indexes every single property that has been added with `index` set to true.
+
+The index method has the following signature:
+
+    index(recurse = false, trieSearchOptions = {}, trieSearch = undefined)
+    
+* **recurse**: whether to recurse into child models and their indexed properties.
+* **trieSearchOptions**: these options will be passed into the Trie search. See the [documentation](https://www.npmjs.org/trie-search) for details.
+* **trieSearch**: if you want to provide your own instance of the Trie, you may pass it in here. If none is passed, a new one is constructed automatically.
+
+Indexing is not performed automatically, you must call `index()` yourself. Also please do not call `index()` more often than is necessary as building the indexing structure
+is time-intensive on large model trees.
+
+**Note: the `addIndexedPropery()` method can be used instead of `addProperty(name, {index:true})`.**

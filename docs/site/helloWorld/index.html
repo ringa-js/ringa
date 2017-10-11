@@ -5,21 +5,21 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">   
-    <link rel="shortcut icon" href="./img/favicon.ico">
+    <link rel="shortcut icon" href="../img/favicon.ico">
 
-    <title>RingaJS</title>
+    <title>Hello World - RingaJS</title>
 
-    <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css">
     <link href='//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700,700italic&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
     <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
-    <link href="./css/base.css" rel="stylesheet">
-    <link href="./css/cinder.css" rel="stylesheet">
-    <link rel="stylesheet" href="./css/highlight.css">
+    <link href="../css/base.css" rel="stylesheet">
+    <link href="../css/cinder.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/highlight.css">
 
 
-    <link href="./extra.css" rel="stylesheet">
+    <link href="../extra.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -39,7 +39,7 @@
     
 </head>
 
-<body class="homepage" >
+<body>
 
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
@@ -57,7 +57,7 @@
             
 
             <!-- Main title -->
-            <a class="navbar-brand" href=".">
+            <a class="navbar-brand" href="..">
               <img class="brand-image" src="/img/logo.svg">
             </a>
         </div>
@@ -69,32 +69,32 @@
                 <ul class="nav navbar-nav">
                 
                 
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../whyRinga/">Why Ringa</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../demo/">Demo</a>
+                    </li>
+                
+                
+                
                     <li class="active">
-                        <a href=".">Home</a>
+                        <a href="./">Hello World</a>
                     </li>
                 
                 
                 
                     <li >
-                        <a href="whyRinga/">Why Ringa</a>
-                    </li>
-                
-                
-                
-                    <li >
-                        <a href="demo/">Demo</a>
-                    </li>
-                
-                
-                
-                    <li >
-                        <a href="helloWorld/">Hello World</a>
-                    </li>
-                
-                
-                
-                    <li >
-                        <a href="model/">Model</a>
+                        <a href="../model/">Model</a>
                     </li>
                 
                 
@@ -128,76 +128,15 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#welcome-to-ringajs">Welcome to RingaJS</a></li>
-        
-            <li class="second-level"><a href="#what-is-it">What is it</a></li>
-            
-        
-            <li class="second-level"><a href="#latest-version">Latest Version</a></li>
-            
-        
-            <li class="second-level"><a href="#requirements">Requirements</a></li>
-            
-        
-            <li class="second-level"><a href="#installation">Installation</a></li>
-            
-        
-            <li class="second-level"><a href="#testing">Testing</a></li>
-            
-        
-            <li class="second-level"><a href="#license">License</a></li>
-            
+        <li class="first-level active"><a href="#hello-world-in-ringa">'Hello World' in Ringa</a></li>
         
     
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="welcome-to-ringajs">Welcome to RingaJS</h1>
-<h2 id="what-is-it">What is it</h2>
-<p>RingaJS is a single page application framework that includes:</p>
-<ol>
-<li><strong>MVC / MVVM hybrid</strong> structure with little boilerplate</li>
-<li><strong>State management</strong> with no singletons</li>
-<li>Performance centered <strong>observer pattern</strong></li>
-<li><strong>Dependency injection</strong></li>
-<li><strong>Asynchronous toolset</strong> with branching, looping, and error handling</li>
-</ol>
-<p>It is hard to explain what Ringa is in a single sentence because it just does so much. This was built in my spare time the last year as a way to shift all the most difficult
-concepts to rapid application development into a core set of Classes to improve my own development speed. It was also designed as a way to organize large enterprise
-applications in a way that made it extremely easy to monitor large teams as they work in a growing codebase.</p>
-<p>Ringa's philosophy can be summed up with a few mantras:</p>
-<ul>
-<li>Shield new developers from concepts they do not need to know... yet</li>
-<li>Let seasoned developers configure or extend anything</li>
-<li>Give everyone easy to understand error messages and warnings</li>
-<li>Never sacrifice performance</li>
-<li>No fancy string parsing for observers</li>
-<li>Give developers 100% control over their observables</li>
-</ul>
-<h2 id="latest-version">Latest Version</h2>
-<p>The latest version is <code>0.1.0</code> Alpha.</p>
-<p>RingaJS is currently in Alpha version and has been so since Janary 2017, and while being used live, has not been battle-tested on a large scale quite yet. We would
-love your input and your bug reports.</p>
-<h2 id="requirements">Requirements</h2>
-<p>Right now RingaJS is being developed for an ES6+ development environment and has been tested on:</p>
-<ul>
-<li>Chrome</li>
-<li>Firefox</li>
-<li>Safari</li>
-<li>IE 11+</li>
-</ul>
-<h2 id="installation">Installation</h2>
-<ul>
-<li><code>npm install --save-dev ringa</code> - Install Ringa into your project</li>
-</ul>
-<h2 id="testing">Testing</h2>
-<p>Ringa currently has around 200 unit tests to ensure its core features are running smoothly. Test can be run with:</p>
-<p><code>npm run test</code></p>
-<p>My personal goal is 100% coverage so there is a little work to do! Results as of Oct. 9th, 2017 are:</p>
-<p><img alt="Test Results" src="https://i.imgur.com/G564KCy.png" /></p>
-<h2 id="license">License</h2>
-<p>MIT</p></div>
+<h1 id="hello-world-in-ringa">'Hello World' in Ringa</h1>
+<p>In this walkthrough we will guide you to building your first <code>Hello world</code> application in Ringa using React and the <code>react-ringa</code> plugin.</p></div>
         
     </div>
 
@@ -207,15 +146,15 @@ love your input and your bug reports.</p>
         <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p></small>
     </footer>
 
-    <script src="./js/jquery-1.10.2.min.js"></script>
-    <script src="./js/bootstrap-3.0.3.min.js"></script>
-    <script src="./js/highlight.pack.js"></script>
+    <script src="../js/jquery-1.10.2.min.js"></script>
+    <script src="../js/bootstrap-3.0.3.min.js"></script>
+    <script src="../js/highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
     <script>
-    var base_url = '.';
+    var base_url = '..';
     </script>
-    <script data-main="./mkdocs/js/search.js" src="./mkdocs/js/require.js"></script>
-    <script src="./js/base.js"></script>
+    <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+    <script src="../js/base.js"></script>
 
     <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
         <div class="modal-dialog">
@@ -247,8 +186,3 @@ love your input and your bug reports.</p>
     </body>
 
 </html>
-
-<!--
-MkDocs version : 0.14.0
-Build Date UTC : 2017-10-11 15:02:14.835434
--->

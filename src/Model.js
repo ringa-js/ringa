@@ -526,6 +526,8 @@ class Model extends Bus {
 Model.version = '0.0.0'; // This can be customized for serialization and deserialization
 
 Model.isDeserializable = function (pojo, options = {}) {
+  options.ignore$Model = options.ignore$Model !== undefined ? options.ignore$Model : true;
+
   if (!options.ignore$Model) {
     if (!pojo.$Model && !options.modelMapper) {
       console.error('Model.isDeserializable: could not deserialize object because it does not contain the $Model property or does not contain options.modelMapper', pojo);
@@ -677,6 +679,28 @@ Model.deserialize = function(pojo, options = {}) {
   }
 
   return newInstance;
+};
+
+Model.construct = function(className, propertyArray) {
+  return class M extends Model {
+    static get name() {
+      return className;
+    }
+
+    constructor(name, values) {
+      super(name, values);
+
+      for (let key in propertyArray) {
+        let v = propertyArray[key];
+
+        if (typeof v === 'string') {
+          this.addProperty(v);
+        } else {
+          this.addProperty(v.name, v.default, v.options);
+        }
+      }
+    }
+  };
 };
 
 export default Model;

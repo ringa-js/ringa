@@ -738,7 +738,7 @@ describe('Model', () => {
       let model = Model.deserialize({
         $Model: 'Model',
         $version: '0.0.0'
-      });
+      }, {ignore$Model: false});
 
       expect(model.constructor).toBe(Model);
       expect(model.constructor.name).toBe('Model');
@@ -752,7 +752,7 @@ describe('Model', () => {
       let model = Model.deserialize({
         $Model: 'ModelDeserialize',
         $version: '0.0.0'
-      });
+      }, {ignore$Model: false});
 
       expect(model).not.toBe(undefined);
       expect(model.constructor).toBe(ModelDeserialize);
@@ -775,7 +775,7 @@ describe('Model', () => {
             yay: 'string'
           }
         }
-      });
+      }, {ignore$Model: false});
 
       expect(model.prop1).toBe('hello world');
       expect(model.prop2).toBe(1);
@@ -798,7 +798,7 @@ describe('Model', () => {
           $Model: 'Model',
           $version: '0.0.0'
         }
-      });
+      }, {ignore$Model: false});
 
       expect(model.child).not.toBe(undefined);
       expect(model.child).not.toBe(model);
@@ -822,7 +822,7 @@ describe('Model', () => {
           },
           prop4: [3, 2, 1]
         }
-      });
+      }, {ignore$Model: false});
 
       expect(model.child.prop1).toBe(1);
       expect(model.child.prop2).toBe('hello world');
@@ -851,7 +851,7 @@ describe('Model', () => {
         $Model: 'ModelDeserialize2',
         $version: '0.0.0',
         children: [childPojo, childPojo, childPojo, 4567]
-      });
+      }, {ignore$Model: false});
 
       expect(model.children.length).toBe(4);
       expect(model.children[0].constructor).toBe(ModelDeserialize);
@@ -859,7 +859,7 @@ describe('Model', () => {
       expect(model.children[2].constructor).toBe(ModelDeserialize);
       expect(model.children[3]).toBe(4567);
 
-      for (var i = 0; i < 3; i++) {
+      for (let i = 0; i < 3; i++) {
         expect(model.children[i].prop1).toBe(1);
         expect(model.children[i].prop2).toBe('hello world');
         expect(model.children[i].prop3).toEqual({
