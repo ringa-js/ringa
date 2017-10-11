@@ -1,29 +1,34 @@
-When designing Ringa we asked the following questions:
+# When should I use it?
 
-1. What is the development problem?
-2. What would be the most enjoyable code to write to solve it?
-3. Is this going to scale and not impact the *computers performance*?
-4. Is this going to scale and not impact the *next developers performance*?
+RingaJS is right for you if you find yourself dealing with:
 
-We went back to the drawing board and put on our computer scientist caps to solve each problem and answer each of the 4 Questions. As a result, to understand why Ringa is so powerful a basic understanding of trees, graphs, algorithms, and software design patterns like singletons, factories, decorators, and dependency injection is a huge plus.
+* Boilerplate Code
+* Chains of asynchronous code
+* Complicated intercomponent communication
+* Strange state problems
+* Application scalability issues
+* Trouble refactoring large portions of your view
 
-# Advantages
+## Boilerplate
 
-Ringa provides the following high-level architectural advantages:
+RingaJS uses very little boilerplate code to get all of its features working. 
 
-* **Uses DOM event system**
-  * Controllers are attached to a DOM node so there are no God objects
-  * Use 'bubble' and 'capture' to communicate between controllers through the DOM
-  * Intercept events at a higher level in the DOM so that the root of your application always has complete control
-  * All RingaEvents include information on the view that dispatched them, the line of code they were dispatched from, the controller that is handling them, the commands that are responding, and much, much more
-* **Follows the Best MVC principles**
-  * Controllers are designed to keep your view, API, control, and model separated
-* **Asynchronous Syntax**
-  * Writing complicated trees of asynchronous and synchronous processes is simple
-  * Reading someone else's complex tree of asynchronous tasks is straightforward
-  * Extending, intercepting, or injecting into an existing asynchronous process is easy, but never interferes with debugging so there are no surprises
-  * Debugging when something fails in a complex tree of asynchronous tasks is at your fingertips
+## Asynchronous Code
 
-# Developing with Ringa
+RingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.
 
-Ringa is designed for enterprise-level applications and scales with your team to keep everyone happy. It is designed with the idea that you will eventually have a large application with a lot of library dependencies and also so that your code can be cordoned off into discrete sections so that there is less developer conflict during development.
+## Intercomponent Communication
+
+RingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.
+
+## State
+
+RingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.
+
+## Scalability
+
+RingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.
+
+## Refactoring
+
+RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuses large sections of asynchronous code.

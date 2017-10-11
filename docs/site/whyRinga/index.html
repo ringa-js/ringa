@@ -98,6 +98,12 @@
                     </li>
                 
                 
+                
+                    <li >
+                        <a href="../links/">Links</a>
+                    </li>
+                
+                
                 </ul>
             
 
@@ -128,42 +134,53 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#advantages">Advantages</a></li>
+        <li class="first-level active"><a href="#when-should-i-use-it">When should I use it?</a></li>
         
-    
-        <li class="first-level "><a href="#developing-with-ringa">Developing with Ringa</a></li>
+            <li class="second-level"><a href="#boilerplate">Boilerplate</a></li>
+            
+        
+            <li class="second-level"><a href="#asynchronous-code">Asynchronous Code</a></li>
+            
+        
+            <li class="second-level"><a href="#intercomponent-communication">Intercomponent Communication</a></li>
+            
+        
+            <li class="second-level"><a href="#state">State</a></li>
+            
+        
+            <li class="second-level"><a href="#scalability">Scalability</a></li>
+            
+        
+            <li class="second-level"><a href="#refactoring">Refactoring</a></li>
+            
         
     
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<p>When designing Ringa we asked the following questions:</p>
-<ol>
-<li>What is the development problem?</li>
-<li>What would be the most enjoyable code to write to solve it?</li>
-<li>Is this going to scale and not impact the <em>computers performance</em>?</li>
-<li>Is this going to scale and not impact the <em>next developers performance</em>?</li>
-</ol>
-<p>We went back to the drawing board and put on our computer scientist caps to solve each problem and answer each of the 4 Questions. As a result, to understand why Ringa is so powerful a basic understanding of trees, graphs, algorithms, and software design patterns like singletons, factories, decorators, and dependency injection is a huge plus.</p>
-<h1 id="advantages">Advantages</h1>
-<p>Ringa provides the following high-level architectural advantages:</p>
+<h1 id="when-should-i-use-it">When should I use it?</h1>
+<p>RingaJS is right for you if you find yourself dealing with:</p>
 <ul>
-<li><strong>Uses DOM event system</strong></li>
-<li>Controllers are attached to a DOM node so there are no God objects</li>
-<li>Use 'bubble' and 'capture' to communicate between controllers through the DOM</li>
-<li>Intercept events at a higher level in the DOM so that the root of your application always has complete control</li>
-<li>All RingaEvents include information on the view that dispatched them, the line of code they were dispatched from, the controller that is handling them, the commands that are responding, and much, much more</li>
-<li><strong>Follows the Best MVC principles</strong></li>
-<li>Controllers are designed to keep your view, API, control, and model separated</li>
-<li><strong>Asynchronous Syntax</strong></li>
-<li>Writing complicated trees of asynchronous and synchronous processes is simple</li>
-<li>Reading someone else's complex tree of asynchronous tasks is straightforward</li>
-<li>Extending, intercepting, or injecting into an existing asynchronous process is easy, but never interferes with debugging so there are no surprises</li>
-<li>Debugging when something fails in a complex tree of asynchronous tasks is at your fingertips</li>
+<li>Boilerplate Code</li>
+<li>Chains of asynchronous code</li>
+<li>Complicated intercomponent communication</li>
+<li>Strange state problems</li>
+<li>Application scalability issues</li>
+<li>Trouble refactoring large portions of your view</li>
 </ul>
-<h1 id="developing-with-ringa">Developing with Ringa</h1>
-<p>Ringa is designed for enterprise-level applications and scales with your team to keep everyone happy. It is designed with the idea that you will eventually have a large application with a lot of library dependencies and also so that your code can be cordoned off into discrete sections so that there is less developer conflict during development.</p></div>
+<h2 id="boilerplate">Boilerplate</h2>
+<p>RingaJS uses very little boilerplate code to get all of its features working. </p>
+<h2 id="asynchronous-code">Asynchronous Code</h2>
+<p>RingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.</p>
+<h2 id="intercomponent-communication">Intercomponent Communication</h2>
+<p>RingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.</p>
+<h2 id="state">State</h2>
+<p>RingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.</p>
+<h2 id="scalability">Scalability</h2>
+<p>RingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.</p>
+<h2 id="refactoring">Refactoring</h2>
+<p>RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuses large sections of asynchronous code.</p></div>
         
     </div>
 

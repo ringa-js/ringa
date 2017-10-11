@@ -351,19 +351,23 @@ var ExecutorAbstract = function (_RingaObject) {
     value: function _timeoutHandler() {
       var message = void 0;
 
-      if (true) {
-        message = 'ExecutorAbstract::_timeoutHandler(): the timeout (' + this.timeout + ' ms) for this executor was exceeded:\n\t' + this.toString();
+      if (this.controller.options.timeoutHandler) {
+        this.controller.options.timeoutHandler(this.ringaEvent, this);
+      } else {
+        if (true) {
+          message = 'ExecutorAbstract::_timeoutHandler(): the timeout (' + this.timeout + ' ms) for this executor was exceeded:\n\t' + this.toString();
+        }
+
+        if (false) {
+          message = 'Ringa: executor timeout (' + this.timeout + ' ms) exceeded:\n\t' + this.toString();
+        }
+
+        this.ringaEvent._threadTimedOut = true;
+
+        this.error = new Error(message);
+
+        this.failHandler(this.error, true);
       }
-
-      if (false) {
-        message = 'Ringa: executor timeout (' + this.timeout + ' ms) exceeded:\n\t' + this.toString();
-      }
-
-      this.ringaEvent._threadTimedOut = true;
-
-      this.error = new Error(message);
-
-      this.failHandler(this.error, true);
     }
 
     /**
@@ -1409,7 +1413,7 @@ var RingaEvent = function (_RingaObject) {
 
       this.addDebug('Fail');
 
-      this._dispatchEvent(RingaEvent.FAIL, undefined, error);
+      this._dispatchEvent(RingaEvent.FAIL, undefined, error, killed);
     }
 
     /**
@@ -1470,7 +1474,7 @@ var RingaEvent = function (_RingaObject) {
 
   }, {
     key: '_dispatchEvent',
-    value: function _dispatchEvent(type, detail, error) {
+    value: function _dispatchEvent(type, detail, error, kill) {
       var listeners = this.listeners[type];
 
       this.dispatchedEvents.push({
@@ -1484,7 +1488,8 @@ var RingaEvent = function (_RingaObject) {
           listener({
             type: type,
             detail: detail,
-            error: error
+            error: error,
+            kill: kill
           });
         });
       }
@@ -7526,14 +7531,16 @@ var EventExecutor = function (_ExecutorAbstract) {
   }, {
     key: 'dispatchedRingaEventFailHandler',
     value: function dispatchedRingaEventFailHandler(error) {
-      // Alright, this failure is a timeout on our dispatched event, so the other handling thread will have already dealt with it. Don't display
-      // the error again.
-      if (this.dispatchedRingaEvent._threadTimedOut) {
-        // Lets clear our own timeout and just neither be done nor fail.
-        return;
-      }
+      if (error.kill) {
+        // Alright, this failure is a timeout on our dispatched event, so the other handling thread will have already dealt with it. Don't display
+        // the error again.
+        if (this.dispatchedRingaEvent._threadTimedOut) {
+          // Lets clear our own timeout and just neither be done nor fail.
+          return;
+        }
 
-      this.fail(error, this.controller.options.killOnErrorHandler(this.ringaEvent, error));
+        this.fail(error, this.controller.options.killOnErrorHandler(this.ringaEvent, error));
+      }
     }
   }]);
 

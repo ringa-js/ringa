@@ -3,7 +3,7 @@
 
     
     <url>
-     <loc>None/</loc>
+     <loc>/</loc>
      <lastmod>2017-10-11</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -11,7 +11,7 @@
 
     
     <url>
-     <loc>None/whyRinga/</loc>
+     <loc>/whyRinga/</loc>
      <lastmod>2017-10-11</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -19,7 +19,7 @@
 
     
     <url>
-     <loc>None/demo/</loc>
+     <loc>/demo/</loc>
      <lastmod>2017-10-11</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -27,7 +27,7 @@
 
     
     <url>
-     <loc>None/helloWorld/</loc>
+     <loc>/helloWorld/</loc>
      <lastmod>2017-10-11</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -35,7 +35,15 @@
 
     
     <url>
-     <loc>None/model/</loc>
+     <loc>/model/</loc>
+     <lastmod>2017-10-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>/links/</loc>
      <lastmod>2017-10-11</lastmod>
      <changefreq>daily</changefreq>
     </url>

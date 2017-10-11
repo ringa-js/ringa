@@ -215,19 +215,23 @@ class ExecutorAbstract extends RingaObject {
   _timeoutHandler() {
     let message;
 
-    if (__DEV__) {
-      message = `ExecutorAbstract::_timeoutHandler(): the timeout (${this.timeout} ms) for this executor was exceeded:\n\t${this.toString()}`;
+    if (this.controller.options.timeoutHandler) {
+      this.controller.options.timeoutHandler(this.ringaEvent, this);
+    } else {
+      if (__DEV__) {
+        message = `ExecutorAbstract::_timeoutHandler(): the timeout (${this.timeout} ms) for this executor was exceeded:\n\t${this.toString()}`;
+      }
+
+      if (!__DEV__) {
+        message = `Ringa: executor timeout (${this.timeout} ms) exceeded:\n\t${this.toString()}`;
+      }
+
+      this.ringaEvent._threadTimedOut = true;
+
+      this.error = new Error(message);
+
+      this.failHandler(this.error, true);
     }
-
-    if (!__DEV__) {
-      message = `Ringa: executor timeout (${this.timeout} ms) exceeded:\n\t${this.toString()}`;
-    }
-
-    this.ringaEvent._threadTimedOut = true;
-
-    this.error = new Error(message);
-
-    this.failHandler(this.error, true);
   }
 
   /**
