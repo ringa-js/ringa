@@ -1,0 +1,26 @@
+.navbar-default{
+  background-color: #00304A;
+}
+
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus{
+  background-color: #002133;
+}
+.navbar-default .navbar-nav>li>a:hover, .navbar-default .navbar-nav>li>a:focus{
+  background-color: #002133;
+}
+
+.brand-image{
+  width: 120px;
+}
+
+a{
+  color:#3D9CCC
+}
+
+@media (min-width: 768px){
+
+  .navbar-nav>li>a{
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+}
