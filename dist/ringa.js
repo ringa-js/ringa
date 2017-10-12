@@ -7138,8 +7138,8 @@ TrieSearch.prototype = {
     if (this.options.cache && (c = this.getCache.get(phrase))) return c.value;
 
     var ret = undefined,
-        haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields;
-    words = this.options.splitOnRegEx ? phrase.split(this.options.splitOnRegEx) : [phrase];
+        haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
+        words = this.options.splitOnRegEx ? phrase.split(this.options.splitOnRegEx) : [phrase];
 
     for (var w = 0, l = words.length; w < l; w++) {
       if (this.options.min && words[w].length < this.options.min) continue;
