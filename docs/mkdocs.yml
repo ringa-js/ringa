@@ -3,8 +3,8 @@ theme_dir: cinder
 pages:
     - Home: index.md
     - Why Ringa: whyRinga.md
+    - Getting Started: helloWorld.md
     - Demo: demo.md
-    - Hello World: helloWorld.md
     - Model: model.md
     - Links: links.md
 extra_css: [extra.css]

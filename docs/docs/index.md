@@ -21,30 +21,15 @@ RingaJS is an all-in-one solution that can be used alongside your current state 
 * Flux
 * Relay
 
-## Background
+## Examples
 
-RingaJS was built in my spare time the last year as a way to shift the most difficult
-concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
-applications in a way that made it extremely easy to monitor teams as they work in a growing codebase.
+* [Chuck Norris Jokes](https://github.com/joshjung/ringa-example-chuck-norris)
+* [Todo MVC](https://github.com/Saajan/ringa-todomvc)
 
 ## Size
 
 * Ringa (minified): **~133kb**
 * React Ringa (minified): **~8kb**
-
-## Full Demo
-
-[Full Trello-like demo application](http://demo.ringajs.com)
-
-## Examples
-
-[Chuck Norris Jokes](https://github.com/joshjung/ringa-example-chuck-norris)
-
-## Latest Version
-
-[The latest version is `0.1.3` Alpha.](https://www.npmjs.org/ringa)
-
-RingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!
 
 ## Requirements
 
@@ -68,6 +53,12 @@ Ringa currently has 208 unit tests to ensure its core features are running smoot
 Our goal is 100% coverage so there is a little work to do!
 
 <img src="https://i.imgur.com/G564KCy.png" alt="Test Results" style="width: 500px;"/>
+
+## Background
+
+RingaJS was built in my spare time the last year as a way to shift the most difficult
+concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
+applications in a way that made it extremely easy to monitor teams as they work in a growing codebase.
 
 ## Contributors
 
