@@ -2,7 +2,7 @@
     "docs": [
         {
             "location": "/", 
-            "text": "Welcome to RingaJS\n\n\nRingaJS is an enterprise level single page application (SPA) framework that includes:\n\n\n\n\nMVC / MVVM Hybrid Architecture\n\n\nState management\n with no singletons\n\n\nPerformance centered \nObserver Pattern\n\n\nDependency injection to React Components\n\n\nAsynchronous toolset\n with branching, looping, and error handling\n\n\nCustomizable \nError Management\n\n\nHeavy focus on \nperformance, modularity, and scalability\n\n\n\n\nWhile not built for React, RingaJS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nSimilar Libraries\n\n\nRingaJS is an all-in-one solution that can be used alongside your current state management or asynchronous library or completely replace them. Competitors include:\n\n\n\n\nMobX\n\n\nRedux\n\n\nFlux\n\n\nRelay\n\n\n\n\nBackground\n\n\nRingaJS was built in my spare time the last year as a way to shift the most difficult\nconcepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.\n\n\nFull Demo\n\n\nFull Trello-like demo application\n\n\nExamples\n\n\nChuck Norris Jokes\n\n\nLatest Version\n\n\nThe latest version is \n0.1.3\n Alpha.\n\n\nRingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!\n\n\nRequirements\n\n\nRight now RingaJS is being developed for an ES6+ development environment and has been tested on:\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 11+\n\n\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa into your project\n\n\n\n\nTesting and Coverage\n\n\nnpm run test\n\n\nRinga currently has 208 unit tests to ensure its core features are running smoothly.\n\n\nOur goal is 100% coverage so there is a little work to do!\n\n\n\n\nLicense\n\n\nMIT", 
+            "text": "Welcome to RingaJS\n\n\nRingaJS is an enterprise level single page application (SPA) framework that includes:\n\n\n\n\nMVC / MVVM Hybrid Architecture\n\n\nState management\n with no singletons\n\n\nPerformance centered \nObserver Pattern\n\n\nDependency injection to React Components\n\n\nAsynchronous toolset\n with branching, looping, and error handling\n\n\nCustomizable \nError Management\n\n\nHeavy focus on \nperformance, modularity, and scalability\n\n\n\n\nWhile not built for React, RingaJS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nSimilar Libraries\n\n\nRingaJS is an all-in-one solution that can be used alongside your current state management or asynchronous library or completely replace them. Competitors include:\n\n\n\n\nMobX\n\n\nRedux\n\n\nFlux\n\n\nRelay\n\n\n\n\nBackground\n\n\nRingaJS was built in my spare time the last year as a way to shift the most difficult\nconcepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.\n\n\nSize\n\n\nRinga (minified): ~133kb\nReact Ringa (minified): ~8kb\n\n\nFull Demo\n\n\nFull Trello-like demo application\n\n\nExamples\n\n\nChuck Norris Jokes\n\n\nLatest Version\n\n\nThe latest version is \n0.1.3\n Alpha.\n\n\nRingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!\n\n\nRequirements\n\n\nRight now RingaJS is being developed for an ES6+ development environment and has been tested on:\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 11+\n\n\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa into your project\n\n\n\n\nTesting and Coverage\n\n\nnpm run test\n\n\nRinga currently has 208 unit tests to ensure its core features are running smoothly.\n\n\nOur goal is 100% coverage so there is a little work to do!\n\n\n\n\nContributors\n\n\n\n\nJoshua Jung\n\n\nThomas Yarnall\n\n\nJimmy Schwarzenberger\n\n\nSaajan Sn\n\n\nNaomi Mathews\n\n\n\n\nLicense\n\n\nMIT", 
             "title": "Home"
         }, 
         {
@@ -19,6 +19,11 @@
             "location": "/#background", 
             "text": "RingaJS was built in my spare time the last year as a way to shift the most difficult\nconcepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.", 
             "title": "Background"
+        }, 
+        {
+            "location": "/#size", 
+            "text": "Ringa (minified): ~133kb\nReact Ringa (minified): ~8kb", 
+            "title": "Size"
         }, 
         {
             "location": "/#full-demo", 
@@ -49,6 +54,11 @@
             "location": "/#testing-and-coverage", 
             "text": "npm run test  Ringa currently has 208 unit tests to ensure its core features are running smoothly.  Our goal is 100% coverage so there is a little work to do!", 
             "title": "Testing and Coverage"
+        }, 
+        {
+            "location": "/#contributors", 
+            "text": "Joshua Jung  Thomas Yarnall  Jimmy Schwarzenberger  Saajan Sn  Naomi Mathews", 
+            "title": "Contributors"
         }, 
         {
             "location": "/#license", 
