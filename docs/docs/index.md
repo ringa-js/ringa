@@ -12,9 +12,9 @@ RingaJS is an enterprise level single page application (SPA) framework that incl
 
 While not built for React, RingaJS integrates with your React application through the `react-ringa` plugin.
 
-## Similarities
+## Similar Libraries
 
-RingaJS is a complete replacement that can be used alongside any state management or asynchronous library that you may be currently using, such as:
+RingaJS is an all-in-one solution that can be used alongside your current state management or asynchronous library or completely replace them. Competitors include:
 
 * MobX
 * Redux
@@ -23,8 +23,8 @@ RingaJS is a complete replacement that can be used alongside any state managemen
 
 ## Background
 
-RingaJS was built in my spare time the last year as a way to shift all the most difficult
-concepts to rapid application development into a core set of Classes to improve my own development speed. It was also designed as a way to organize large enterprise
+RingaJS was built in my spare time the last year as a way to shift the most difficult
+concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
 applications in a way that made it extremely easy to monitor teams as they work in a growing codebase.
 
 ## Demo
