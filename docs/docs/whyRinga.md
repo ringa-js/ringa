@@ -31,4 +31,4 @@ RingaJS's architecture strongly encourages heavy decoupling and reusability of a
 
 ## Refactoring
 
-RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuses large sections of asynchronous code.
+RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.

@@ -2,7 +2,7 @@
     "docs": [
         {
             "location": "/", 
-            "text": "Welcome to RingaJS\n\n\nRingaJS is an enterprise level single page application (SPA) framework that includes:\n\n\n\n\nMVC / MVVM Hybrid Architecture\n\n\nState management\n with no singletons\n\n\nPerformance centered \nObserver Pattern\n\n\nDependency injection to React Components\n\n\nAsynchronous toolset\n with branching, looping, and error handling\n\n\nCustomizable \nError Management\n\n\nHeavy focus on \nperformance, modularity, and scalability\n\n\n\n\nWhile not built for React, RingaJS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nSimilarities\n\n\nRingaJS is a complete replacement that can be used alongside any state management or asynchronous library that you may be currently using, such as:\n\n\n\n\nMobX\n\n\nRedux\n\n\nFlux\n\n\nRelay\n\n\n\n\nBackground\n\n\nRingaJS was built in my spare time the last year as a way to shift all the most difficult\nconcepts to rapid application development into a core set of Classes to improve my own development speed. It was also designed as a way to organize large enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.\n\n\nDemo\n\n\nClick here for a demo of some of the features in action.\n\n\nLatest Version\n\n\nThe latest version is \n0.1.0\n Alpha.\n\n\nRingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!\n\n\nRequirements\n\n\nRight now RingaJS is being developed for an ES6+ development environment and has been tested on:\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 11+\n\n\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa into your project\n\n\n\n\nTesting and Coverage\n\n\nnpm run test\n\n\nRinga currently has 208 unit tests to ensure its core features are running smoothly.\n\n\nOur goal is 100% coverage so there is a little work to do!\n\n\n\n\nLicense\n\n\nMIT", 
+            "text": "Welcome to RingaJS\n\n\nRingaJS is an enterprise level single page application (SPA) framework that includes:\n\n\n\n\nMVC / MVVM Hybrid Architecture\n\n\nState management\n with no singletons\n\n\nPerformance centered \nObserver Pattern\n\n\nDependency injection to React Components\n\n\nAsynchronous toolset\n with branching, looping, and error handling\n\n\nCustomizable \nError Management\n\n\nHeavy focus on \nperformance, modularity, and scalability\n\n\n\n\nWhile not built for React, RingaJS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nSimilar Libraries\n\n\nRingaJS is an all-in-one solution that can be used alongside your current state management or asynchronous library or completely replace them. Competitors include:\n\n\n\n\nMobX\n\n\nRedux\n\n\nFlux\n\n\nRelay\n\n\n\n\nBackground\n\n\nRingaJS was built in my spare time the last year as a way to shift the most difficult\nconcepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.\n\n\nFull Demo\n\n\nFull Trello-like demo application\n\n\nExamples\n\n\nChuck Norris Jokes\n\n\nLatest Version\n\n\nThe latest version is \n0.1.3\n Alpha.\n\n\nRingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!\n\n\nRequirements\n\n\nRight now RingaJS is being developed for an ES6+ development environment and has been tested on:\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 11+\n\n\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa into your project\n\n\n\n\nTesting and Coverage\n\n\nnpm run test\n\n\nRinga currently has 208 unit tests to ensure its core features are running smoothly.\n\n\nOur goal is 100% coverage so there is a little work to do!\n\n\n\n\nLicense\n\n\nMIT", 
             "title": "Home"
         }, 
         {
@@ -11,23 +11,28 @@
             "title": "Welcome to RingaJS"
         }, 
         {
-            "location": "/#similarities", 
-            "text": "RingaJS is a complete replacement that can be used alongside any state management or asynchronous library that you may be currently using, such as:   MobX  Redux  Flux  Relay", 
-            "title": "Similarities"
+            "location": "/#similar-libraries", 
+            "text": "RingaJS is an all-in-one solution that can be used alongside your current state management or asynchronous library or completely replace them. Competitors include:   MobX  Redux  Flux  Relay", 
+            "title": "Similar Libraries"
         }, 
         {
             "location": "/#background", 
-            "text": "RingaJS was built in my spare time the last year as a way to shift all the most difficult\nconcepts to rapid application development into a core set of Classes to improve my own development speed. It was also designed as a way to organize large enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.", 
+            "text": "RingaJS was built in my spare time the last year as a way to shift the most difficult\nconcepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.", 
             "title": "Background"
         }, 
         {
-            "location": "/#demo", 
-            "text": "Click here for a demo of some of the features in action.", 
-            "title": "Demo"
+            "location": "/#full-demo", 
+            "text": "Full Trello-like demo application", 
+            "title": "Full Demo"
+        }, 
+        {
+            "location": "/#examples", 
+            "text": "Chuck Norris Jokes", 
+            "title": "Examples"
         }, 
         {
             "location": "/#latest-version", 
-            "text": "The latest version is  0.1.0  Alpha.  RingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!", 
+            "text": "The latest version is  0.1.3  Alpha.  RingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!", 
             "title": "Latest Version"
         }, 
         {
@@ -52,7 +57,7 @@
         }, 
         {
             "location": "/whyRinga/", 
-            "text": "When should I use it?\n\n\nRingaJS is right for you if you find yourself dealing with:\n\n\n\n\nBoilerplate Code\n\n\nChains of asynchronous code\n\n\nComplicated intercomponent communication\n\n\nStrange state problems\n\n\nApplication scalability issues\n\n\nTrouble refactoring large portions of your view\n\n\n\n\nBoilerplate\n\n\nRingaJS uses very little boilerplate code to get all of its features working. \n\n\nAsynchronous Code\n\n\nRingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.\n\n\nIntercomponent Communication\n\n\nRingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.\n\n\nState\n\n\nRingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.\n\n\nScalability\n\n\nRingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.\n\n\nRefactoring\n\n\nRingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuses large sections of asynchronous code.", 
+            "text": "When should I use it?\n\n\nRingaJS is right for you if you find yourself dealing with:\n\n\n\n\nBoilerplate Code\n\n\nChains of asynchronous code\n\n\nComplicated intercomponent communication\n\n\nStrange state problems\n\n\nApplication scalability issues\n\n\nTrouble refactoring large portions of your view\n\n\n\n\nBoilerplate\n\n\nRingaJS uses very little boilerplate code to get all of its features working. \n\n\nAsynchronous Code\n\n\nRingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.\n\n\nIntercomponent Communication\n\n\nRingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.\n\n\nState\n\n\nRingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.\n\n\nScalability\n\n\nRingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.\n\n\nRefactoring\n\n\nRingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.", 
             "title": "Why Ringa"
         }, 
         {
@@ -87,7 +92,7 @@
         }, 
         {
             "location": "/whyRinga/#refactoring", 
-            "text": "RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuses large sections of asynchronous code.", 
+            "text": "RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.", 
             "title": "Refactoring"
         }, 
         {

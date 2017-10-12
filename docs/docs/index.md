@@ -27,13 +27,17 @@ RingaJS was built in my spare time the last year as a way to shift the most diff
 concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
 applications in a way that made it extremely easy to monitor teams as they work in a growing codebase.
 
-## Demo
+## Full Demo
 
-[Click here for a demo of some of the features in action.](http://demo.ringajs.com)
+[Full Trello-like demo application](http://demo.ringajs.com)
+
+## Examples
+
+[Chuck Norris Jokes](https://github.com/joshjung/ringa-example-chuck-norris)
 
 ## Latest Version
 
-[The latest version is `0.1.0` Alpha.](https://www.npmjs.org/ringa)
+[The latest version is `0.1.3` Alpha.](https://www.npmjs.org/ringa)
 
 RingaJS is Alpha since January 2017. We would love your input, testing, and bug reports!
 
