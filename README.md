@@ -8,7 +8,7 @@ It was designed primarily for ReactJS and eliminates the need for the container/
 
 # [Documentation](http://www.ringajs.com)
 
-# [Demo]((http://demo.ringajs.com))
+# [Demo](http://demo.ringajs.com)
 
 # Examples
 
