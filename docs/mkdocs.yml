@@ -7,6 +7,7 @@ pages:
     - Demo: demo.md
     - Model: model.md
     - Links: links.md
+    - Versions: versions.md
 extra_css: [extra.css]
 repo_url: https://github.com/joshjung/ringa
 include_next_prev: false

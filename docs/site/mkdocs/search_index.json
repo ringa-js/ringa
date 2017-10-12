@@ -97,13 +97,18 @@
         }, 
         {
             "location": "/helloWorld/", 
-            "text": "'Hello World' in Ringa\n\n\nIn this walkthrough we will guide you to building your first \nHello world\n application in Ringa using React and the \nreact-ringa\n plugin.", 
+            "text": "Getting Started\n\n\nIn this walkthrough we will guide you to building your first \nHello world\n application in Ringa using React and the \nreact-ringa\n plugin.\n\n\nEmpty RingaJS Project\n\n\nFirst, you will want to download and run the \nRingaJS Application Template\n.\n\n\nMore information coming soon!", 
             "title": "Getting Started"
         }, 
         {
-            "location": "/helloWorld/#hello-world-in-ringa", 
+            "location": "/helloWorld/#getting-started", 
             "text": "In this walkthrough we will guide you to building your first  Hello world  application in Ringa using React and the  react-ringa  plugin.", 
-            "title": "'Hello World' in Ringa"
+            "title": "Getting Started"
+        }, 
+        {
+            "location": "/helloWorld/#empty-ringajs-project", 
+            "text": "First, you will want to download and run the  RingaJS Application Template .  More information coming soon!", 
+            "title": "Empty RingaJS Project"
         }, 
         {
             "location": "/demo/", 
@@ -282,13 +287,18 @@
         }, 
         {
             "location": "/links/", 
-            "text": "Code\n\n\n\n\nRinga Github\n\n\nReact Ringa Github\n\n\nDemo Github\n\n\n\n\nDemo\n\n\nFull Demonstration\n\n\nVideos\n\n\nInitial Presentation\n\nSkip to about 10 minutes in.", 
+            "text": "Code\n\n\n\n\nRinga Github\n\n\nReact Ringa Github\n\n\nDemo Github\n\n\n\n\nTemplate\n\n\n\n\nRingaJS Application Template\n.\n\n\n\n\nDemo\n\n\n\n\nFull Demonstration\n\n\n\n\nVideos\n\n\n\n\nInitial Presentation\n\nSkip to about 10 minutes in.", 
             "title": "Links"
         }, 
         {
             "location": "/links/#code", 
             "text": "Ringa Github  React Ringa Github  Demo Github", 
             "title": "Code"
+        }, 
+        {
+            "location": "/links/#template", 
+            "text": "RingaJS Application Template .", 
+            "title": "Template"
         }, 
         {
             "location": "/links/#demo", 
@@ -299,6 +309,26 @@
             "location": "/links/#videos", 
             "text": "Initial Presentation \nSkip to about 10 minutes in.", 
             "title": "Videos"
+        }, 
+        {
+            "location": "/versions/", 
+            "text": "Versions\n\n\nringa \n\n\nreact-ringa", 
+            "title": "Versions"
+        }, 
+        {
+            "location": "/versions/#versions", 
+            "text": "", 
+            "title": "Versions"
+        }, 
+        {
+            "location": "/versions/#ringa", 
+            "text": "", 
+            "title": "ringa "
+        }, 
+        {
+            "location": "/versions/#react-ringa", 
+            "text": "", 
+            "title": "react-ringa "
         }
     ]
 }
