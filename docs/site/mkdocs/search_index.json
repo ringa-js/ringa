@@ -107,7 +107,7 @@
         }, 
         {
             "location": "/demo/", 
-            "text": "Demo\n\n\nIntroduction\n\n\nThis RingaJS demo is a significant sized demonstration of some of the best features of RingaJS and its integration with a server. Feel free to dig through the code and \nplay around with the application, but keep in mind the codebase was not designed as a \"Hello World\" equivalent. If you are just getting started, take a look at the examples on the \nHome\n.\n\n\n\n\nLive Application\n\n\nSource Code (Web)\n\n\nSource Code (Server)\n\n\n\n\nTechnology\n\n\n\n\nWebpack\n\n\nBabel Transpiling to ES5\n\n\nJavascript ES6\n\n\nSCSS\n\n\n\n\n\n  \n\n\n\n\nDescription\n\n\nThis demo is like \nTodoMVC\n on steroids. It allows you to create lists of items that are associated with a token and stored in the database. You can share the lists of items with others by giving them the url.", 
+            "text": "Demo\n\n\nIntroduction\n\n\nThis RingaJS demo is a large demonstration of some of the best features of RingaJS integrated with a live server. Feel free to dig through the code and \nplay around with the application, but keep in mind the codebase was not designed as a \"Hello World\" equivalent. If you are just getting started, take a look at the examples in \nHome\n.\n\n\n\n\nLive Application\n\n\nSource Code (Web)\n\n\nSource Code (Server)\n\n\n\n\n\n  \n\n\n\n\nDescription\n\n\nThis demo is like \nTodoMVC\n on steroids. It allows you to create lists of items that are associated with a token and stored in the database. You can share the lists of items with others by giving them the url.\n\n\nTechnology\n\n\nWeb\n\n\n\n\nWebpack\n\n\nBabel Transpiling to ES5\n\n\nJavascript ES6\n\n\nSCSS\n\n\n\n\nServer\n\n\n\n\nExpress\n\n\nMongoDB", 
             "title": "Demo"
         }, 
         {
@@ -117,18 +117,28 @@
         }, 
         {
             "location": "/demo/#introduction", 
-            "text": "This RingaJS demo is a significant sized demonstration of some of the best features of RingaJS and its integration with a server. Feel free to dig through the code and \nplay around with the application, but keep in mind the codebase was not designed as a \"Hello World\" equivalent. If you are just getting started, take a look at the examples on the  Home .   Live Application  Source Code (Web)  Source Code (Server)", 
+            "text": "This RingaJS demo is a large demonstration of some of the best features of RingaJS integrated with a live server. Feel free to dig through the code and \nplay around with the application, but keep in mind the codebase was not designed as a \"Hello World\" equivalent. If you are just getting started, take a look at the examples in  Home .   Live Application  Source Code (Web)  Source Code (Server)", 
             "title": "Introduction"
-        }, 
-        {
-            "location": "/demo/#technology", 
-            "text": "Webpack  Babel Transpiling to ES5  Javascript ES6  SCSS", 
-            "title": "Technology"
         }, 
         {
             "location": "/demo/#description", 
             "text": "This demo is like  TodoMVC  on steroids. It allows you to create lists of items that are associated with a token and stored in the database. You can share the lists of items with others by giving them the url.", 
             "title": "Description"
+        }, 
+        {
+            "location": "/demo/#technology", 
+            "text": "", 
+            "title": "Technology"
+        }, 
+        {
+            "location": "/demo/#web", 
+            "text": "Webpack  Babel Transpiling to ES5  Javascript ES6  SCSS", 
+            "title": "Web"
+        }, 
+        {
+            "location": "/demo/#server", 
+            "text": "Express  MongoDB", 
+            "title": "Server"
         }, 
         {
             "location": "/model/", 
