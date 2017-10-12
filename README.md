@@ -1,22 +1,22 @@
 [<img src="http://www.jungdigital.com/public/ringa/logo/ringa.png" width="250">](http://demo.ringajs.com)
 
-Ringa is a Javascript state and action framework designed with no global model, no global controllers, the simplicity of proven dependency injection, and asynchronous action trees.
+# Getting started
 
-It was designed primarily for ReactJS and eliminates the need for the container/component pattern.
+In most cases you will want to install RingaJS for use inside your React application:
 
-*Note: Ringa is very much in alpha stage and a couple applications are being built on top of it. As such, it will be in a state of flux (no pun intended) for the next few months.*
+    npm install -S ringa
+    npm install -S react-ringa
+    
+This should give you everything you need to get started! We recommend taking a look at the Chuck Norris example to get started.
 
-# [Documentation](http://www.ringajs.com)
+# Links
 
-# [Demo](http://demo.ringajs.com)
+* [Documentation](http://www.ringajs.com)
+* [Demo](http://demo.ringajs.com)
 
 # Examples
 
 * [Chuck Norris Joke Loader](https://github.com/joshjung/ringa-example-chuck-norris)
-
-# Getting started
-
-    npm install -S ringa
 
 # Testing
 
