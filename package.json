@@ -57,7 +57,8 @@
     }
   ],
   "peerDependencies": {
-    "react-dom": "15.5.4"
+    "react-dom": "15.5.4",
+    "react": "15.5.4"
   },
   "dependencies": {
     "camelcase": "^4.0.0",
@@ -65,7 +66,6 @@
     "error-stack-parser": "^2.0.0",
     "hasharray": "^1.1.0",
     "jsdoc": "^3.4.3",
-    "react": "15.5.4",
     "snake-case": "^2.1.0",
     "string-width": "^2.1.1",
     "trie-search": "^1.0.7"
