@@ -65,7 +65,7 @@
     "jsdoc": "^3.4.3",
     "snake-case": "^2.1.0",
     "string-width": "^2.1.1",
-    "trie-search": "^1.0.7"
+    "trie-search": "^1.0.8"
   },
   "devDependencies": {
     "babel-core": "^6.22.1",
