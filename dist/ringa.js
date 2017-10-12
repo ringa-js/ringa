@@ -7134,7 +7134,7 @@ TrieSearch.prototype = {
   _get: function _get(phrase) {
     phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
 
-    var c;
+    var c, node;
     if (this.options.cache && (c = this.getCache.get(phrase))) return c.value;
 
     var ret = undefined,
