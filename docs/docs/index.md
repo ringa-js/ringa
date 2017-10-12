@@ -29,8 +29,8 @@ applications in a way that made it extremely easy to monitor teams as they work 
 
 ## Size
 
-Ringa (minified): ~133kb
-React Ringa (minified): ~8kb
+* Ringa (minified): **~133kb**
+* React Ringa (minified): **~8kb**
 
 ## Full Demo
 

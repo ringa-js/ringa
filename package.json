@@ -12,6 +12,7 @@
     "build": "npm run dist && npm run dev",
     "dist": "webpack --progress --colors --config build/webpack.dist.js",
     "dev": "webpack --progress --colors --config build/webpack.dev.js",
+    "docs": "cd docs && mkdocs build",
     "release:major": "npm test && npm run build && npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm test && npm run build && npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm test && npm run build && npm version patch && npm publish && git push --follow-tags"
