@@ -145,8 +145,23 @@
     
         <li class="first-level active"><a href="#getting-started">Getting Started</a></li>
         
-            <li class="second-level"><a href="#empty-ringajs-project">Empty RingaJS Project</a></li>
+            <li class="second-level"><a href="#setting-up-your-workspace">Setting Up Your Workspace</a></li>
             
+        
+    
+        <li class="first-level "><a href="#1-building-a-ringa-model">1. Building a Ringa Model</a></li>
+        
+    
+        <li class="first-level "><a href="#2-building-a-ringa-controller">2. Building a Ringa Controller</a></li>
+        
+    
+        <li class="first-level "><a href="#3-attach-a-controller-to-your-view">3. Attach a Controller to your view</a></li>
+        
+    
+        <li class="first-level "><a href="#4-inject-your-model-into-the-view">4. Inject your Model into the View</a></li>
+        
+    
+        <li class="first-level "><a href="#conclusion">Conclusion</a></li>
         
     
     </ul>
@@ -154,10 +169,251 @@
         <div class="col-md-9" role="main">
 
 <h1 id="getting-started">Getting Started</h1>
-<p>In this walkthrough we will guide you to building your first <code>Hello world</code> application in Ringa using React and the <code>react-ringa</code> plugin.</p>
-<h3 id="empty-ringajs-project">Empty RingaJS Project</h3>
-<p>First, you will want to download and run the <strong><a href="https://github.com/joshjung/ringa-app-template">RingaJS Application Template</a></strong>.</p>
-<p>More information coming soon!</p></div>
+<p>This tutorial will walk you through, step by step, how to:</p>
+<ol>
+<li>Build a Ringa Model</li>
+<li>Build a Ringa Controller</li>
+<li>Attach a Ringa controller to your view</li>
+<li>Inject your model into React view Components</li>
+<li>Refresh a Component when a property on the Model changes</li>
+<li>Quickly, and Painlessly, Refactor our View</li>
+<li>Dispatch and Handle an Events and trigger an asynchronous chain of code</li>
+</ol>
+<h3 id="setting-up-your-workspace">Setting Up Your Workspace</h3>
+<p>First, you will want to download and install the <strong><a href="https://github.com/joshjung/ringa-app-template">RingaJS Application Template</a></strong>.</p>
+<p>Once you have this running per the <code>Readme.md</code> instructions, you can continue!</p>
+<p><em>Note: you may want to fork the repository or clear out the .git references until we have built a Yeoman generator or something similar.</em></p>
+<h1 id="1-building-a-ringa-model">1. Building a Ringa <code>Model</code></h1>
+<p>To construct a Ringa Model, you just need to extend <code>Model</code> and add some properties:</p>
+<pre><code>import {Model} from 'ringa';
+
+class HelloWorldModel extends Model {
+  constructor(name, values) {
+    super(name, values);
+
+    this.addProperty('helloWorldText', 'Hello World!');
+  }
+}
+</code></pre>
+<p>Or, if you want to use the shorthand:</p>
+<pre><code>const HelloWorldModel = Model.construct('HelloWorldModel', [{
+  name: 'helloWorldText',
+  default: 'Hello World!'
+}]);
+</code></pre>
+<p>Under the hood, Ringa creates custom getters and setters for each property on your model. In addition
+it can store custom options for each property. These getters, setters, and options allow Ringa to perform
+its fancy magic.</p>
+<h1 id="2-building-a-ringa-controller">2. Building a Ringa <code>Controller</code></h1>
+<p>Controllers in Ringa link Models to your view. They also link Models to your control / asynchronous code. In many ways the Controllers in Ringa work like a traditional MVC controller (with a couple major game-changing differences which we will explain later).</p>
+<p>In any case, here is a basic example of a bare-bones Controller that does virtually nothing:</p>
+<pre><code>import {Controller} from 'ringa';
+
+class HelloWorldController extends Controller {
+  constructor(name, bus, options) {
+    super(name, bus, options);
+
+    this.addModel(new HelloWorldModel());
+  }
+}
+</code></pre>
+<p>This controller really does not do much. It simply "holds" a reference to a single instance of our super fancy and magical hello world model.</p>
+<p>It's really okay if you are not impressed yet.</p>
+<h1 id="3-attach-a-controller-to-your-view">3. Attach a <code>Controller</code> to your view</h1>
+<p><em>Note: Ringa does not depend on React, but in the current version React is the only plugin being developed so you must suffer if you love Vue or something. But quite frankly after seeing how well Ringa works with React at keeping things clean, you might give up your current framework.</em></p>
+<p>And now, let us attach our beautiful Controller to an equally vapid React Component:</p>
+<pre><code>import {attach} from 'react-ringa';
+
+class HelloWorld extends React.Component {
+  constructor(props) {
+    super(props);
+
+    attach(this, new HelloWorldController());
+  }
+
+  render() {
+    return &lt;div&gt;This doesn't really do anything.&lt;/div&gt;;
+  }
+}
+</code></pre>
+<p>At this point we are nearly 90% of the way to recreating Facebook! Pat yourself on the back.</p>
+<h1 id="4-inject-your-model-into-the-view">4. Inject your <code>Model</code> into the View</h1>
+<p>One of the most powerful features of Ringa, and in particular <code>react-ringa</code>, is that a view component can request any Model by its type or its name. <code>react-ringa</code> will look
+through its parent hierarchy for all controllers, and ask those controllers if they have an instance of the requested <code>Model</code>. If they do, the one <em>closest</em> to the current Component is returned:</p>
+<pre><code>import {depend, dependency} from 'react-ringa';
+
+class HelloWorld extends React.Component {
+  constructor(props) {
+    super(props);
+
+    depend(this, dependency(HelloWorldModel)); // Ask for an instance of HelloWorldModel
+
+    attach(this, new HelloWorldController()); // Attach the Controller (which has the instance)
+  }
+
+  render() {
+    return &lt;div&gt;This starting to do something...&lt;/div&gt;;
+  }
+}
+</code></pre>
+<p>In this case, our <code>HelloWorld</code> component will search for the first instance of <code>HelloWorldModel</code> that it can find. First it looks for all Ringa Controllers within itself or its ancestors. It finds <code>HelloWorldController</code>, attached to itself like a barnacle. Then it searches
+through all of the available <code>Models</code> that are added to those Controllers (in our case only the <code>HelloWorldController</code>). It returns the first one it finds... the one that is closest in the view stack to the current Component. In this case it finds our instance of <code>HelloWorldModel</code> that
+we added to our <code>HelloWorldController</code>.</p>
+<p>When Ringa finds a matching <code>Model</code> it uses the name of the <code>Model</code> and injects that into the Component's state object:</p>
+<pre><code>import {depend, dependency} from 'react-ringa';
+
+class HelloWorld extends React.Component {
+  constructor(props) {
+    super(props);
+
+    // Note that all Ringa Models by default have a name that is the camelcase
+    // of the Class name, so this would be named 'helloWorldModel'
+    depend(this, dependency(HelloWorldModel));
+
+    attach(this, new HelloWorldController());
+  }
+
+  render() {
+    // Here our instance has been injected into the state
+    const {helloWorldModel} = this.state;
+
+    return &lt;div&gt;{helloWorldModel.helloWorldText}&lt;/div&gt;;
+  }
+}
+</code></pre>
+<p>You may ask why we inject into <code>state</code> and not <code>props</code>. This was a complicated decision. Some other frameworks like Redux get around the immutability of <code>props</code> by wrapping every single component that uses <code>connect</code> with <em>another</em> React Component so they can inject the <code>store</code>.</p>
+<p>I just personally decided this felt silly to wrap every component in another component to work around a design decision and <code>state</code> worked so I ran with it. We can discuss the philosophical ramifications of this decision later but for now it works super well.</p>
+<ol>
+<li>Refresh the Display When a Property Changes on a Model</li>
+</ol>
+<p>Now, clearly displaying hello world is not enough. We may, in fact, need at some point to say goodbye to the world. Perhaps it is because it is covered in a dense layer of Venusian gasses and infected with a wildly popular orange alien who keeps spewing them.</p>
+<p>Whatever your personal reasons may be for leaving this planet, Ringa makes it easy (in this particular example):</p>
+<pre><code>import {depend, dependency} from 'react-ringa';
+
+class HelloWorld extends React.Component {
+  constructor(props) {
+    super(props);
+
+    depend(this, dependency(HelloWorldModel, 'helloWorldText'));
+
+    attach(this, new HelloWorldController());
+  }
+
+  render() {
+    // Now the property *and* the model are injected into state.
+    const {helloWorldText} = this.state;
+
+    return &lt;div&gt;
+      {helloWorldText}
+      &lt;button onClick={this.goodbyeWorld}&gt;Hej Då!&lt;/button&gt;
+    &lt;/div&gt;;
+  }
+
+  goodbyeWorld() {
+    this.state.helloWorldModel.helloWorldText = 'Goodbye, earth!';
+  }
+}
+</code></pre>
+<p>After close scrutiny you might have noticed that in this example we are now watching, specifically, the <code>helloWorldText</code> property on our model. What this means is that whenever that property changes, we force the component to rerender itself and inject that property
+into the state object.</p>
+<ol>
+<li>Quick, and Painless, Refactoring our View</li>
+</ol>
+<p>At this point, you may wonder what all the fuss is about. You see, Ringa's power does not lie just in its low boilerplate, intuitive dependency injection, or fast observer pattern. It lies in the flexibility of restructuring your view on the fly while having to adjust the least amount of code. Moving things around and refactoring your view
+is insanely easy:</p>
+<pre><code>class HelloWorldText extends React.Component {
+  constructor(props) {
+    super(props);
+
+    depend(this, dependency(HelloWorldModel, 'helloWorldText'));
+  }
+
+  render() {
+    const {helloWorldText} = this.state;
+
+    return &lt;div&gt;{helloWorldText}&lt;/div&gt;;
+  }
+}
+
+class HelloWorld extends React.Component {
+  constructor(props) {
+    super(props);
+
+    attach(this, new HelloWorldController());
+  }
+
+  render() {
+    const {helloWorldText} = this.state;
+
+    return &lt;div&gt;
+      &lt;HelloWorldText /&gt; // &lt;--- Take a look here
+      &lt;button onClick={this.goodbyeWorld}&gt;Go to Mars with Elon Musk&lt;/button&gt;
+    &lt;/div&gt;;
+  }
+
+  goodbyeWorld() {
+    this.state.helloWorldModel.helloWorldText = 'Goodbye, earth!';
+  }
+}
+</code></pre>
+<p>But wait, how... how does <code>HelloWorldText</code> know what instance of the <code>HelloWorldModel</code> it is supposed to use?</p>
+<p>Note the <code>Take a look here</code> comment. On that line, we create an instance of <code>HelloWorldText</code>. The ancestor of that instance (<code>HelloWorld</code>) contains a Controller that has an instance of our <code>HelloWorldModel</code>. So <code>depend</code> easily finds an instance to inject!</p>
+<p>While at first this may be confusing, it naturally allows you to structure the tree of your view in a highly reusable and scalable way.</p>
+<ol>
+<li>Dispatching and Handling Asynchronous Events</li>
+</ol>
+<p>Setting properties on Models is great and all, but our application does - at some point - need to actually do something. And nobody is going to buy that our trip to mars only took like 0 milliseconds.</p>
+<p>First, we need to update our Controller so that it can receive events:</p>
+<pre><code>import {Controller} from 'ringa';
+
+class HelloWorldController extends Controller {
+  constructor(name, bus, options) {
+    super(name, bus, options);
+
+    this.addModel(new HelloWorldModel());
+
+    this.addListener('goToMars', [
+      this.updateMessage('Traveling to Mars!'),
+      1000, // Wait 1000 ms
+      this.updateMessage('Getting really bored...'),
+      5000, // Wait 5000 ms
+      this.updateMessage('Perhaps hibernation should have been invented.'),
+      10000, // Wait 10000 ms
+      this.updateMessage('Finally, we have arrived!!'),
+    ]);
+  }
+
+  updateMessage(text) {
+    return (helloWorldModel) =&gt; {helloWorldModel.helloWorldText = };
+  }
+}
+</code></pre>
+<p>Second, we are going to create create Form and have it dispatch an event:</p>
+<pre><code>import {dispatch} from 'ringa';
+
+class HelloWorldForm extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return &lt;button ref="button" onClick={() =&gt; {this.onClick}}&gt;Blast off!&lt;/button&gt;;
+  }
+
+  onClick() {
+    dispatch(HelloWorldController.GO_TO_MARS, {}, this.refs.button);
+  }
+}
+</code></pre>
+<p>And that is it! Dispatching in Ringa dispatches <em>through</em> the DOM. Since all Controllers are attached to a DOM node (the root DOM node of a React Component in this case) then they can catch
+any events (including DOM events like <code>'click'</code>) that can be passed through the DOM. So in our <code>HelloWorldForm</code> we dispatch the event, it bubbles up through to be caught by our single instance of
+the <code>HelloWorldController</code>.</p>
+<p>Note in <code>addListener</code> that we provide an array of functions and numbers. In Ringa, when listening for an event we can chain asynchronous and synchronous code together. Each method in the chain has
+its arguments injected by name from the context of the Controller or the detail of the dispatched event. Numbers are just a trick to sleep for some milliseconds (super useful for building onboarding wizards or transitions).</p>
+<p>For a better example of this using an actual API call, take a look at the Chuck Norris example.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>In this example we have shown how to easily create Ringa Models and Controllers. We highly recommend poking around some of the other examples, and if you feel really adventurous, you can take a look at
+<a href="http://github.com/joshjung/ringa-example-react">ringa-example-react</a> for a more advanced discussion of the features of Ringa in the code comments.</p></div>
         
     </div>
 
