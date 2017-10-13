@@ -387,7 +387,9 @@ class HelloWorldController extends Controller {
   }
 
   updateMessage(text) {
-    return (helloWorldModel) =&gt; {helloWorldModel.helloWorldText = };
+    return (helloWorldModel) =&gt; {
+      helloWorldModel.helloWorldText = text;
+    };
   }
 }
 </code></pre>
@@ -400,7 +402,7 @@ class HelloWorldForm extends React.Component {
   }
 
   render() {
-    return &lt;button ref="button" onClick={() =&gt; {this.onClick}}&gt;Blast off!&lt;/button&gt;;
+    return &lt;button ref="button" onClick={() =&gt; {this.onClick()}}&gt;Blast off!&lt;/button&gt;;
   }
 
   onClick() {

@@ -244,7 +244,9 @@ First, we need to update our Controller so that it can receive events:
       }
       
       updateMessage(text) {
-        return (helloWorldModel) => {helloWorldModel.helloWorldText = };
+        return (helloWorldModel) => {
+          helloWorldModel.helloWorldText = text;
+        };
       }
     }
 
@@ -258,7 +260,7 @@ Second, we are going to create create Form and have it dispatch an event:
       }
       
       render() {
-        return <button ref="button" onClick={() => {this.onClick}}>Blast off!</button>;
+        return <button ref="button" onClick={() => {this.onClick()}}>Blast off!</button>;
       }
       
       onClick() {
