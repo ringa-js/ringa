@@ -10,7 +10,7 @@ This tutorial will walk you through, step by step, how to:
 6. Quickly, and Painlessly, Refactor our View
 7. Dispatch and Handle an Events and trigger an asynchronous chain of code
 
-### Setting Up Your Workspace
+## Setting Up Your Workspace
 
 First, you will want to download and install the **[RingaJS Application Template](https://github.com/joshjung/ringa-app-template)**.
 
@@ -18,7 +18,7 @@ Once you have this running per the `Readme.md` instructions, you can continue!
 
 *Note: you may want to fork the repository or clear out the .git references until we have built a Yeoman generator or something similar.*
 
-# 1. Building a Ringa `Model`
+## 1. Building a Ringa `Model`
 
 To construct a Ringa Model, you just need to extend `Model` and add some properties:
 
@@ -43,7 +43,7 @@ Under the hood, Ringa creates custom getters and setters for each property on yo
 it can store custom options for each property. These getters, setters, and options allow Ringa to perform
 its fancy magic.
 
-# 2. Building a Ringa `Controller`
+## 2. Building a Ringa `Controller`
 
 Controllers in Ringa link Models to your view. They also link Models to your control / asynchronous code. In many ways the Controllers in Ringa work like a traditional MVC controller (with a couple major game-changing differences which we will explain later).
 
@@ -63,7 +63,7 @@ This controller really does not do much. It simply "holds" a reference to a sing
 
 It's really okay if you are not impressed yet.
 
-# 3. Attach a `Controller` to your view
+## 3. Attach a `Controller` to your view
 
 *Note: Ringa does not depend on React, but in the current version React is the only plugin being developed so you must suffer if you love Vue or something. But quite frankly after seeing how well Ringa works with React at keeping things clean, you might give up your current framework.*
 
@@ -85,7 +85,7 @@ And now, let us attach our beautiful Controller to an equally vapid React Compon
     
 At this point we are nearly 90% of the way to recreating Facebook! Pat yourself on the back.
 
-# 4. Inject your `Model` into the View
+## 4. Inject your `Model` into the View
 
 One of the most powerful features of Ringa, and in particular `react-ringa`, is that a view component can request any Model by its type or its name. `react-ringa` will look
 through its parent hierarchy for all controllers, and ask those controllers if they have an instance of the requested `Model`. If they do, the one *closest* to the current Component is returned:
@@ -137,7 +137,7 @@ You may ask why we inject into `state` and not `props`. This was a complicated d
 
 I just personally decided this felt silly to wrap every component in another component to work around a design decision and `state` worked so I ran with it. We can discuss the philosophical ramifications of this decision later but for now it works super well.
 
-5. Refresh the Display When a Property Changes on a Model
+## 5. Refresh the Display When a Property Changes on a Model
 
 Now, clearly displaying hello world is not enough. We may, in fact, need at some point to say goodbye to the world. Perhaps it is because it is covered in a dense layer of Venusian gasses and infected with a wildly popular orange alien who keeps spewing them.
 
@@ -172,7 +172,7 @@ Whatever your personal reasons may be for leaving this planet, Ringa makes it ea
 After close scrutiny you might have noticed that in this example we are now watching, specifically, the `helloWorldText` property on our model. What this means is that whenever that property changes, we force the component to rerender itself and inject that property
 into the state object.
 
-6. Quick, and Painless, Refactoring our View
+## 6. Quick, and Painless, Refactoring our View
 
 At this point, you may wonder what all the fuss is about. You see, Ringa's power does not lie just in its low boilerplate, intuitive dependency injection, or fast observer pattern. It lies in the flexibility of restructuring your view on the fly while having to adjust the least amount of code. Moving things around and refactoring your view
 is insanely easy:
@@ -218,7 +218,7 @@ Note the `Take a look here` comment. On that line, we create an instance of `Hel
 
 While at first this may be confusing, it naturally allows you to structure the tree of your view in a highly reusable and scalable way.
 
-7. Dispatching and Handling Asynchronous Events
+## 7. Dispatching and Handling Asynchronous Events
 
 Setting properties on Models is great and all, but our application does - at some point - need to actually do something. And nobody is going to buy that our trip to mars only took like 0 milliseconds.
 
@@ -275,7 +275,7 @@ its arguments injected by name from the context of the Controller or the detail 
 
 For a better example of this using an actual API call, take a look at the Chuck Norris example.
 
-# Conclusion
+## Conclusion
 
 In this example we have shown how to easily create Ringa Models and Controllers. We highly recommend poking around some of the other examples, and if you feel really adventurous, you can take a look at
 [ringa-example-react](http://github.com/joshjung/ringa-example-react) for a more advanced discussion of the features of Ringa in the code comments.
