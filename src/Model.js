@@ -54,6 +54,10 @@ let _serialize = function (model, pojo, options) {
     }
   });
 
+  if (model.postSerialize) {
+    model.postSerialize(pojo, options);
+  }
+
   return pojo;
 };
 
