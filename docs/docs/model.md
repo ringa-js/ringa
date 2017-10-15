@@ -179,7 +179,7 @@ Output:
 
 **Be careful! If you accidentally pass the property options as the second parameter to `addProperty` they will be treated as the default value.**
 
-Note: the following propertyOptions are reserved and used by Ringa:
+Note: the following propertyOptions have special functions in Ringa and will be discussed further in the following docs:
 
 * `descriptor`
 * `setParentModel`
