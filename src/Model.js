@@ -429,6 +429,11 @@ class Model extends Bus {
     newInstance.propertyOptions = this.propertyOptions;
 
     let _clone = (propName, obj) => {
+      if (obj === null) {
+        return null;
+      } else if (obj === undefined) {
+        return undefined;
+      }
       if (obj instanceof Array) {
         return obj.map(_clone.bind(undefined, propName));
       } else if (obj instanceof Model) {
@@ -440,7 +445,7 @@ class Model extends Bus {
         }
 
         return childModel;
-      } else if (typeof obj === 'object' && obj.hasOwnProperty('clone')) {
+      } else if (typeof obj === 'object' && obj.hasOwnProperty && obj.hasOwnProperty('clone')) {
         return obj.clone(newInstance);
       } else if (typeof obj === 'object') {
         let newObj = {};

@@ -236,7 +236,27 @@ Using the Example Class `UserModel` defined at the beginning of this page, we co
 The console will now output:
 
     A property has changed 'firstName': Saajan
+    
+## 1.4. Watch Until
+    
+Model's can be watched until a condition is met. One use case might be if you have an authorization model with a flag for being logged in. Your view could `watchUntil` the user is logged in before continuing:
 
+* `watchUntil(condition, handler, autoUnwatch = true)`
+
+    class AuthModel = Model.construct('AuthModel', ['loggedIn']);
+    
+    ...
+    
+    let authModel = new AuthModel(); //
+    
+    authModel.watchUntil(authModel => authModel.loggedIn, signal => {
+      console.log(`The user has logged in!`);
+    }, true);
+
+Internally the model watches all of its dispatched signals and reruns the condition check function every time. When it is truthy, then the handler is called.
+
+If you set `autoUnwatch` to true, then the handler will only be called the first time the condition is met. If `autoUnwatch` is false, then the handler function will be called every time the condition is met.
+ 
 # 2. Advanced
 
 While all the following features are optional, they are all designed to work together seamlessly to serve every need you could have for a Model. For the best results, I recommend reading on each of the following features to get the most mileage and reuse from your Ringa models.
