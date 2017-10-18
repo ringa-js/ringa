@@ -61,6 +61,7 @@
     "camelcase": "^4.0.0",
     "dateformat": "^2.0.0",
     "error-stack-parser": "^2.0.0",
+    "fbjs": "^0.8.16",
     "hasharray": "^1.1.0",
     "jsdoc": "^3.4.3",
     "snake-case": "^2.1.0",
