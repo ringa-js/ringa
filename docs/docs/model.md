@@ -243,6 +243,7 @@ Model's can be watched until a condition is met. One use case might be if you ha
 
 * `watchUntil(condition, handler, autoUnwatch = true)`
 
+
     class AuthModel = Model.construct('AuthModel', ['loggedIn']);
     
     ...
