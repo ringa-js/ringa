@@ -1,6 +1,6 @@
-# Welcome to RingaJS
+# Welcome to Ringa JS!
 
-RingaJS is an enterprise level single page application (SPA) framework that includes:
+Ringa JS is an enterprise single page application (SPA) framework that includes:
 
 1. **MVC / MVVM Hybrid Architecture**
 2. **State management** with no singletons
@@ -10,35 +10,39 @@ RingaJS is an enterprise level single page application (SPA) framework that incl
 6. Customizable **Error Management**
 7. Heavy focus on **performance, modularity, and scalability**
 
-While not built for React, RingaJS integrates with your React application through the `react-ringa` plugin.
+Ringa JS integrates with your React application through the `react-ringa` plugin.
+
+## Latest Versions
+
+### ringa [<img src="https://img.shields.io/npm/v/ringa.svg"/>](http://www.github.com/joshjung/ringa)
+
+### react-ringa [<img src="https://img.shields.io/npm/v/react-ringa.svg"/>](http://www.github.com/joshjung/react-ringa)
 
 ## Similar Libraries
 
-RingaJS is an all-in-one solution that can be used alongside your current state management or asynchronous library or completely replace them. Competitors include:
+RingaJS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa can completely replace them.
+
+Similar libraries include:
 
 * MobX
 * Redux
 * Flux
 * Relay
 
-## Examples
-
-* [Chuck Norris Jokes](https://github.com/joshjung/ringa-example-chuck-norris)
-* [Todo MVC](https://github.com/Saajan/ringa-todomvc)
-
 ## Size
 
-* Ringa (minified): **~133kb**
-* React Ringa (minified): **~8kb**
+* `ringa` (minified): **~133kb**
+* `react-ringa` (minified): **~8kb**
 
 ## Requirements
 
-Right now RingaJS is being developed for an ES6+ development environment and has been tested on:
+Right now RingaJS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available) and has been tested on:
 
 * Chrome
 * Firefox
 * Safari
-* IE 11+
+* IE 10+
+* Edge
 
 ## Installation
 
@@ -54,6 +58,41 @@ Our goal is 100% coverage so there is a little work to do!
 
 <img src="https://i.imgur.com/G564KCy.png" alt="Test Results" style="width: 500px;"/>
 
+## When should I use it?
+
+RingaJS is right for you if you find yourself dealing with:
+
+* Boilerplate Code
+* Chains of asynchronous code
+* Complicated intercomponent communication
+* Strange state problems
+* Application scalability issues
+* Trouble refactoring large portions of your view
+
+### Boilerplate
+
+RingaJS uses very little boilerplate code. 
+
+### Asynchronous Code
+
+RingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.
+
+### Intercomponent Communication
+
+RingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.
+
+### State
+
+RingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.
+
+### Scalability
+
+RingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.
+
+### Refactoring
+
+RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.
+
 ## Background
 
 RingaJS was built in my spare time the last year as a way to shift the most difficult
@@ -67,8 +106,4 @@ applications in a way that made it extremely easy to monitor teams as they work 
 * Jimmy Schwarzenberger
 * Saajan Sn
 * Naomi Mathews
-
-## License
-
-MIT
-
+* Marcus Folkeryd

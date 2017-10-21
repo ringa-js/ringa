@@ -4,10 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ringa JS is a scalable framework for your small or enterprise-level Javascript project."> 
+    <meta name="author" content="Joshua Jung">  
     <link rel="shortcut icon" href="./img/favicon.ico">
 
-    <title>RingaJS</title>
+    <title>Ringa JS</title>
 
     <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
@@ -36,6 +38,23 @@
     });
     </script>
 
+    
+    <script>
+    (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function() {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-108440815-1', 'ringajs.com');
+    ga('send', 'pageview');
+    </script>
     
 </head>
 
@@ -78,38 +97,119 @@
                 
                 
                 
-                    <li >
-                        <a href="whyRinga/">Why Ringa</a>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Getting Started <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="gettingStarted/demo/">Live Demo</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="gettingStarted/helloWorld/">Hello World Tutorial</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="gettingStarted/examples/">Examples</a>
+</li>
+
+                        
+                        </ul>
                     </li>
                 
                 
                 
-                    <li >
-                        <a href="helloWorld/">Getting Started</a>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Architecture <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="architecture/lifecycle/">Lifecycle</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="architecture/events/">Event System</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="architecture/inspector/">Inspector</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="architecture/debugging/">Debugging</a>
+</li>
+
+                        
+                        </ul>
                     </li>
                 
                 
                 
-                    <li >
-                        <a href="demo/">Demo</a>
-                    </li>
-                
-                
-                
-                    <li >
-                        <a href="model/">Model</a>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Docs <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="docs/">Index</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="docs/ringaObject/">RingaObject</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="docs/ringaEvent/">RingaEvent</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="docs/model/">Model</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="docs/controller/">Controller</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="docs/executors/">Executors</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="docs/reactRinga/">React Ringa</a>
+</li>
+
+                        
+                        </ul>
                     </li>
                 
                 
                 
                     <li >
                         <a href="links/">Links</a>
-                    </li>
-                
-                
-                
-                    <li >
-                        <a href="versions/">Versions</a>
                     </li>
                 
                 
@@ -143,12 +243,16 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#welcome-to-ringajs">Welcome to RingaJS</a></li>
+        <li class="first-level active"><a href="#welcome-to-ringa-js">Welcome to Ringa JS!</a></li>
         
-            <li class="second-level"><a href="#similar-libraries">Similar Libraries</a></li>
+            <li class="second-level"><a href="#latest-versions">Latest Versions</a></li>
+            
+                <li class="third-level"><a href="#ringa">ringa </a></li>
+            
+                <li class="third-level"><a href="#react-ringa">react-ringa </a></li>
             
         
-            <li class="second-level"><a href="#examples">Examples</a></li>
+            <li class="second-level"><a href="#similar-libraries">Similar Libraries</a></li>
             
         
             <li class="second-level"><a href="#size">Size</a></li>
@@ -163,13 +267,25 @@
             <li class="second-level"><a href="#testing-and-coverage">Testing and Coverage</a></li>
             
         
+            <li class="second-level"><a href="#when-should-i-use-it">When should I use it?</a></li>
+            
+                <li class="third-level"><a href="#boilerplate">Boilerplate</a></li>
+            
+                <li class="third-level"><a href="#asynchronous-code">Asynchronous Code</a></li>
+            
+                <li class="third-level"><a href="#intercomponent-communication">Intercomponent Communication</a></li>
+            
+                <li class="third-level"><a href="#state">State</a></li>
+            
+                <li class="third-level"><a href="#scalability">Scalability</a></li>
+            
+                <li class="third-level"><a href="#refactoring">Refactoring</a></li>
+            
+        
             <li class="second-level"><a href="#background">Background</a></li>
             
         
             <li class="second-level"><a href="#contributors">Contributors</a></li>
-            
-        
-            <li class="second-level"><a href="#license">License</a></li>
             
         
     
@@ -177,8 +293,8 @@
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="welcome-to-ringajs">Welcome to RingaJS</h1>
-<p>RingaJS is an enterprise level single page application (SPA) framework that includes:</p>
+<h1 id="welcome-to-ringa-js">Welcome to Ringa JS!</h1>
+<p>Ringa JS is an enterprise single page application (SPA) framework that includes:</p>
 <ol>
 <li><strong>MVC / MVVM Hybrid Architecture</strong></li>
 <li><strong>State management</strong> with no singletons</li>
@@ -188,32 +304,32 @@
 <li>Customizable <strong>Error Management</strong></li>
 <li>Heavy focus on <strong>performance, modularity, and scalability</strong></li>
 </ol>
-<p>While not built for React, RingaJS integrates with your React application through the <code>react-ringa</code> plugin.</p>
+<p>Ringa JS integrates with your React application through the <code>react-ringa</code> plugin.</p>
+<h2 id="latest-versions">Latest Versions</h2>
+<h3 id="ringa">ringa <a href="http://www.github.com/joshjung/ringa"><img src="https://img.shields.io/npm/v/ringa.svg"/></a></h3>
+<h3 id="react-ringa">react-ringa <a href="http://www.github.com/joshjung/react-ringa"><img src="https://img.shields.io/npm/v/react-ringa.svg"/></a></h3>
 <h2 id="similar-libraries">Similar Libraries</h2>
-<p>RingaJS is an all-in-one solution that can be used alongside your current state management or asynchronous library or completely replace them. Competitors include:</p>
+<p>RingaJS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa can completely replace them.</p>
+<p>Similar libraries include:</p>
 <ul>
 <li>MobX</li>
 <li>Redux</li>
 <li>Flux</li>
 <li>Relay</li>
 </ul>
-<h2 id="examples">Examples</h2>
-<ul>
-<li><a href="https://github.com/joshjung/ringa-example-chuck-norris">Chuck Norris Jokes</a></li>
-<li><a href="https://github.com/Saajan/ringa-todomvc">Todo MVC</a></li>
-</ul>
 <h2 id="size">Size</h2>
 <ul>
-<li>Ringa (minified): <strong>~133kb</strong></li>
-<li>React Ringa (minified): <strong>~8kb</strong></li>
+<li><code>ringa</code> (minified): <strong>~133kb</strong></li>
+<li><code>react-ringa</code> (minified): <strong>~8kb</strong></li>
 </ul>
 <h2 id="requirements">Requirements</h2>
-<p>Right now RingaJS is being developed for an ES6+ development environment and has been tested on:</p>
+<p>Right now RingaJS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available) and has been tested on:</p>
 <ul>
 <li>Chrome</li>
 <li>Firefox</li>
 <li>Safari</li>
-<li>IE 11+</li>
+<li>IE 10+</li>
+<li>Edge</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <ul>
@@ -224,6 +340,28 @@
 <p>Ringa currently has 208 unit tests to ensure its core features are running smoothly.</p>
 <p>Our goal is 100% coverage so there is a little work to do!</p>
 <p><img src="https://i.imgur.com/G564KCy.png" alt="Test Results" style="width: 500px;"/></p>
+<h2 id="when-should-i-use-it">When should I use it?</h2>
+<p>RingaJS is right for you if you find yourself dealing with:</p>
+<ul>
+<li>Boilerplate Code</li>
+<li>Chains of asynchronous code</li>
+<li>Complicated intercomponent communication</li>
+<li>Strange state problems</li>
+<li>Application scalability issues</li>
+<li>Trouble refactoring large portions of your view</li>
+</ul>
+<h3 id="boilerplate">Boilerplate</h3>
+<p>RingaJS uses very little boilerplate code. </p>
+<h3 id="asynchronous-code">Asynchronous Code</h3>
+<p>RingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.</p>
+<h3 id="intercomponent-communication">Intercomponent Communication</h3>
+<p>RingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.</p>
+<h3 id="state">State</h3>
+<p>RingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.</p>
+<h3 id="scalability">Scalability</h3>
+<p>RingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.</p>
+<h3 id="refactoring">Refactoring</h3>
+<p>RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.</p>
 <h2 id="background">Background</h2>
 <p>RingaJS was built in my spare time the last year as a way to shift the most difficult
 concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
@@ -235,15 +373,16 @@ applications in a way that made it extremely easy to monitor teams as they work 
 <li>Jimmy Schwarzenberger</li>
 <li>Saajan Sn</li>
 <li>Naomi Mathews</li>
-</ul>
-<h2 id="license">License</h2>
-<p>MIT</p></div>
+<li>Marcus Folkeryd</li>
+</ul></div>
         
     </div>
 
     <footer class="col-md-12 text-center">
         <hr>
         <p>
+        <small>2017 The Ringa JS Team<br></small>
+        
         <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p></small>
     </footer>
 
@@ -290,5 +429,5 @@ applications in a way that made it extremely easy to monitor teams as they work 
 
 <!--
 MkDocs version : 0.16.3
-Build Date UTC : 2017-10-18 20:11:44
+Build Date UTC : 2017-10-21 23:47:10
 -->

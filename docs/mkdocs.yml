@@ -1,13 +1,29 @@
-site_name: RingaJS
+site_name: Ringa JS
+site_description: Ringa JS is a scalable framework for your small or enterprise-level Javascript project.
+site_author: Joshua Jung
+copyright: 2017 The Ringa JS Team
+google_analytics: ['UA-108440815-1', 'ringajs.com']
 theme_dir: cinder
 pages:
     - Home: index.md
-    - Why Ringa: whyRinga.md
-    - Getting Started: helloWorld.md
-    - Demo: demo.md
-    - Model: model.md
+    - Getting Started:
+        - Live Demo: gettingStarted/demo.md
+        - Hello World Tutorial: gettingStarted/helloWorld.md
+        - Examples: gettingStarted/examples.md
+    - Architecture:
+        - Lifecycle: architecture/lifecycle.md
+        - Event System: architecture/events.md
+        - Inspector: architecture/inspector.md
+        - Debugging: architecture/debugging.md
+    - Docs:
+        - Index: docs/index.md
+        - RingaObject: docs/ringaObject.md
+        - RingaEvent: docs/ringaEvent.md
+        - Model: docs/model.md
+        - Controller: docs/controller.md
+        - Executors: docs/executors.md
+        - React Ringa: docs/reactRinga.md
     - Links: links.md
-    - Versions: versions.md
 extra_css: [extra.css]
 repo_url: https://github.com/joshjung/ringa
 include_next_prev: false

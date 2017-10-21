@@ -4,55 +4,111 @@
     
     <url>
      <loc>/</loc>
-     <lastmod>2017-10-18</lastmod>
+     <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
+        
     <url>
-     <loc>/whyRinga/</loc>
-     <lastmod>2017-10-18</lastmod>
+     <loc>/gettingStarted/demo/</loc>
+     <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    <url>
+     <loc>/gettingStarted/helloWorld/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/gettingStarted/examples/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
     
 
     
+        
     <url>
-     <loc>/helloWorld/</loc>
-     <lastmod>2017-10-18</lastmod>
+     <loc>/architecture/lifecycle/</loc>
+     <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    <url>
+     <loc>/architecture/events/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/architecture/inspector/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/architecture/debugging/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
     
 
     
+        
     <url>
-     <loc>/demo/</loc>
-     <lastmod>2017-10-18</lastmod>
+     <loc>/docs/</loc>
+     <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
+        
     <url>
-     <loc>/model/</loc>
-     <lastmod>2017-10-18</lastmod>
+     <loc>/docs/ringaObject/</loc>
+     <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    <url>
+     <loc>/docs/ringaEvent/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/docs/model/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/docs/controller/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/docs/executors/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/docs/reactRinga/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
     
 
     
     <url>
      <loc>/links/</loc>
-     <lastmod>2017-10-18</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-    
-
-    
-    <url>
-     <loc>/versions/</loc>
-     <lastmod>2017-10-18</lastmod>
+     <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
