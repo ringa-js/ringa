@@ -1,7 +1,7 @@
 site_name: Ringa JS
 site_description: Ringa JS is a scalable framework for your small or enterprise-level Javascript project.
 site_author: Joshua Jung
-copyright: 2017 The Ringa JS Team
+copyright: © 2017 Joshua Jung and the Ringa JS Team
 google_analytics: ['UA-108440815-1', 'ringajs.com']
 theme_dir: cinder
 pages:
