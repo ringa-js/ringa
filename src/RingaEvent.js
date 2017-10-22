@@ -247,8 +247,8 @@ class RingaEvent extends RingaObject {
       }
       catch(err) {
 
-        // 'new CustomEvent()' will throw an error on IE <= 11 
-        // See http://caniuse.com/#search=customevent for more info,
+        // 'new CustomEvent()' will throw an error on IE <= 11.
+        // See http://caniuse.com/#search=customevent for more info.
         // The code below ensures compatibility with IE >= 9.
 
         this.customEvent = document.createEvent('CustomEvent');
