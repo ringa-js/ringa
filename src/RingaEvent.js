@@ -219,6 +219,11 @@ class RingaEvent extends RingaObject {
 
     if (__DEV__ || this.detail.debug) {
 
+      // The current version of error-stack-parser throws an error if it
+      // fails to parse the given Error object. We don't really want this to 
+      // cause a fatal error, so we'll just wrap it in a try/catch.
+      // TODO: might want to console.warn() about this.
+
       try { this.dispatchStack = ErrorStackParser.parse(new Error()); }
       catch(err) { this.dispatchStack = []; }
       
@@ -241,6 +246,10 @@ class RingaEvent extends RingaObject {
         });
       }
       catch(err) {
+
+        // 'new CustomEvent()' will throw an error on IE <= 11 
+        // See http://caniuse.com/#search=customevent for more info,
+        // The code below ensures compatibility with IE >= 9.
 
         this.customEvent = document.createEvent('CustomEvent');
         this.customEvent.initCustomEvent(this.type, this.bubbles, this.cancelable, this.detail);
