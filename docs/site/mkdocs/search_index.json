@@ -296,6 +296,16 @@
             "title": "Conclusion"
         }, 
         {
+            "location": "/architecture/dependencyInjection/", 
+            "text": "Dependency Injection\n\n\nUnder construction", 
+            "title": "Dependency Injection"
+        }, 
+        {
+            "location": "/architecture/dependencyInjection/#dependency-injection", 
+            "text": "Under construction", 
+            "title": "Dependency Injection"
+        }, 
+        {
             "location": "/architecture/inspector/", 
             "text": "Inspector\n\n\nUnder construction", 
             "title": "Inspector"

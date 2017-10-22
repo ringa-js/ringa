@@ -46,6 +46,12 @@
     </url>
         
     <url>
+     <loc>/architecture/dependencyInjection/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
      <loc>/architecture/inspector/</loc>
      <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>

@@ -13,6 +13,7 @@ pages:
     - Architecture:
         - Lifecycle: architecture/lifecycle.md
         - Event System: architecture/events.md
+        - Dependency Injection: architecture/dependencyInjection.md
         - Inspector: architecture/inspector.md
         - Debugging: architecture/debugging.md
         - Building Component Libraries: architecture/buildingComponentLibraries.md
