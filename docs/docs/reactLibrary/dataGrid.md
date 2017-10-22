@@ -1,3 +1,3 @@
-# RingaEvent
+# Data Grid
 
 *Under construction*

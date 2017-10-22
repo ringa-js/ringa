@@ -15,6 +15,7 @@ pages:
         - Event System: architecture/events.md
         - Inspector: architecture/inspector.md
         - Debugging: architecture/debugging.md
+        - Building Component Libraries: architecture/buildingComponentLibraries.md
     - Docs:
         - Index: docs/index.md
         - RingaObject: docs/ringaObject.md
@@ -23,6 +24,12 @@ pages:
         - Controller: docs/controller.md
         - Executors: docs/executors.md
         - React Ringa: docs/reactRinga.md
+    - React Library:
+        - Introduction: reactLibrary/introduction.md
+        - Core: reactLibrary/core.md
+        - Overlays: reactLibrary/overlays.md
+        - Modals: reactLibrary/modals.md
+        - Drag and Drop: reactLibrary/dragDrop.md
     - Links: links.md
 extra_css: [extra.css]
 repo_url: https://github.com/joshjung/ringa

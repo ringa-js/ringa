@@ -57,6 +57,12 @@
      <changefreq>daily</changefreq>
     </url>
         
+    <url>
+     <loc>/architecture/buildingComponentLibraries/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
     
 
     
@@ -99,6 +105,40 @@
         
     <url>
      <loc>/docs/reactRinga/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    
+
+    
+        
+    <url>
+     <loc>/reactLibrary/introduction/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/core/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/overlays/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/modals/</loc>
+     <lastmod>2017-10-22</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/dragDrop/</loc>
      <lastmod>2017-10-22</lastmod>
      <changefreq>daily</changefreq>
     </url>

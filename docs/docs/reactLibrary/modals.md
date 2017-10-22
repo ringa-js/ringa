@@ -1,3 +1,3 @@
-# RingaEvent
+# Modals
 
 *Under construction*

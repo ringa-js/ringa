@@ -1,3 +1,3 @@
-# RingaEvent
+# Dropdown
 
 *Under construction*

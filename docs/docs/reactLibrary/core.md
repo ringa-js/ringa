@@ -1,3 +1,3 @@
-# RingaEvent
+# Core
 
 *Under construction*

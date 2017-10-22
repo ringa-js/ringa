@@ -149,6 +149,12 @@
 </li>
 
                         
+                            
+<li >
+    <a href="architecture/buildingComponentLibraries/">Building Component Libraries</a>
+</li>
+
+                        
                         </ul>
                     </li>
                 
@@ -205,6 +211,45 @@
                 
                 
                 
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">React Library <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="reactLibrary/introduction/">Introduction</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="reactLibrary/core/">Core</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="reactLibrary/overlays/">Overlays</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="reactLibrary/modals/">Modals</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="reactLibrary/dragDrop/">Drag and Drop</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
                     <li >
                         <a href="links/">Links</a>
                     </li>
@@ -242,20 +287,25 @@
     
         <li class="first-level active"><a href="#welcome-to-ringa-js">Welcome to Ringa JS!</a></li>
         
+            <li class="second-level"><a href="#plugins">Plugins</a></li>
+            
+        
+            <li class="second-level"><a href="#react-components">React Components</a></li>
+            
+        
             <li class="second-level"><a href="#latest-versions">Latest Versions</a></li>
             
-                <li class="third-level"><a href="#ringa">ringa </a></li>
-            
-                <li class="third-level"><a href="#react-ringa">react-ringa </a></li>
+        
+            <li class="second-level"><a href="#minified-size">Minified Size</a></li>
             
         
-            <li class="second-level"><a href="#similar-libraries">Similar Libraries</a></li>
-            
-        
-            <li class="second-level"><a href="#size">Size</a></li>
+            <li class="second-level"><a href="#comparisons">Comparisons</a></li>
             
         
             <li class="second-level"><a href="#requirements">Requirements</a></li>
+            
+        
+            <li class="second-level"><a href="#compatibility">Compatibility</a></li>
             
         
             <li class="second-level"><a href="#installation">Installation</a></li>
@@ -282,7 +332,7 @@
             <li class="second-level"><a href="#background">Background</a></li>
             
         
-            <li class="second-level"><a href="#contributors">Contributors</a></li>
+            <li class="second-level"><a href="#contributors-and-contact">Contributors and Contact</a></li>
             
         
     
@@ -291,59 +341,126 @@
         <div class="col-md-9" role="main">
 
 <h1 id="welcome-to-ringa-js">Welcome to Ringa JS!</h1>
-<p>Ringa JS is an enterprise single page application (SPA) framework that includes:</p>
-<ol>
-<li><strong>MVC / MVVM Hybrid Architecture</strong></li>
-<li><strong>State management</strong> with no singletons</li>
-<li>Performance centered <strong>Observer Pattern</strong></li>
-<li><strong>Dependency injection to React Components</strong></li>
-<li><strong>Asynchronous toolset</strong> with branching, looping, and error handling</li>
-<li>Customizable <strong>Error Management</strong></li>
-<li>Heavy focus on <strong>performance, modularity, and scalability</strong></li>
-</ol>
-<p>Ringa JS integrates with your React application through the <code>react-ringa</code> plugin.</p>
+<p>Ringa JS is an enterprise single page application (SPA) framework that provides:</p>
+<ul>
+<li>MV* Architecture</li>
+<li>State Management</li>
+<li>Observer Pattern</li>
+<li>Dependency Injection</li>
+<li>Asynchronous Toolset</li>
+<li>Error Management</li>
+<li>Core focus on performance, modularity, and scalability</li>
+<li>Zero dependencies on any other frameworks (pure JS)</li>
+</ul>
+<h2 id="plugins">Plugins</h2>
+<p>Ringa JS integrates with your React application through the <strong><a href="docs/reactRinga/"><code>react-ringa</code></a></strong> plugin.</p>
+<h2 id="react-components">React Components</h2>
+<p>I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:</p>
+<ul>
+<li>Tooltips</li>
+<li>Drag and Drop</li>
+<li>List</li>
+<li>Dropdown</li>
+<li>Data Grid</li>
+<li>Modals</li>
+<li>Overlays</li>
+<li>and much, much more</li>
+</ul>
+<p>Stay tuned for more information! This should be available by end of 2017.</p>
 <h2 id="latest-versions">Latest Versions</h2>
-<h3 id="ringa">ringa <a href="http://www.github.com/joshjung/ringa"><img src="https://img.shields.io/npm/v/ringa.svg"/></a></h3>
-<h3 id="react-ringa">react-ringa <a href="http://www.github.com/joshjung/react-ringa"><img src="https://img.shields.io/npm/v/react-ringa.svg"/></a></h3>
-<h2 id="similar-libraries">Similar Libraries</h2>
-<p>RingaJS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa can completely replace them.</p>
-<p>Similar libraries include:</p>
 <ul>
-<li>MobX</li>
-<li>Redux</li>
-<li>Flux</li>
-<li>Relay</li>
+<li>
+<p>ringa <a href="http://www.github.com/joshjung/ringa"><img src="https://img.shields.io/npm/v/ringa.svg"/></a></p>
+</li>
+<li>
+<p>react-ringa <a href="http://www.github.com/joshjung/react-ringa"><img src="https://img.shields.io/npm/v/react-ringa.svg"/></a></p>
+</li>
 </ul>
-<h2 id="size">Size</h2>
+<h2 id="minified-size">Minified Size</h2>
 <ul>
-<li><code>ringa</code> (minified): <strong>~133kb</strong></li>
-<li><code>react-ringa</code> (minified): <strong>~8kb</strong></li>
+<li><code>ringa</code>: <strong>~133kb</strong></li>
+<li><code>react-ringa</code>: <strong>~8kb</strong></li>
 </ul>
+<h2 id="comparisons">Comparisons</h2>
+<p>Ringa JS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa is designed to entirely replace your current mix of dozens of libraries and plugins.</p>
+<p>In today's world hooking together a collection of small libraries (e.g. one for state management and another for promise management and another for observer pattern, etc.) can be quite frustrating. It is especially frustrating if you know that you will need to train a new developer in your unique mix of code. Ringa JS is designed to alleviate these problems
+by giving you all the features you need in one place through a unified framework.</p>
+<p><strong>This chart is subject to update. There are a lot of libraries out there and I may have missed some or their capabilities. If I missed something, let me know! </strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">Project</th>
+<th align="left">State Management</th>
+<th align="left">Observer Pattern</th>
+<th>Dependency Injection</th>
+<th align="left">Asynchronous Tools</th>
+<th align="left">Error Handling</th>
+<th align="left">Handles DOM Events</th>
+<th>Unit Test Ready</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Ringa</td>
+<td align="left"><strong>Yes</strong></td>
+<td align="left"><strong>Yes</strong></td>
+<td><strong>Yes</strong></td>
+<td align="left"><strong>Yes</strong></td>
+<td align="left"><strong>Yes</strong></td>
+<td align="left"><strong>Yes</strong></td>
+<td>Coming Soon</td>
+</tr>
+<tr>
+<td align="left">Redux</td>
+<td align="left"><strong>Yes</strong></td>
+<td align="left">No</td>
+<td>No</td>
+<td align="left"><strong>Yes</strong> *</td>
+<td align="left">No</td>
+<td align="left">No</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td align="left">MobX</td>
+<td align="left"><strong>Yes</strong></td>
+<td align="left"><strong>Yes</strong></td>
+<td>No</td>
+<td align="left">No</td>
+<td align="left">No</td>
+<td align="left">No</td>
+<td><strong>Yes</strong></td>
+</tr>
+</tbody>
+</table>
+<p>* With plugin usage.</p>
 <h2 id="requirements">Requirements</h2>
-<p>Right now RingaJS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available) and has been tested on:</p>
+<p>Ringa JS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available).</p>
+<h2 id="compatibility">Compatibility</h2>
 <ul>
 <li>Chrome</li>
 <li>Firefox</li>
 <li>Safari</li>
 <li>IE 10+</li>
 <li>Edge</li>
+<li>Native Node (through use of the Ringa <code>Bus</code> instead of DOM nodes)</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <ul>
-<li><code>npm install --save-dev ringa</code> - Install Ringa into your project</li>
+<li><code>npm install --save-dev ringa</code> - Install Ringa JS into your project</li>
 </ul>
 <h2 id="testing-and-coverage">Testing and Coverage</h2>
 <p><code>npm run test</code></p>
-<p>Ringa currently has 208 unit tests to ensure its core features are running smoothly.</p>
+<p>Ringa JS currently has 208 unit tests to ensure its core features are running smoothly.</p>
 <p>Our goal is 100% coverage so there is a little work to do!</p>
-<p><img src="https://i.imgur.com/G564KCy.png" alt="Test Results" style="width: 500px;"/></p>
+<p><img src="https://i.imgur.com/G564KCy.png" alt="Test Results" style="width: 450px;"/></p>
 <h2 id="when-should-i-use-it">When should I use it?</h2>
 <p>RingaJS is right for you if you find yourself dealing with:</p>
 <ul>
 <li>Boilerplate Code</li>
+<li>Need seamless integration between components in a large library</li>
 <li>Chains of asynchronous code</li>
 <li>Complicated intercomponent communication</li>
-<li>Strange state problems</li>
+<li>Complex state managemetn</li>
 <li>Application scalability issues</li>
 <li>Trouble refactoring large portions of your view</li>
 </ul>
@@ -363,9 +480,9 @@
 <p>RingaJS was built in my spare time the last year as a way to shift the most difficult
 concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
 applications in a way that made it extremely easy to monitor teams as they work in a growing codebase.</p>
-<h2 id="contributors">Contributors</h2>
+<h2 id="contributors-and-contact">Contributors and Contact</h2>
 <ul>
-<li>Joshua Jung</li>
+<li><a href="mailto://joshua.p.jung@gmail.com">Joshua Jung - Project Owner</a></li>
 <li>Thomas Yarnall</li>
 <li>Jimmy Schwarzenberger</li>
 <li>Saajan Sn</li>
@@ -426,5 +543,5 @@ applications in a way that made it extremely easy to monitor teams as they work 
 
 <!--
 MkDocs version : 0.16.3
-Build Date UTC : 2017-10-21 23:50:52
+Build Date UTC : 2017-10-22 08:40:01
 -->

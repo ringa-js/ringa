@@ -1,3 +1,3 @@
-# RingaEvent
+# Introduction
 
 *Under construction*

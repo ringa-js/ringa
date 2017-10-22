@@ -1,3 +1,5 @@
+# Asynchronous Trees
+
 As a general rule, whenever the controller is told to do something we should always assume it is asynchronous. The reason is that if an action changes from synchronous to asynchronous we do not want to have to update any of the other code in the controller or the application.
 
 This is the underlying rule behind the development of Javascript Promises: provide a core pattern and library for developers to follow to add asynchronous code to their application.

@@ -2,57 +2,62 @@
     "docs": [
         {
             "location": "/", 
-            "text": "Welcome to Ringa JS!\n\n\nRinga JS is an enterprise single page application (SPA) framework that includes:\n\n\n\n\nMVC / MVVM Hybrid Architecture\n\n\nState management\n with no singletons\n\n\nPerformance centered \nObserver Pattern\n\n\nDependency injection to React Components\n\n\nAsynchronous toolset\n with branching, looping, and error handling\n\n\nCustomizable \nError Management\n\n\nHeavy focus on \nperformance, modularity, and scalability\n\n\n\n\nRinga JS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nLatest Versions\n\n\nringa \n\n\nreact-ringa \n\n\nSimilar Libraries\n\n\nRingaJS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa can completely replace them.\n\n\nSimilar libraries include:\n\n\n\n\nMobX\n\n\nRedux\n\n\nFlux\n\n\nRelay\n\n\n\n\nSize\n\n\n\n\nringa\n (minified): \n~133kb\n\n\nreact-ringa\n (minified): \n~8kb\n\n\n\n\nRequirements\n\n\nRight now RingaJS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available) and has been tested on:\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 10+\n\n\nEdge\n\n\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa into your project\n\n\n\n\nTesting and Coverage\n\n\nnpm run test\n\n\nRinga currently has 208 unit tests to ensure its core features are running smoothly.\n\n\nOur goal is 100% coverage so there is a little work to do!\n\n\n\n\nWhen should I use it?\n\n\nRingaJS is right for you if you find yourself dealing with:\n\n\n\n\nBoilerplate Code\n\n\nChains of asynchronous code\n\n\nComplicated intercomponent communication\n\n\nStrange state problems\n\n\nApplication scalability issues\n\n\nTrouble refactoring large portions of your view\n\n\n\n\nBoilerplate\n\n\nRingaJS uses very little boilerplate code. \n\n\nAsynchronous Code\n\n\nRingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.\n\n\nIntercomponent Communication\n\n\nRingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.\n\n\nState\n\n\nRingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.\n\n\nScalability\n\n\nRingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.\n\n\nRefactoring\n\n\nRingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.\n\n\nBackground\n\n\nRingaJS was built in my spare time the last year as a way to shift the most difficult\nconcepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.\n\n\nContributors\n\n\n\n\nJoshua Jung\n\n\nThomas Yarnall\n\n\nJimmy Schwarzenberger\n\n\nSaajan Sn\n\n\nNaomi Mathews\n\n\nMarcus Folkeryd", 
+            "text": "Welcome to Ringa JS!\n\n\nRinga JS is an enterprise single page application (SPA) framework that provides:\n\n\n\n\nMV* Architecture\n\n\nState Management\n\n\nObserver Pattern\n\n\nDependency Injection\n\n\nAsynchronous Toolset\n\n\nError Management\n\n\nCore focus on performance, modularity, and scalability\n\n\nZero dependencies on any other frameworks (pure JS)\n\n\n\n\nPlugins\n\n\nRinga JS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nReact Components\n\n\nI am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:\n\n\n\n\nTooltips\n\n\nDrag and Drop\n\n\nList\n\n\nDropdown\n\n\nData Grid\n\n\nModals\n\n\nOverlays\n\n\nand much, much more\n\n\n\n\nStay tuned for more information! This should be available by end of 2017.\n\n\nLatest Versions\n\n\n\n\n\n\nringa \n\n\n\n\n\n\nreact-ringa \n\n\n\n\n\n\nMinified Size\n\n\n\n\nringa\n: \n~133kb\n\n\nreact-ringa\n: \n~8kb\n\n\n\n\nComparisons\n\n\nRinga JS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa is designed to entirely replace your current mix of dozens of libraries and plugins.\n\n\nIn today's world hooking together a collection of small libraries (e.g. one for state management and another for promise management and another for observer pattern, etc.) can be quite frustrating. It is especially frustrating if you know that you will need to train a new developer in your unique mix of code. Ringa JS is designed to alleviate these problems\nby giving you all the features you need in one place through a unified framework.\n\n\nThis chart is subject to update. There are a lot of libraries out there and I may have missed some or their capabilities. If I missed something, let me know! \n\n\n\n\n\n\n\n\nProject\n\n\nState Management\n\n\nObserver Pattern\n\n\nDependency Injection\n\n\nAsynchronous Tools\n\n\nError Handling\n\n\nHandles DOM Events\n\n\nUnit Test Ready\n\n\n\n\n\n\n\n\n\n\nRinga\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nComing Soon\n\n\n\n\n\n\nRedux\n\n\nYes\n\n\nNo\n\n\nNo\n\n\nYes\n *\n\n\nNo\n\n\nNo\n\n\nYes\n\n\n\n\n\n\nMobX\n\n\nYes\n\n\nYes\n\n\nNo\n\n\nNo\n\n\nNo\n\n\nNo\n\n\nYes\n\n\n\n\n\n\n\n\n* With plugin usage.\n\n\nRequirements\n\n\nRinga JS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available).\n\n\nCompatibility\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 10+\n\n\nEdge\n\n\nNative Node (through use of the Ringa \nBus\n instead of DOM nodes)\n\n\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa JS into your project\n\n\n\n\nTesting and Coverage\n\n\nnpm run test\n\n\nRinga JS currently has 208 unit tests to ensure its core features are running smoothly.\n\n\nOur goal is 100% coverage so there is a little work to do!\n\n\n\n\nWhen should I use it?\n\n\nRingaJS is right for you if you find yourself dealing with:\n\n\n\n\nBoilerplate Code\n\n\nNeed seamless integration between components in a large library\n\n\nChains of asynchronous code\n\n\nComplicated intercomponent communication\n\n\nComplex state managemetn\n\n\nApplication scalability issues\n\n\nTrouble refactoring large portions of your view\n\n\n\n\nBoilerplate\n\n\nRingaJS uses very little boilerplate code. \n\n\nAsynchronous Code\n\n\nRingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.\n\n\nIntercomponent Communication\n\n\nRingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.\n\n\nState\n\n\nRingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.\n\n\nScalability\n\n\nRingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.\n\n\nRefactoring\n\n\nRingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.\n\n\nBackground\n\n\nRingaJS was built in my spare time the last year as a way to shift the most difficult\nconcepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise\napplications in a way that made it extremely easy to monitor teams as they work in a growing codebase.\n\n\nContributors and Contact\n\n\n\n\nJoshua Jung - Project Owner\n\n\nThomas Yarnall\n\n\nJimmy Schwarzenberger\n\n\nSaajan Sn\n\n\nNaomi Mathews\n\n\nMarcus Folkeryd", 
             "title": "Home"
         }, 
         {
             "location": "/#welcome-to-ringa-js", 
-            "text": "Ringa JS is an enterprise single page application (SPA) framework that includes:   MVC / MVVM Hybrid Architecture  State management  with no singletons  Performance centered  Observer Pattern  Dependency injection to React Components  Asynchronous toolset  with branching, looping, and error handling  Customizable  Error Management  Heavy focus on  performance, modularity, and scalability   Ringa JS integrates with your React application through the  react-ringa  plugin.", 
+            "text": "Ringa JS is an enterprise single page application (SPA) framework that provides:   MV* Architecture  State Management  Observer Pattern  Dependency Injection  Asynchronous Toolset  Error Management  Core focus on performance, modularity, and scalability  Zero dependencies on any other frameworks (pure JS)", 
             "title": "Welcome to Ringa JS!"
         }, 
         {
+            "location": "/#plugins", 
+            "text": "Ringa JS integrates with your React application through the  react-ringa  plugin.", 
+            "title": "Plugins"
+        }, 
+        {
+            "location": "/#react-components", 
+            "text": "I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:   Tooltips  Drag and Drop  List  Dropdown  Data Grid  Modals  Overlays  and much, much more   Stay tuned for more information! This should be available by end of 2017.", 
+            "title": "React Components"
+        }, 
+        {
             "location": "/#latest-versions", 
-            "text": "", 
+            "text": "ringa     react-ringa", 
             "title": "Latest Versions"
         }, 
         {
-            "location": "/#ringa", 
-            "text": "", 
-            "title": "ringa "
+            "location": "/#minified-size", 
+            "text": "ringa :  ~133kb  react-ringa :  ~8kb", 
+            "title": "Minified Size"
         }, 
         {
-            "location": "/#react-ringa", 
-            "text": "", 
-            "title": "react-ringa "
-        }, 
-        {
-            "location": "/#similar-libraries", 
-            "text": "RingaJS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa can completely replace them.  Similar libraries include:   MobX  Redux  Flux  Relay", 
-            "title": "Similar Libraries"
-        }, 
-        {
-            "location": "/#size", 
-            "text": "ringa  (minified):  ~133kb  react-ringa  (minified):  ~8kb", 
-            "title": "Size"
+            "location": "/#comparisons", 
+            "text": "Ringa JS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa is designed to entirely replace your current mix of dozens of libraries and plugins.  In today's world hooking together a collection of small libraries (e.g. one for state management and another for promise management and another for observer pattern, etc.) can be quite frustrating. It is especially frustrating if you know that you will need to train a new developer in your unique mix of code. Ringa JS is designed to alleviate these problems\nby giving you all the features you need in one place through a unified framework.  This chart is subject to update. There are a lot of libraries out there and I may have missed some or their capabilities. If I missed something, let me know!      Project  State Management  Observer Pattern  Dependency Injection  Asynchronous Tools  Error Handling  Handles DOM Events  Unit Test Ready      Ringa  Yes  Yes  Yes  Yes  Yes  Yes  Coming Soon    Redux  Yes  No  No  Yes  *  No  No  Yes    MobX  Yes  Yes  No  No  No  No  Yes     * With plugin usage.", 
+            "title": "Comparisons"
         }, 
         {
             "location": "/#requirements", 
-            "text": "Right now RingaJS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available) and has been tested on:   Chrome  Firefox  Safari  IE 10+  Edge", 
+            "text": "Ringa JS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available).", 
             "title": "Requirements"
         }, 
         {
+            "location": "/#compatibility", 
+            "text": "Chrome  Firefox  Safari  IE 10+  Edge  Native Node (through use of the Ringa  Bus  instead of DOM nodes)", 
+            "title": "Compatibility"
+        }, 
+        {
             "location": "/#installation", 
-            "text": "npm install --save-dev ringa  - Install Ringa into your project", 
+            "text": "npm install --save-dev ringa  - Install Ringa JS into your project", 
             "title": "Installation"
         }, 
         {
             "location": "/#testing-and-coverage", 
-            "text": "npm run test  Ringa currently has 208 unit tests to ensure its core features are running smoothly.  Our goal is 100% coverage so there is a little work to do!", 
+            "text": "npm run test  Ringa JS currently has 208 unit tests to ensure its core features are running smoothly.  Our goal is 100% coverage so there is a little work to do!", 
             "title": "Testing and Coverage"
         }, 
         {
             "location": "/#when-should-i-use-it", 
-            "text": "RingaJS is right for you if you find yourself dealing with:   Boilerplate Code  Chains of asynchronous code  Complicated intercomponent communication  Strange state problems  Application scalability issues  Trouble refactoring large portions of your view", 
+            "text": "RingaJS is right for you if you find yourself dealing with:   Boilerplate Code  Need seamless integration between components in a large library  Chains of asynchronous code  Complicated intercomponent communication  Complex state managemetn  Application scalability issues  Trouble refactoring large portions of your view", 
             "title": "When should I use it?"
         }, 
         {
@@ -91,9 +96,9 @@
             "title": "Background"
         }, 
         {
-            "location": "/#contributors", 
-            "text": "Joshua Jung  Thomas Yarnall  Jimmy Schwarzenberger  Saajan Sn  Naomi Mathews  Marcus Folkeryd", 
-            "title": "Contributors"
+            "location": "/#contributors-and-contact", 
+            "text": "Joshua Jung - Project Owner  Thomas Yarnall  Jimmy Schwarzenberger  Saajan Sn  Naomi Mathews  Marcus Folkeryd", 
+            "title": "Contributors and Contact"
         }, 
         {
             "location": "/gettingStarted/demo/", 
@@ -292,23 +297,33 @@
         }, 
         {
             "location": "/architecture/inspector/", 
-            "text": "Inspector", 
+            "text": "Inspector\n\n\nUnder construction", 
             "title": "Inspector"
         }, 
         {
             "location": "/architecture/inspector/#inspector", 
-            "text": "", 
+            "text": "Under construction", 
             "title": "Inspector"
         }, 
         {
             "location": "/architecture/debugging/", 
-            "text": "Debugging", 
+            "text": "Debugging\n\n\nUnder construction", 
             "title": "Debugging"
         }, 
         {
             "location": "/architecture/debugging/#debugging", 
-            "text": "", 
+            "text": "Under construction", 
             "title": "Debugging"
+        }, 
+        {
+            "location": "/architecture/buildingComponentLibraries/", 
+            "text": "Building Component Libraries\n\n\nUnder construction", 
+            "title": "Building Component Libraries"
+        }, 
+        {
+            "location": "/architecture/buildingComponentLibraries/#building-component-libraries", 
+            "text": "Under construction", 
+            "title": "Building Component Libraries"
         }, 
         {
             "location": "/docs/", 
@@ -352,22 +367,22 @@
         }, 
         {
             "location": "/docs/ringaObject/", 
-            "text": "RingaObject", 
+            "text": "RingaObject\n\n\nUnder construction", 
             "title": "RingaObject"
         }, 
         {
             "location": "/docs/ringaObject/#ringaobject", 
-            "text": "", 
+            "text": "Under construction", 
             "title": "RingaObject"
         }, 
         {
             "location": "/docs/ringaEvent/", 
-            "text": "RingaEvent", 
+            "text": "RingaEvent\n\n\nUnder construction", 
             "title": "RingaEvent"
         }, 
         {
             "location": "/docs/ringaEvent/#ringaevent", 
-            "text": "", 
+            "text": "Under construction", 
             "title": "RingaEvent"
         }, 
         {
@@ -517,33 +532,83 @@
         }, 
         {
             "location": "/docs/controller/", 
-            "text": "Controller", 
+            "text": "Controller\n\n\nUnder construction", 
             "title": "Controller"
         }, 
         {
             "location": "/docs/controller/#controller", 
-            "text": "", 
+            "text": "Under construction", 
             "title": "Controller"
         }, 
         {
             "location": "/docs/executors/", 
-            "text": "Executors", 
+            "text": "Executors\n\n\nUnder construction", 
             "title": "Executors"
         }, 
         {
             "location": "/docs/executors/#executors", 
-            "text": "", 
+            "text": "Under construction", 
             "title": "Executors"
         }, 
         {
             "location": "/docs/reactRinga/", 
-            "text": "react-ringa", 
+            "text": "react-ringa\n\n\nUnder construction", 
             "title": "React Ringa"
         }, 
         {
             "location": "/docs/reactRinga/#react-ringa", 
-            "text": "", 
+            "text": "Under construction", 
             "title": "react-ringa"
+        }, 
+        {
+            "location": "/reactLibrary/introduction/", 
+            "text": "Introduction\n\n\nUnder construction", 
+            "title": "Introduction"
+        }, 
+        {
+            "location": "/reactLibrary/introduction/#introduction", 
+            "text": "Under construction", 
+            "title": "Introduction"
+        }, 
+        {
+            "location": "/reactLibrary/core/", 
+            "text": "Core\n\n\nUnder construction", 
+            "title": "Core"
+        }, 
+        {
+            "location": "/reactLibrary/core/#core", 
+            "text": "Under construction", 
+            "title": "Core"
+        }, 
+        {
+            "location": "/reactLibrary/overlays/", 
+            "text": "Overlays\n\n\nUnder construction", 
+            "title": "Overlays"
+        }, 
+        {
+            "location": "/reactLibrary/overlays/#overlays", 
+            "text": "Under construction", 
+            "title": "Overlays"
+        }, 
+        {
+            "location": "/reactLibrary/modals/", 
+            "text": "Modals\n\n\nUnder construction", 
+            "title": "Modals"
+        }, 
+        {
+            "location": "/reactLibrary/modals/#modals", 
+            "text": "Under construction", 
+            "title": "Modals"
+        }, 
+        {
+            "location": "/reactLibrary/dragDrop/", 
+            "text": "Drag and Drop\n\n\nUnder construction", 
+            "title": "Drag and Drop"
+        }, 
+        {
+            "location": "/reactLibrary/dragDrop/#drag-and-drop", 
+            "text": "Under construction", 
+            "title": "Drag and Drop"
         }, 
         {
             "location": "/links/", 
