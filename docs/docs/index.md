@@ -67,9 +67,11 @@ Ringa JS is being developed for an ES6+ development environment (transpiled ES5 
 * Chrome
 * Firefox
 * Safari
-* IE 10+
+* IE 11+
 * Edge
 * Native Node (through use of the Ringa `Bus` instead of DOM nodes)
+
+IE 10 needs work because it does not recognize `__proto__`.
 
 ## Installation
 
