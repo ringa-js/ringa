@@ -218,22 +218,42 @@ class RingaEvent extends RingaObject {
     }
 
     if (__DEV__ || this.detail.debug) {
-      this.dispatchStack = ErrorStackParser.parse(new Error());
+
+      // The current version of error-stack-parser throws an error if it
+      // fails to parse the given Error object. We don't really want this to 
+      // cause a fatal error, so we'll just wrap it in a try/catch.
+      // TODO: might want to console.warn() about this.
+
+      try { this.dispatchStack = ErrorStackParser.parse(new Error()); }
+      catch(err) { this.dispatchStack = []; }
+      
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
       if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
         this.dispatchStack.shift(); // Remove a reference to Object.dispatch()
       }
+
     } else {
       this.dispatchStack = 'To turn on stack traces, build Ringa in development mode. See documentation.';
     }
 
     if (isDOMNode(bus)) {
-      this.customEvent = new CustomEvent(this.type, {
-        detail: this.detail,
-        bubbles: this.bubbles,
-        cancelable: this.cancelable
-      });
+      try {
+        this.customEvent = new CustomEvent(this.type, {
+          detail: this.detail,
+          bubbles: this.bubbles,
+          cancelable: this.cancelable
+        });
+      }
+      catch(err) {
+
+        // 'new CustomEvent()' will throw an error on IE <= 11.
+        // See http://caniuse.com/#search=customevent for more info.
+        // The code below ensures compatibility with IE >= 9.
+
+        this.customEvent = document.createEvent('CustomEvent');
+        this.customEvent.initCustomEvent(this.type, this.bubbles, this.cancelable, this.detail);
+      }
     }
 
     this.dispatched = true;
