@@ -36,10 +36,10 @@ Stay tuned for more information! This should be available by end of 2017.
 
 * react-ringa [<img src="https://img.shields.io/npm/v/react-ringa.svg"/>](http://www.github.com/joshjung/react-ringa)
 
-## Minified Size
+## Minified + GZipped Size
 
-* `ringa`: **~133kb**
-* `react-ringa`: **~8kb**
+* `ringa`: **~29.5kb**
+* `react-ringa`: **2.7kb**
 
 ## Comparisons
 
