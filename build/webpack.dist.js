@@ -41,30 +41,10 @@ module.exports = Object.assign({
           'fail',
           '$lastPromiseResult',
           '$lastPromiseError',
-          'Command',
-          'EventExecutor',
-          'FunctionExecutor',
-          'IifExecutor',
-          'ParallelExecutor',
-          'PromiseExecutor',
-          'SleepExecutor',
-          'SpawnExecutor',
-          'Bus',
-          'Controller',
-          'ExecutorAbstract',
-          'Model',
-          'ModelWatcher',
-          'RingaEvent',
-          'RingaEventFactory',
-          'RingaHashArray',
-          'RingaObject',
-          'Thread',
-          'ThreadFactory',
           'InspectorModel',
           'inspectorModel',
           'InspectorController',
-          'inspectorController',
-          'thread']
+          'inspectorController']
       }
     })
   ]

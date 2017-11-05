@@ -1,10 +1,15 @@
-# Asynchronous Trees
+# Asynchronous Philosophy
 
-As a general rule, whenever the controller is told to do something we should always assume it is asynchronous. The reason is that if an action changes from synchronous to asynchronous we do not want to have to update any of the other code in the controller or the application.
+Since the introduction of AJAX, all modern web applications are a complex synchronization of asynchronous server calls and view state updates. Regardless of which solution you choose, there is generally a place
+in your code that acts as a controller that ties together what the interaction with the server and the the state that feeds your view. 
 
-This is the underlying rule behind the development of Javascript Promises: provide a core pattern and library for developers to follow to add asynchronous code to their application.
+In an MV* system, this is almost always called the controller. Typically, when the controller is told to do something we should assume it is asynchronous. The reason is that if an action changes from synchronous to asynchronous we do not want to have to update any of the other code in the controller or the application.
 
-Ringa JS was originally developed before promises and it provided a unique solution. That said, it does have built-in support for promises so that your team can get the best of both worlds.
+The development of Javascript Promises (or Java Futures or the plethora of other asynchronous paradigms) fulfils a simple principle: provide a core pattern and library for developers to follow to add asynchronous code to their application that *looks* like it is synchronous. It should flow visually, as best as possible, like synchronous code. If anyone remembers the callback hell or pyramid of doom, it is quite obvious why this should be avoided. Probably the best example of this synchronous look is `async` keyword added to a lot of modern languages, including ES 2017.
+
+The concepts behind Ringa JS were originally developed before promises were introduced. Each controller response to an event is an Array of operations, each of which could or could not be asynchronous. That said, it does have built-in support for promises so that your team can get the best of both worlds.
+
+What follows is a conceptual walk-through of the reasoning behind why Ringa JS treats asynchronous code the way it does. We hope this provides a good overview behind the principles we built into our system.
 
 # Decouple View from Asynchronous Control
 
@@ -40,6 +45,7 @@ Here is an example of the view component when it waits for updates on the model:
     usernameChangeHandler(event) {
       Controller.getUserByUsername(event.username);
     }
+
     // Called when the model is changed for any reason
     userChangeHandler(user) {
       this.user = user;
@@ -144,11 +150,11 @@ One huge advantage of promises is that they can be passed around your applicatio
       return promise;
     }
 
-This is super powerful because now have created a central point that intercepts the results and errors of every single GET request in our application if they use this method. But this has a huge downside: because promises are so flexible and can be passed around anywhere, there is no central location in your application to see how an entire promise chain is built. Debugging what promises are attached to what other promises and who is waiting on who or what can be a nightmare especially as codebases grow.
+Now have created a central point that intercepts the results and errors of every single GET request in our application if they use this method. But this has a huge downside: because promises are so flexible and can be passed around anywhere, there is no central location in your application to see how an entire promise chain is built. Debugging what promises are attached to what other promises and who is waiting on who or what can be a nightmare especially as codebases grow.
 
-# Ringa Command Sequences
+# Ringa Asynchronous Trees
 
-Ringa takes a different approach from promises by treating the control of your application as a tree of commands. It asks the questions "What would I love my code to look like?"
+Ringa takes a different approach from promises by treating the control of your application as a tree of commands.
 
 If your actions for `getUserByUsername` looks like this:
 
@@ -178,11 +184,11 @@ A Ringa command tree is analogous to a tree of processes to be run, with special
 
 * **Injection**
   * Injection of appropriate objects into each command by name
-  * Failing gracefully when a parameter is missing
+  * Gracefully error message when a parameter is missing
 * **Parallels**
-  * Commands can be chosen to run in parallel and Ringa does not pass execution onto the next command until all parallel commands have completed
+  * Commands can be chosen to run in parallel and Ringa does not pass execution onto the next command until all parallel commands have completed. This is similar to Promise.all.
 * **Failure**
-  * All commands can call `fail()` or `throw` an error and the `Ringa.Controller` gracefully handles the issue
+  * All commands can call `fail()` or `throw` an error and the `Ringa.Controller` will kill all subsequent work.
   * All `RingaEvent`s can be cancelled and every command in the command tree that has already run has the ability to roll back their last action as a response
 * **Any Executor Type**
   * Promises
@@ -204,3 +210,4 @@ Ringa splits your application into sky and ground view helping you navigate from
 * *Command*: ground view of the responsibility of this particular command.
 
 The possibilities are endless in how you respond to a command and you can mix and match complex asynchronous and synchronous processes together as a response to events.
+

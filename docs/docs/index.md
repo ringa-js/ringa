@@ -15,6 +15,8 @@ Ringa JS is an enterprise single page application (SPA) framework that provides:
 
 Ringa JS integrates with your React application through the **[`react-ringa`](docs/reactRinga.md)** plugin.
 
+**`react-ringa` is compatible with React 16 Fiber and React 15**.
+
 ## React Components
 
 I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:
