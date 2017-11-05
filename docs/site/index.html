@@ -322,18 +322,6 @@
         
             <li class="second-level"><a href="#when-should-i-use-it">When should I use it?</a></li>
             
-                <li class="third-level"><a href="#boilerplate">Boilerplate</a></li>
-            
-                <li class="third-level"><a href="#asynchronous-code">Asynchronous Code</a></li>
-            
-                <li class="third-level"><a href="#intercomponent-communication">Intercomponent Communication</a></li>
-            
-                <li class="third-level"><a href="#state">State</a></li>
-            
-                <li class="third-level"><a href="#scalability">Scalability</a></li>
-            
-                <li class="third-level"><a href="#refactoring">Refactoring</a></li>
-            
         
             <li class="second-level"><a href="#background">Background</a></li>
             
@@ -355,11 +343,13 @@
 <li>Dependency Injection</li>
 <li>Asynchronous Toolset</li>
 <li>Error Management</li>
+<li>Single communication paradigm between all components that depends only on the browser</li>
 <li>Core focus on performance, modularity, and scalability</li>
 <li>Zero dependencies on any other frameworks (pure JS)</li>
 </ul>
 <h2 id="plugins">Plugins</h2>
 <p>Ringa JS integrates with your React application through the <strong><a href="docs/reactRinga/"><code>react-ringa</code></a></strong> plugin.</p>
+<p><strong><code>react-ringa</code> is compatible with React 16 Fiber and React 15</strong>.</p>
 <h2 id="react-components">React Components</h2>
 <p>I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:</p>
 <ul>
@@ -464,25 +454,13 @@ by giving you all the features you need in one place through a unified framework
 <p>RingaJS is right for you if you find yourself dealing with:</p>
 <ul>
 <li>Boilerplate Code</li>
-<li>Need seamless integration between components in a large library</li>
-<li>Chains of asynchronous code</li>
+<li>Need seamless integration between components in a large library and across various versions</li>
+<li>Complex chains of asynchronous code</li>
 <li>Complicated intercomponent communication</li>
-<li>Complex state managemetn</li>
-<li>Application scalability issues</li>
+<li>Complex state management</li>
+<li>Application scaling issues</li>
 <li>Trouble refactoring large portions of your view</li>
 </ul>
-<h3 id="boilerplate">Boilerplate</h3>
-<p>RingaJS uses very little boilerplate code. </p>
-<h3 id="asynchronous-code">Asynchronous Code</h3>
-<p>RingaJS has an advanced built-in system for hooking chains of complicated asynchronous code together so they talk to eachother seamlessly and have intelligent fallbacks for any error, whether a thrown JS error or an API error.</p>
-<h3 id="intercomponent-communication">Intercomponent Communication</h3>
-<p>RingaJS lets all controllers in your application talk to eachother by default through DOM elements. This means your controllers are one with your view, while also being able to talk to each other through the natural tree structure of your view.</p>
-<h3 id="state">State</h3>
-<p>RingaJS uses dependency injection, the observer pattern, and the natural tree structure of your application for its state management without needing any singletons.</p>
-<h3 id="scalability">Scalability</h3>
-<p>RingaJS's architecture strongly encourages heavy decoupling and reusability of all of your code, from models, to asynchronous code, to your view. This leads to highly scalable code as your program grows.</p>
-<h3 id="refactoring">Refactoring</h3>
-<p>RingaJS's structure makes refactoring large swaths of your view, models, or control easy because of its strict use of dependency injection, simple use of the observer pattern, and unique ability to reuse large sections of asynchronous code.</p>
 <h2 id="background">Background</h2>
 <p>RingaJS was built in my spare time the last year as a way to shift the most difficult
 concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
@@ -550,5 +528,5 @@ applications in a way that made it extremely easy to monitor teams as they work 
 
 <!--
 MkDocs version : 0.16.3
-Build Date UTC : 2017-10-24 10:19:59
+Build Date UTC : 2017-11-05 01:15:43
 -->
