@@ -119,12 +119,6 @@
      <changefreq>daily</changefreq>
     </url>
         
-    <url>
-     <loc>/docs/reactRinga/</loc>
-     <lastmod>2017-11-07</lastmod>
-     <changefreq>daily</changefreq>
-    </url>
-        
     
 
     
@@ -136,7 +130,37 @@
     </url>
         
     <url>
+     <loc>/reactLibrary/examples/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/licensing/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
      <loc>/reactLibrary/core/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/arrayCollection/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/ringaComponent/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/container/</loc>
      <lastmod>2017-11-07</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -155,6 +179,48 @@
         
     <url>
      <loc>/reactLibrary/dragDrop/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/list/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/list/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/list/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/radioButton/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/Checkbox/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/Dropdown/</loc>
+     <lastmod>2017-11-07</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
+     <loc>/reactLibrary/tabNavigator/</loc>
      <lastmod>2017-11-07</lastmod>
      <changefreq>daily</changefreq>
     </url>

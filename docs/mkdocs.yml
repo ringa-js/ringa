@@ -12,27 +12,38 @@ pages:
         - Code Examples: gettingStarted/examples.md
     - Architecture:
         - Lifecycle: architecture/lifecycle.md
-        - Event System: architecture/events.md
+        - Event System *: architecture/events.md
         - Dependency Injection: architecture/dependencyInjection.md
-        - Debugging: architecture/debugging.md
-        - Building Component Libraries: architecture/buildingComponentLibraries.md
+        - Debugging *: architecture/debugging.md
+        - Building Component Libraries *: architecture/buildingComponentLibraries.md
     - Plugins:
         - react-ringa: plugins/reactRinga.md
-        - Inspector: plugins/inspector.md
+        - Inspector *: plugins/inspector.md
     - Docs:
         - Index: docs/index.md
-        - RingaObject: docs/ringaObject.md
-        - RingaEvent: docs/ringaEvent.md
+        - RingaObject *: docs/ringaObject.md
+        - RingaEvent *: docs/ringaEvent.md
         - Model: docs/model.md
-        - Controller: docs/controller.md
-        - Executors: docs/executors.md
-        - React Ringa: docs/reactRinga.md
+        - Controller *: docs/controller.md
+        - Executors *: docs/executors.md
     - Components:
-        - Introduction: reactLibrary/introduction.md
-        - Core: reactLibrary/core.md
-        - Overlays: reactLibrary/overlays.md
-        - Modals: reactLibrary/modals.md
-        - Drag and Drop: reactLibrary/dragDrop.md
+        - Introduction *: reactLibrary/introduction.md
+        - Examples: reactLibrary/examples.md
+        - Licensing *: reactLibrary/licensing.md
+        - Core *: reactLibrary/core.md
+        - ArrayCollection *: reactLibrary/arrayCollection.md
+        - RingaComponent *: reactLibrary/ringaComponent.md
+        - Container *: reactLibrary/container.md
+        - Overlays *: reactLibrary/overlays.md
+        - Modals *: reactLibrary/modals.md
+        - Drag and Drop *: reactLibrary/dragDrop.md
+        - List *: reactLibrary/list.md
+        - TextInput *: reactLibrary/list.md
+        - NumberInput *: reactLibrary/list.md
+        - RadioButton *: reactLibrary/radioButton.md
+        - Checkbox *: reactLibrary/Checkbox.md
+        - Dropdown *: reactLibrary/Dropdown.md
+        - TabNavigator *: reactLibrary/tabNavigator.md
     - Links: links.md
 extra_css: [extra.css]
 repo_url: https://github.com/joshjung/ringa
