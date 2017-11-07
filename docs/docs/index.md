@@ -12,38 +12,6 @@ Ringa JS is an enterprise single page application (SPA) framework that provides:
 * Core focus on performance, modularity, and scalability
 * Zero dependencies on any other frameworks (pure JS)
 
-## Plugins
-
-Ringa JS integrates with your React application through the **[`react-ringa`](docs/reactRinga.md)** plugin.
-
-**`react-ringa` is compatible with React 16 Fiber and React 15**.
-
-## React Components
-
-I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:
-
-* Tooltips
-* Drag and Drop
-* List
-* Dropdown
-* Data Grid
-* Modals
-* Overlays
-* and much, much more
-
-Stay tuned for more information! This should be available by end of 2017.
-
-## Latest Versions
-
-* ringa [<img src="https://img.shields.io/npm/v/ringa.svg"/>](http://www.github.com/joshjung/ringa)
-
-* react-ringa [<img src="https://img.shields.io/npm/v/react-ringa.svg"/>](http://www.github.com/joshjung/react-ringa)
-
-## Minified + GZipped Size
-
-* `ringa`: **~29.5kb**
-* `react-ringa`: **2.7kb**
-
 ## Comparisons
 
 Ringa JS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa is designed to entirely replace your current mix of dozens of libraries and plugins.
@@ -80,6 +48,38 @@ IE 10 needs work because it does not recognize `__proto__`.
 
 * `npm install --save-dev ringa` - Install Ringa JS into your project
 
+## Plugins
+
+Ringa JS integrates with your React application through the **[`react-ringa`](docs/reactRinga.md)** plugin.
+
+**`react-ringa` is compatible with React 16 Fiber and React 15**.
+
+## React Components
+
+I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:
+
+* Tooltips
+* Drag and Drop
+* List
+* Dropdown
+* Data Grid
+* Modals
+* Overlays
+* and much, much more
+
+Stay tuned for more information! This should be available by end of 2017.
+
+## Latest Versions
+
+* ringa [<img src="https://img.shields.io/npm/v/ringa.svg"/>](http://www.github.com/joshjung/ringa)
+
+* react-ringa [<img src="https://img.shields.io/npm/v/react-ringa.svg"/>](http://www.github.com/joshjung/react-ringa)
+
+## Minified + GZipped Size
+
+* `ringa`: **~29.5kb**
+* `react-ringa`: **2.7kb**
+
 ## Testing and Coverage
 
 `npm run test`
@@ -92,23 +92,29 @@ Our goal is 100% coverage so there is a little work to do!
 
 ## When should I use it?
 
-RingaJS is right for you if you find yourself dealing with:
+RingaJS is right for you if you:
 
-* Boilerplate Code
+* Hate Boilerplate Code
 * Need seamless integration between components in a large library and across various versions
-* Complex chains of asynchronous code
-* Complicated intercomponent communication
-* Complex state management
-* Application scaling issues
-* Trouble refactoring large portions of your view
+* Want to simplify complex chains of asynchronous code
+* Want simple communication between all your components
+* Want to break your enterprise application into manageable submodules
+* Want to avoid singletons
+* Are not sure what your final UX is going to be and want completely painless refactoring next year
+* Want to be able to pass your codebase to other developers and have the entire thing be easily understood
+* Want to know your application can scale from a prototype to enterprise with little refactoring
 
 ## Background
 
-RingaJS was built in my spare time the last year as a way to shift the most difficult
-concepts of rapid application development into a library to improve my own personal development speed. It was also designed as a way to organize enterprise
-applications in a way that made it extremely easy to monitor teams as they work in a growing codebase.
+The concepts of Ringa JS were originally developed around 2010 for Adobe Flex and used on a dozen enterprise applications. Since the death of Flash, I had tossed around the idea of rewriting them for Javascript.
+
+I built the current version of Ringa JS in my spare time the last year to improve my own development speed and out of sheer frustration at every single major state and asynchronous library on the market.
+
+So far it is working super well and is highly performant on several large-scale applications. More details to come soon as the project grows!
 
 ## Contributors and Contact
+
+If you want to contribute, or want to ask questions, feel free to reach out. As of November, 2017 the project is under heavy active daily development:
 
 * [Joshua Jung - Project Owner](mailto://joshua.p.jung@gmail.com)
 * Thomas Yarnall

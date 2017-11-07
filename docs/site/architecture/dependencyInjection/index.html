@@ -292,13 +292,263 @@
     
         <li class="first-level active"><a href="#dependency-injection">Dependency Injection</a></li>
         
+            <li class="second-level"><a href="#1-function-argument-injection">1. Function Argument Injection</a></li>
+            
+                <li class="third-level"><a href="#11-executor-event-detail-injection">1.1. Executor Event Detail Injection</a></li>
+            
+                <li class="third-level"><a href="#12-executor-model-injection">1.2. Executor Model Injection</a></li>
+            
+                <li class="third-level"><a href="#13-event-chaining-and-injections">1.3. Event Chaining and Injections</a></li>
+            
+                <li class="third-level"><a href="#14-promise-injection">1.4. Promise Injection</a></li>
+            
+                <li class="third-level"><a href="#15-built-in-injections">1.5. Built in Injections</a></li>
+            
+                <li class="third-level"><a href="#16-custom-injections">1.6. Custom Injections</a></li>
+            
+                <li class="third-level"><a href="#17-preparing-for-production-uglify">1.7. Preparing for Production (Uglify)</a></li>
+            
+        
+            <li class="second-level"><a href="#2-view-injection-react-ringa">2. View Injection (react-ringa)</a></li>
+            
+        
     
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
 <h1 id="dependency-injection">Dependency Injection</h1>
-<p><em>Under construction</em></p></div>
+<p><em>Note: make sure you have read and understand everything in the <a href="../../gettingStarted/helloWorld/">Hello World Tutorial</a> before proceeding.</em></p>
+<p>Ringa JS has two types of dependency injection:</p>
+<ul>
+<li>Function argument injection by name</li>
+<li>View <code>Model</code> injection through <code>react-ringa</code></li>
+</ul>
+<h2 id="1-function-argument-injection">1. Function Argument Injection</h2>
+<p>There are several rules that are followed when performing all function injections in Ringa JS:</p>
+<ul>
+<li>Function injection always injects by name</li>
+<li>Order of arguments does not matter</li>
+<li>Ringa JS will always warn you in the console if a property could not be found for injection</li>
+</ul>
+<p>Limitations:</p>
+<ul>
+<li>You cannot currently use defaults (e.g. <code>(f = 0) =&gt; {}</code>) when performing injections due to the various ways that different transpilers treat this code. I spent a good 4-6 hours trying to figure out how to do this and gave up.</li>
+</ul>
+<h3 id="11-executor-event-detail-injection">1.1. Executor Event Detail Injection</h3>
+<pre><code>import {Controller} from 'ringa'
+
+class MyController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    this.addListener('saySomething', (message) =&gt; {
+      console.log(message);
+    });
+  }
+}
+
+...
+
+import {dispatch} from 'ringa';
+
+dispatch('saySomething', {
+  message: 'I will be injected!'
+}, document);
+</code></pre>
+<p>You will notice that the property has been injected by its name <code>message</code>.</p>
+<p>Every key in the detail object is available for injection in every executor.</p>
+<h3 id="12-executor-model-injection">1.2. Executor <code>Model</code> Injection</h3>
+<p>As we have seen in 1.2, executors can request <code>RingaEvent</code> details be injected by their name. Executors can request <code>Model</code> objects be injected by name as well. </p>
+<p>Please note that all Ringa JS <code>Model</code> instances by default have their <code>name</code> set to the camelcase of their class name. As a result, when
+you create and add a <code>Model</code> to a <code>Controller</code>, that model can be injected by its default name. For example, if your model is named <code>CarModel</code> you can
+use <code>addModel</code> to attach the model to your Controller and then inject it by its default camelcase name <code>carModel</code>.</p>
+<pre><code>import {Controller, Model} from 'ringa'
+
+const CarModel = Model.construct('CarModel', ['brand', 'type', 'color', 'state']);
+const DriverModel = Model.construct('CarModel', ['name', 'skill']);
+
+class CarController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    this.addModel(new CarModel());
+    this.addModel(new DriverModel('Joshua'));
+
+    this.addListener('startDriving', (carModel) =&gt; {
+      carModel.state = 'driving';
+    });
+
+    this.addListener('brakeSuddenly', (carModel, Joshua) =&gt; {
+      if (Joshua.skill === 0) {
+        carModel.state = 'crashed';
+      } else {
+        carModel.state = 'stopped';
+      }
+    });
+  }
+}
+</code></pre>
+<p>In this example, we see that <code>carModel</code> and <code>Joshua</code> can be injected easily by either the default name or the custom name.</p>
+<h3 id="13-event-chaining-and-injections">1.3. Event Chaining and Injections</h3>
+<p>In Ringa JS, one <code>Controller</code> executor chain can trigger another. When this happens, all the injections that were available in the original dispatched event are also available in the secondary dispatched event:</p>
+<pre><code>import {Controller, Model, event} from 'ringa'
+
+class ConsoleController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    // Ringa JS automatically creates ConsoleController.LOG
+    this.addListener('log', message =&gt; {console.log(message);});
+  }
+}
+
+class MessageController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    // Ringa JS automatically creates MessageController.SAY_SOMETHING
+    this.addListener('saySomething', event(ConsoleController.LOG));
+  }
+}
+
+...
+
+// Assuming the above controllers have been attached to the document...
+dispatch(MessageController.SAY_SOMETHING, {
+  message: 'Woohoo, this gets passed through to ConsoleController!'
+}, document);
+</code></pre>
+<p>One huge architectural advantage of this system is that controllers can function as interfaces to other generic implementations.</p>
+<p>But what if there is a name collision somewhere in the chain, like this:</p>
+<pre><code>import {Controller, Model, event} from 'ringa'
+
+class ConsoleController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    this.addListener('log', (message, $ringaEvent, $lastEvent) =&gt; {
+      console.log(message);                       // Message 2!
+      console.log($ringaEvent.lastEvent.detail.message); // Message 1!
+      console.log($lastEvent.detail.message);            // Message 1!
+    });
+  }
+}
+
+class MessageController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    this.addListener('saySomething', event(ConsoleController.LOG, {
+      message: 'Message 2!' // Uh oh, the name 'message' collides with our 'message' below!
+    }));
+  }
+}
+
+...
+
+// Assuming the above controllers have been attached to the document...
+dispatch(MessageController.SAY_SOMETHING, {
+  message: 'Message 1!'
+}, document);
+</code></pre>
+<p>Ringa JS always retains all contextual information even in a naming conflict. If you dispatch an event that overrides a name that was provided in the original event you can still access the original variable through either <code>$ringaEvent.lastEvent</code> or <code>$lastEvent</code>.</p>
+<h3 id="14-promise-injection">1.4. Promise Injection</h3>
+<p>Every time you call <code>dispatch()</code> a <code>RingaEvent</code> object is created and returned. The <code>RingaEvent</code> object functions like a promise and you can request injections in your <code>then</code> or <code>catch</code>:</p>
+<pre><code>import {Controller, Model, event} from 'ringa'
+
+const UserModel = Model.construct('UserModel', ['name']);
+
+class UserController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    this.addModel(new UserModel());
+
+    this.addListener('getUser', [
+      // Do some complex server call
+    ]);
+  }
+}
+
+...
+
+// userModel is injected because it exists on the handling controller
+dispatch(UserController.GET_USER, {}, document).then(userModel =&gt; {
+  console.log(`${userModel.name} has been successfully retrieved!`);
+});
+</code></pre>
+<h3 id="15-built-in-injections">1.5. Built in Injections</h3>
+<p>Ringa JS by default provides several built-in variables that can be injected at any time:</p>
+<ul>
+<li><strong><code>$controller</code></strong>: The controller that caught and is currently handling the event.</li>
+<li><strong><code>$thread</code></strong>: The internal thread object that is currently managing the executors for the event.</li>
+<li><strong><code>$ringaEvent</code></strong>: The original <code>RingaEvent</code> that was dispatched.</li>
+<li><strong><code>event</code></strong>: If a DOM event (like <code>click</code> or <code>mouseover</code>) triggered the executor chain, then this would be the DOM event. Note that all DOM events that are caught by Ringa <code>Controller</code> are wrapped in a <code>RingaEvent</code> before the executors are run.</li>
+<li><strong><code>$lastEvent</code></strong>: If one <code>RingaEvent</code> chain triggers another (e.g. by using <code>event()</code>) then you can access the prior events via <code>$lastEvent</code>. These are chained together so if an event triggers 3 executor chains, then <code>$lastEvent.lastEvent.lastEvent</code> would be valid.</li>
+<li><strong><code>$customEvent</code></strong>: Accesses the DOM <code>CustomEvent</code> object that is used to dispatch the <code>RingaEvent</code> through the DOM nodes.</li>
+<li><strong><code>$target</code></strong>: The target DOM node that dispatched the event.</li>
+<li><strong><code>$detail</code></strong>: The event detail object. Useful if you want to add new properties or for some reason cannot inject the properties by name.</li>
+<li><strong><code>done</code></strong>: Only available in a function executor. A function to call when the executor has been completed. Similar to <code>Mocha</code> or <code>Jest</code> unit tests.</li>
+<li><strong><code>fail</code></strong>: Similar to done, except triggers a failure of the executor chain.</li>
+<li><strong><code>stop</code></strong>: Useful for debugging. Stops the executor and outputs information to the console, where you can start the executor chain again.</li>
+<li><strong><code>resume</code></strong>: Resume the executor chain.</li>
+<li><strong><code>$lastPromiseResult</code></strong>: If <em>any</em> previous executor returned a promise that completed, the result will be contained here.</li>
+<li><strong><code>$lastPromiseError</code></strong>: If <em>any</em> previous executor returned a promise that errored, the error will be contained here.</li>
+</ul>
+<h3 id="16-custom-injections">1.6. Custom Injections</h3>
+<p>Custom injection values can be added easily to the <code>options.injections</code> object:</p>
+<pre><code>import {Controller, Model, event} from 'ringa'
+
+class DudeController extends Controller {
+  constructor(name, options) {
+    super(name, options);
+
+    this.options.injections.someCustomValue = 'I just have to find a cash machine...';
+
+    this.addListener('doSomething', ...);
+  }
+}
+
+...
+
+dispatch(DudeController.DO_SOMETHING, {}, document).then(someCustomValue =&gt; {
+  console.log(someCustomValue);
+});
+</code></pre>
+<h3 id="17-preparing-for-production-uglify">1.7. Preparing for Production (Uglify)</h3>
+<p>When preparing production code, your variable names will be uglified. As a result, you need to add the list of injected variable names to the blacklist for <code>UglifyJS</code>:</p>
+<pre><code>plugins: [
+  new webpack.DefinePlugin({
+    __DEV__: false
+  }),
+  new webpack.optimize.UglifyJsPlugin({
+    sourceMap: true,
+    mangle: {
+      except: [
+        '$controller',
+        '$thread',
+        '$ringaEvent',
+        'event',
+        '$customEvent',
+        '$lastEvent',
+        '$target',
+        '$detail',
+        'done',
+        'fail',
+        '$lastPromiseResult',
+        '$lastPromiseError'
+        ...]
+    }
+  })
+]
+</code></pre>
+<p>But how do you know what they are?</p>
+<p>When in <code>__DEV__: true</code> mode, Ringa JS keeps track of every single variable that has been injected and builds a whilelist for you.</p>
+<p><strong>To view all the injections you need to add to the <code>mangle</code> property of <code>UglifyJS</code>, after you have run your application and all of its various executors go to the browser console:</strong></p>
+<p><img src="/img/uglifywhitelist.png" alt="ringaDebug().uglifywhitelist" style="width: 100%;"/></p>
+<p>Please note that because a lot of the injections that can occur in Ringa JS are dynamic, it is impossible to know before running each executor which variable names will need to avoid mangling.</p>
+<h2 id="2-view-injection-react-ringa">2. View Injection (<code>react-ringa</code>)</h2></div>
         
     </div>
 

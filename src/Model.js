@@ -199,11 +199,11 @@ class Model extends Bus {
   watchUntil(condition, handler, autoUnwatch = true) {
     let fn = (signal, signaler, value, descriptor) => {
       if (condition(this, signal, signaler, value, descriptor)) {
-        handler(this, signal, signaler, value, descriptor);
-
         if (autoUnwatch) {
           this.unwatch(fn);
         }
+
+        handler(this, signal, signaler, value, descriptor);
 
         return true;
       }

@@ -1,10 +1,5 @@
 # Documentation Guide
 
-## Getting Started
-
-* Lifecycle
-* Dependency Injection
-
 ## Ringa Library
 
 * `RingaObject`
