@@ -2204,11 +2204,11 @@ var Model = function (_Bus) {
 
       var fn = function fn(signal, signaler, value, descriptor) {
         if (condition(_this3, signal, signaler, value, descriptor)) {
-          handler(_this3, signal, signaler, value, descriptor);
-
           if (autoUnwatch) {
             _this3.unwatch(fn);
           }
+
+          handler(_this3, signal, signaler, value, descriptor);
 
           return true;
         }
