@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="author" content="Joshua Jung">  
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+
+    <title>react-ringa - Ringa JS</title>
+
+    <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css">
+    <link href='//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700,700italic&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="../../css/base.css" rel="stylesheet">
+    <link href="../../css/cinder.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+
+
+    <link href="../../extra.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+    <script>
+    WebFont.load({
+        google: {
+            families: ['Open Sans', 'PT Sans']
+        }
+    });
+    </script>
+
+    
+    <script>
+    (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function() {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-108440815-1', 'ringajs.com');
+    ga('send', 'pageview');
+    </script>
+    
+</head>
+
+<body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="../..">
+              <img class="brand-image" src="/img/logo.svg">
+            </a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="../..">Home</a>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Get Started <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../gettingStarted/demo/">Live Demo</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../gettingStarted/helloWorld/">Hello World Tutorial</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../gettingStarted/examples/">Code Examples</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Architecture <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../architecture/lifecycle/">Lifecycle</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../architecture/events/">Event System</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../architecture/dependencyInjection/">Dependency Injection</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../architecture/debugging/">Debugging</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../architecture/buildingComponentLibraries/">Building Component Libraries</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plugins <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li class="active">
+    <a href="./">react-ringa</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../inspector/">Inspector</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Docs <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../docs/">Index</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../docs/ringaObject/">RingaObject</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../docs/ringaEvent/">RingaEvent</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../docs/model/">Model</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../docs/controller/">Controller</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../docs/executors/">Executors</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../docs/reactRinga/">React Ringa</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Components <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../reactLibrary/introduction/">Introduction</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../reactLibrary/core/">Core</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../reactLibrary/overlays/">Overlays</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../reactLibrary/modals/">Modals</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../reactLibrary/dragDrop/">Drag and Drop</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../../links/">Links</a>
+                    </li>
+                
+                
+                </ul>
+            
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                
+                
+                    <li>
+                        <a href="https://github.com/joshjung/ringa" target="_blank">
+                            
+                                <i class="fa fa-github"></i>
+                            
+                            GitHub
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="first-level active"><a href="#react-ringa-plugin">react-ringa Plugin</a></li>
+        
+            <li class="second-level"><a href="#1-overview">1. Overview</a></li>
+            
+        
+            <li class="second-level"><a href="#2-dependency-injection">2. Dependency Injection</a></li>
+            
+                <li class="third-level"><a href="#21-attach-a-model-to-a-component">2.1. Attach a Model to a Component</a></li>
+            
+                <li class="third-level"><a href="#22-request-a-model-dependency-injection-from-a-component">2.2. Request a Model Dependency Injection from a Component</a></li>
+            
+                <li class="third-level"><a href="#23-watch-a-specific-model-instance-on-a-component">2.3. Watch a specific Model instance on a Component</a></li>
+            
+                <li class="third-level"><a href="#24-performance">2.4. Performance</a></li>
+            
+        
+    
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 id="react-ringa-plugin"><code>react-ringa</code> Plugin</h1>
+<h2 id="1-overview">1. Overview</h2>
+<p>The primary purpose of the <code>react-ringa</code> plugin is to assist in dependency injection of <code>Model</code> objects to your React Components and to intelligently rerender them when dependencies change.</p>
+<h2 id="2-dependency-injection">2. Dependency Injection</h2>
+<p>When using React via the <code>react-ringa</code> plugin, there are a couple ways that a React Component can access to (and watch) a Ringa JS <code>Model</code> instance.</p>
+<p>First you will want to make a <code>Model</code> available for injection:</p>
+<ul>
+<li><code>attach(component, model)</code>: use when you want to directly attach a <code>Model</code> instance to a Component. This will make the <code>Model</code> <strong>available</strong> to the Component and all its descendants for injection. This does not do the injection directly.</li>
+</ul>
+<p>Request a <code>Model</code> (or its properties) to be injected into a Component's <code>state</code> in one of two ways:</p>
+<ol>
+<li><code>depend(component, dependencies[])</code>: use when you expect an ancestor to provide a <code>Model</code> and need to watch its properties and have them injected. If properties are injected, <code>depend</code> ensures that the <code>state</code> of the React Component accurately reflects any changes in the <code>Model</code>.</li>
+<li><code>watch(component, model, properties = [])</code>: if you already have access to the <code>Model</code> instance, you can use watch instead of <code>depend()</code>.</li>
+</ol>
+<h3 id="21-attach-a-model-to-a-component">2.1. Attach a <code>Model</code> to a Component</h3>
+<p><code>attach(component, controllerOrModel)</code></p>
+<p>All <code>Model</code> instances are attached to a React <code>Component</code> via a Ringa JS <code>Controller</code>:</p>
+<h4 id="attach-example-1-direct-to-model"><code>attach()</code> Example 1 Direct to Model</h4>
+<p>To attach a <code>Model</code> directly to a React Component and make it available to be injected to the Component and all its descendants, you can simply do:</p>
+<pre><code>import {Model} from 'ringa'
+import {attach} from 'react-ringa';
+
+const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
+
+class UserContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    attach(this, new UserModel());
+  }
+}
+</code></pre>
+<h4 id="attach-example-2-via-controller"><code>attach()</code> Example 2 Via Controller</h4>
+<p>If you wish to attach the <code>Model</code> via a <code>Controller</code> you can do so like this:</p>
+<pre><code>import {Model} from 'ringa'
+import {attach} from 'react-ringa';
+
+const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
+
+class UserController extends Controller;
+
+class UserContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    let userController = new UserController();
+
+    userController.addModel(new UserModel());
+
+    attach(this, userController);
+  }
+}
+</code></pre>
+<h3 id="22-request-a-model-dependency-injection-from-a-component">2.2. Request a <code>Model</code> Dependency Injection from a Component</h3>
+<p><code>depend(component, dependencies[])</code></p>
+<p>This function searches for instances that match its list of dependencies, injects them into the React <code>Component</code> <code>state</code>, and watches any properties on those instances for changes and intelligently refreshes the view when changes happen.</p>
+<p>Note that when requesting dependencies, Ringa JS is smart enough to look for the closest matching <code>Model</code> that matches the type you request.</p>
+<p>The closest <code>Model</code> is defined as:</p>
+<ul>
+<li><strong>Request by type</strong>: a <code>Model</code> that is attached to the current Component or its nearest ancestor that is itself of the type requested or extends the type requested.</li>
+<li><strong>Request by name</strong>: a <code>Model</code> that is attached to the current Component or its nearest ancestor that has the name requested.</li>
+</ul>
+<p><em>Note: Ringa JS will give you a warning when in <code>__DEV__: true</code> mode if it encounters more than one Model that matches your requested dependency so that you can resolve this conflict if necessary.</em></p>
+<p><code>depend()</code> is the closest concept to binding that exists in Ringa JS. However, unlike other binding frameworks, Ringa JS provides considerable control over when updates take place and helps to ensure that there are no performance bottlenecks.</p>
+<p>Note that when you use <code>depend()</code> the requested <code>Model</code> is added to the components <code>state</code> by its name.</p>
+<h4 id="example-1-request-by-type">Example 1 Request by Type</h4>
+<pre><code>import {Model} from 'ringa'
+import {attach, depend, dependency} from 'react-ringa';
+
+const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
+
+class User extends React.Component {
+  constructor(props) {
+    super(props);
+
+    depend(this, dependency(UserModel, ['firstName', 'lastName']));
+  }
+
+  render() {
+    return &lt;div&gt;{this.state.firstName} {this.state.lastName}&lt;/div&gt;;
+  }
+}
+
+class UserContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    attach(this, new UserModel());
+  }
+
+  render() {
+    return &lt;User /&gt;;
+  }
+}
+</code></pre>
+<h4 id="example-1-request-by-name">Example 1 Request by name</h4>
+<pre><code>import {Model} from 'ringa'
+import {attach, depend, dependency} from 'react-ringa';
+
+const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
+
+class User extends React.Component {
+  constructor(props) {
+    super(props);
+
+    depend(this, dependency('someCustomUserModelName', ['firstName', 'lastName']));
+  }
+
+  render() {
+    return &lt;div&gt;{this.state.firstName} {this.state.lastName}&lt;/div&gt;;
+  }
+}
+
+class UserContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    attach(this, new UserModel('someCustomUserModelName'));
+  }
+
+  render() {
+    return &lt;User /&gt;;
+  }
+}
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li>If you do not provide any dependencies, then every property on the <code>Model</code> is watched.</li>
+<li>If your <code>Model</code> is structured in a tree, you can watch children models by using dot-syntax (e.g. <code>depend(this, dependency(AppModel, ['user.firstName']))</code>)</li>
+<li>If your <code>Model</code> is structured in a tree, you can watch children models and all of their properties by using star syntax (e.g. <code>depend(this, dependency(AppModel, ['user.*']))</code>)</li>
+</ul>
+<p>Architectural benefits to this approach:</p>
+<ul>
+<li>There is no need to pass properties to children</li>
+<li>Each Component is responsible for determining when it needs to update itself</li>
+<li>Build all your view components and wire them up after the fact</li>
+<li>Easy to provide custom injections for unit tests</li>
+<li>Split your large application into submodules and the child modules do not need to know anything about the parent in order to request injections</li>
+<li>Move view components around easily without having to worry about touching ancestors</li>
+<li>No singletons or god objects</li>
+</ul>
+<h3 id="23-watch-a-specific-model-instance-on-a-component">2.3. Watch a specific <code>Model</code> instance on a Component</h3>
+<p><code>watch(component, model, properties = [])</code></p>
+<p>In some cases, you may already have access to a <code>Model</code> instance and want to immediately watch it so that the view refreshes when a property on the <code>Model</code> changes:</p>
+<pre><code>import {Model} from 'ringa'
+import {watch} from 'react-ringa';
+
+const PlaneModel = Model.construct('PlaneModel', ['altitude', 'speed']);
+
+class Plane extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.planeModel = new PlaneModel();
+
+    watch(this, this.planeModel, ['altitude', 'speed']);
+  }
+
+  render() {
+    const {altitude, speed} = this.state;
+
+    return &lt;div&gt;
+      &lt;span&gt;Altitude: {altitude}&lt;/span&gt;
+      &lt;span&gt;Speed: {speed}&lt;/span&gt;
+      &lt;button onClick={this.fasterAndHigher_onClickHandler}&gt;Go faster and higher!&lt;/button&gt;
+    &lt;/div&gt;;
+  }
+
+  fasterAndHigher_onClickHandler() {
+    this.planeModel.altitude += 10;
+    this.planeModel.speed++;
+  }
+}
+</code></pre>
+<p>In the above example, when <code>altitude</code> or <code>speed</code> change, those properties are automatically watched and the view is refreshed.</p>
+<p>Note that Ringa JS is smart enough to only perform one view refresh even though two properties are being updated.</p>
+<h3 id="24-performance">2.4. Performance</h3>
+<p>By default, React does an incredibly good job of ensuring that only DOM nodes are updated that need to be. However, because React was built from the ground up to expect that parents will pass properties to their children, if you are passing all properties to children and one of those properties changes, then this will trigger a call to <code>render()</code> on all of the children that see the property has changed - even if they do not themselves need to be re-rendered.</p>
+<p>Thankfully React 16 has made a ton of improvements to ensure that the lifecycle of Component updates is top-notch. The new scheduling paradigm has made things even better.</p>
+<p>Ringa JS naturally integrates with React because of the unique way it tells React when to rerender a Component.</p>
+<p>Whenever you <code>depend</code> or <code>watch</code> in Ringa JS and a watched property changes, the property is added to a batch of properties to be updated the next frame via <code>setState</code>. As a result you could watch dozens of properties and set all of them and only one <code>setState</code> would be called by Ringa.</p>
+<p>In addition, because each Component is responsible for saying what <code>Model</code> it needs and exactly which properties should trigger an update, parent components do not need to hold the responsibility of changing properties on their children to trigger a redraw.</p>
+<p>We have discovered that Ringa JS works insanely fast with React (both 15 and 16) with literally thousands of React Components and bindings on the screen at once and only takes milliseconds to do large updates.</p>
+<p>All of that said, performance bottlenecks still happen. Ringa JS has a built in warnings when it encounters performance issues. In addition every step of the process from setting a property on a <code>Model</code> to how it updates the display can be customized for maximum leverage over your applications lifecycle. </p></div>
+        
+    </div>
+
+    <footer class="col-md-12 text-center">
+        <hr>
+        <p>
+        <small>© 2017 Joshua Jung and the Ringa JS Team<br></small>
+        
+        <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p></small>
+    </footer>
+
+    <script src="../../js/jquery-1.10.2.min.js"></script>
+    <script src="../../js/bootstrap-3.0.3.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script>
+    var base_url = '../..';
+    </script>
+    <script data-main="../../mkdocs/js/search.js" src="../../mkdocs/js/require.js"></script>
+    <script src="../../js/base.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        From here you can search these documents. Enter your search terms below.
+                    </p>
+                    <form role="form">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        </div>
+                    </form>
+                    <div id="mkdocs-search-results"></div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </body>
+
+</html>

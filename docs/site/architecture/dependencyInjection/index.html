@@ -94,7 +94,7 @@
                 
                 
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Getting Started <b class="caret"></b></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Get Started <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
                             
@@ -111,7 +111,7 @@
                         
                             
 <li >
-    <a href="../../gettingStarted/examples/">Examples</a>
+    <a href="../../gettingStarted/examples/">Code Examples</a>
 </li>
 
                         
@@ -144,12 +144,6 @@
                         
                             
 <li >
-    <a href="../inspector/">Inspector</a>
-</li>
-
-                        
-                            
-<li >
     <a href="../debugging/">Debugging</a>
 </li>
 
@@ -157,6 +151,27 @@
                             
 <li >
     <a href="../buildingComponentLibraries/">Building Component Libraries</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Plugins <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../../plugins/reactRinga/">react-ringa</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../../plugins/inspector/">Inspector</a>
 </li>
 
                         
@@ -217,7 +232,7 @@
                 
                 
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">React Library <b class="caret"></b></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Components <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
                             
@@ -309,17 +324,6 @@
                 <li class="third-level"><a href="#17-preparing-for-production-uglify">1.7. Preparing for Production (Uglify)</a></li>
             
         
-            <li class="second-level"><a href="#2-view-injection-react-ringa">2. View Injection (react-ringa)</a></li>
-            
-                <li class="third-level"><a href="#21-attach-a-model-to-a-component">2.1. Attach a Model to a Component</a></li>
-            
-                <li class="third-level"><a href="#22-request-a-model-dependency-injection-from-a-component">2.2. Request a Model Dependency Injection from a Component</a></li>
-            
-                <li class="third-level"><a href="#23-watch-a-specific-model-instance-on-a-component">2.3. Watch a specific Model instance on a Component</a></li>
-            
-                <li class="third-level"><a href="#24-ringa-js-and-react-performance">2.4. Ringa JS and React Performance</a></li>
-            
-        
     
     </ul>
 </div></div>
@@ -327,10 +331,10 @@
 
 <h1 id="dependency-injection">Dependency Injection</h1>
 <p><em>Note: make sure you have read and understand everything in the <a href="../../gettingStarted/helloWorld/">Hello World Tutorial</a> before proceeding.</em></p>
-<p>Ringa JS has two types of dependency injection:</p>
+<p>Ringa JS currently has two types of dependency injection:</p>
 <ul>
-<li>Function argument injection by name</li>
-<li>View <code>Model</code> injection through <code>react-ringa</code></li>
+<li>Function argument injection by name for Controller executors</li>
+<li><a href="../../plugins/reactRinga/">View <code>Model</code> injection through <code>react-ringa</code> Plugin</a></li>
 </ul>
 <h2 id="1-function-argument-injection">1. Function Argument Injection</h2>
 <p>There are several rules that are followed when performing all function injections in Ringa JS:</p>
@@ -555,179 +559,7 @@ dispatch(DudeController.DO_SOMETHING, {}, document).then(someCustomValue =&gt; {
 <p>When in <code>__DEV__: true</code> mode, Ringa JS keeps track of every single variable that has been injected and builds a whilelist for you.</p>
 <p><strong>To view all the injections you need to add to the <code>mangle</code> property of <code>UglifyJS</code>, after you have run your application and all of its various executors go to the browser console:</strong></p>
 <p><img src="/img/uglifywhitelist.png" alt="ringaDebug().uglifywhitelist" style="width: 100%;"/></p>
-<p>Please note that because a lot of the injections that can occur in Ringa JS are dynamic, it is impossible to know before running each executor which variable names will need to avoid mangling.</p>
-<h2 id="2-view-injection-react-ringa">2. View Injection (<code>react-ringa</code>)</h2>
-<p>When using React via the <code>react-ringa</code> plugin, there are several ways that a React Component can request a <code>Model</code> instance to be injected:</p>
-<p>Make a <code>Model</code> available for injection:</p>
-<ul>
-<li><code>attach(component, model)</code>: use when you want to directly attach a <code>Model</code> instance to a Component. This will make the <code>Model</code> <strong>available</strong> to the Component and all its descendants for injection. This does not do the injection directly.</li>
-</ul>
-<p>Request a <code>Model</code> to be injected into a Component's <code>state</code>:</p>
-<p>1) <code>depend(component, dependencies[])</code>: use when you expect an ancestor to provide a <code>Model</code> and need to watch its properties and have them injected. If properties are injected, <code>depend</code> ensures that the <code>state</code> of the React Component accurately reflects any changes in the <code>Model</code>.
-2) <code>watch(component, model, properties = [])</code>: if you already have access to the <code>Model</code> instance, you can use watch instead of <code>depend()</code>.</p>
-<h3 id="21-attach-a-model-to-a-component">2.1. Attach a <code>Model</code> to a Component</h3>
-<p><code>attach(component, controllerOrModel)</code></p>
-<p>All <code>Model</code> instances are attached to a React <code>Component</code> via a Ringa JS <code>Controller</code>:</p>
-<h4 id="attach-example-1">Attach Example 1</h4>
-<p>To attach a <code>Model</code> directly to a React Component and make it available to be injected to the Component and all its descendants, you can simply do:</p>
-<pre><code>import {Model} from 'ringa'
-import {attach} from 'react-ringa';
-
-const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
-
-class UserContainer extends React.Component {
-  constructor(props) {
-    super(props);
-
-    attach(this, new UserModel());
-  }
-}
-</code></pre>
-<h4 id="attach-example-2">Attach Example 2</h4>
-<p>If you wish to attach the <code>Model</code> via a <code>Controller</code> you can do so like this:</p>
-<pre><code>import {Model} from 'ringa'
-import {attach} from 'react-ringa';
-
-const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
-
-class UserController extends Controller;
-
-class UserContainer extends React.Component {
-  constructor(props) {
-    super(props);
-
-    let userController = new UserController();
-
-    userController.addModel(new UserModel());
-
-    attach(this, userController);
-  }
-}
-</code></pre>
-<h3 id="22-request-a-model-dependency-injection-from-a-component">2.2. Request a <code>Model</code> Dependency Injection from a Component</h3>
-<p><code>depend(component, dependencies[])</code></p>
-<p>This function searches for instances that match its list of dependencies, injects them into the React <code>Component</code> <code>state</code>, and watches any properties on those instances for changes and intelligently refreshes the view when changes happen.</p>
-<p>Note that when requesting dependencies, Ringa JS is smart enough to look for the closest matching <code>Model</code> that matches the type you request.</p>
-<p>The closest <code>Model</code> is defined as:</p>
-<ul>
-<li><strong>Request by type</strong>: a <code>Model</code> that is attached to the current Component or its nearest ancestor that is itself of the type requested or extends the type requested.</li>
-<li><strong>Request by name</strong>: a <code>Model</code> that is attached to the current Component or its nearest ancestor that has the name requested.</li>
-</ul>
-<p><em>Note: Ringa JS will give you a warning when in <code>__DEV__: true</code> mode if it encounters more than one Model that matches your requested dependency so that you can resolve this conflict if necessary.</em></p>
-<p><code>depend()</code> is the closest concept to binding that exists in Ringa JS. However, unlike other binding frameworks, Ringa JS provides considerable control over when updates take place and helps to ensure that there are no performance bottlenecks.</p>
-<h4 id="example-1-request-by-type">Example 1 Request by Type</h4>
-<pre><code>import {Model} from 'ringa'
-import {attach, depend, dependency} from 'react-ringa';
-
-const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
-
-class User extends React.Component {
-  constructor(props) {
-    super(props);
-
-    depend(this, dependency(UserModel, ['firstName', 'lastName']));
-  }
-
-  render() {
-    return &lt;div&gt;{this.state.firstName} {this.state.lastName}&lt;/div&gt;;
-  }
-}
-
-class UserContainer extends React.Component {
-  constructor(props) {
-    super(props);
-
-    attach(this, new UserModel());
-  }
-
-  render() {
-    return &lt;User /&gt;;
-  }
-}
-</code></pre>
-<h4 id="example-1-request-by-name">Example 1 Request by name</h4>
-<pre><code>import {Model} from 'ringa'
-import {attach, depend, dependency} from 'react-ringa';
-
-const UserModel = Model.construct('UserModel', ['firstName', 'lastName']);
-
-class User extends React.Component {
-  constructor(props) {
-    super(props);
-
-    depend(this, dependency('someCustomUserModelName', ['firstName', 'lastName']));
-  }
-
-  render() {
-    return &lt;div&gt;{this.state.firstName} {this.state.lastName}&lt;/div&gt;;
-  }
-}
-
-class UserContainer extends React.Component {
-  constructor(props) {
-    super(props);
-
-    attach(this, new UserModel('someCustomUserModelName'));
-  }
-
-  render() {
-    return &lt;User /&gt;;
-  }
-}
-</code></pre>
-<p>Architectural benefits to this approach:</p>
-<ul>
-<li>There is no need to pass properties to children</li>
-<li>Each Component is responsible for determining when it needs to update itself</li>
-<li>Build all your view components and wire them up after the fact</li>
-<li>Easy to provide custom injections for unit tests</li>
-<li>Split your large application into submodules and the child modules do not need to know anything about the parent in order to request injections</li>
-<li>Move view components around easily without having to worry about touching ancestors</li>
-<li>No singletons or god objects</li>
-</ul>
-<h3 id="23-watch-a-specific-model-instance-on-a-component">2.3. Watch a specific <code>Model</code> instance on a Component</h3>
-<p><code>watch(component, model, properties = [])</code></p>
-<p>In some cases, you may already have access to a <code>Model</code> instance and want to immediately watch it so that the view refreshes when a property on the <code>Model</code> changes:</p>
-<pre><code>import {Model} from 'ringa'
-import {watch} from 'react-ringa';
-
-const PlaneModel = Model.construct('PlaneModel', ['altitude', 'speed']);
-
-class Plane extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.planeModel = new PlaneModel();
-
-    watch(this, this.planeModel, ['altitude', 'speed']);
-  }
-
-  render() {
-    const {altitude, speed} = this.state;
-
-    return &lt;div&gt;
-      &lt;span&gt;Altitude: {altitude}&lt;/span&gt;
-      &lt;span&gt;Speed: {speed}&lt;/span&gt;
-      &lt;button onClick={this.fasterAndHigher_onClickHandler}&gt;Go faster and higher!&lt;/button&gt;
-    &lt;/div&gt;;
-  }
-
-  fasterAndHigher_onClickHandler() {
-    this.planeModel.altitude += 10;
-    this.planeModel.speed++;
-  }
-}
-</code></pre>
-<p>In the above example, when <code>altitude</code> or <code>speed</code> change, those properties are automatically watched and the view is refreshed.</p>
-<p>Note that Ringa JS is smart enough to only perform one view refresh even though two properties are being updated.</p>
-<h3 id="24-ringa-js-and-react-performance">2.4. Ringa JS and React Performance</h3>
-<p>By default, React does an incredibly good job of ensuring that only DOM nodes are updated that need to be. However, because React was built from the ground up to expect that parents will pass properties to their children, if you are passing all properties to children and one of those properties changes, then this will trigger a call to <code>render()</code> on all of the children that see the property has changed - even if they do not themselves need to be re-rendered.</p>
-<p>Thankfully React 16 has made a ton of improvements to ensure that the lifecycle of Component updates is top-notch. The new scheduling paradigm has made things even better.</p>
-<p>Ringa JS naturally integrates with React because of the unique way it tells React when to rerender a Component.</p>
-<p>Whenever you <code>depend</code> or <code>watch</code> in Ringa JS and a watched property changes, the property is added to a batch of properties to be updated the next frame via <code>setState</code>. As a result you could watch dozens of properties and set all of them and only one <code>setState</code> would be called by Ringa.</p>
-<p>In addition, because each Component is responsible for saying what <code>Model</code> it needs and exactly which properties should trigger an update, parent components do not need to hold the responsibility of changing properties on their children to trigger a redraw.</p>
-<p>We have discovered that Ringa JS works insanely fast with React (both 15 and 16) with literally thousands of React Components and bindings on the screen at once and only takes milliseconds to do large updates.</p>
-<p>All of that said, performance bottlenecks still happen. Ringa JS has a built in warnings when it encounters performance issues. In addition every step of the process from setting a property on a <code>Model</code> to how it updates the display can be customized for maximum leverage over your applications lifecycle. </p></div>
+<p>Please note that because a lot of the injections that can occur in Ringa JS are dynamic, it is impossible to know before running each executor which variable names will need to avoid mangling.</p></div>
         
     </div>
 

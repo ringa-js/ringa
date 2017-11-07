@@ -6,17 +6,19 @@ google_analytics: ['UA-108440815-1', 'ringajs.com']
 theme_dir: cinder
 pages:
     - Home: index.md
-    - Getting Started:
+    - Get Started:
         - Live Demo: gettingStarted/demo.md
         - Hello World Tutorial: gettingStarted/helloWorld.md
-        - Examples: gettingStarted/examples.md
+        - Code Examples: gettingStarted/examples.md
     - Architecture:
         - Lifecycle: architecture/lifecycle.md
         - Event System: architecture/events.md
         - Dependency Injection: architecture/dependencyInjection.md
-        - Inspector: architecture/inspector.md
         - Debugging: architecture/debugging.md
         - Building Component Libraries: architecture/buildingComponentLibraries.md
+    - Plugins:
+        - react-ringa: plugins/reactRinga.md
+        - Inspector: plugins/inspector.md
     - Docs:
         - Index: docs/index.md
         - RingaObject: docs/ringaObject.md
@@ -25,7 +27,7 @@ pages:
         - Controller: docs/controller.md
         - Executors: docs/executors.md
         - React Ringa: docs/reactRinga.md
-    - React Library:
+    - Components:
         - Introduction: reactLibrary/introduction.md
         - Core: reactLibrary/core.md
         - Overlays: reactLibrary/overlays.md

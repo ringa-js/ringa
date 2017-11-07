@@ -52,6 +52,8 @@ div.source-links {
     padding-top:    10px;
     padding-bottom: 10px;
     border-radius: 5px;
+    height: calc(100vh - 100px);
+    overflow: auto;
 }
 
 /* All levels of nav */
