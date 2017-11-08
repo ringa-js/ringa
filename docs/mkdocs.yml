@@ -26,8 +26,8 @@ pages:
         - Model: docs/model.md
         - Controller *: docs/controller.md
         - Executors *: docs/executors.md
-    - Components:
-        - Introduction *: reactLibrary/introduction.md
+    - React Components:
+        - Introduction: reactLibrary/introduction.md
         - Examples: reactLibrary/examples.md
         - Licensing *: reactLibrary/licensing.md
         - Core *: reactLibrary/core.md

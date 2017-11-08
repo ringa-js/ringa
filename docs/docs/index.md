@@ -12,6 +12,30 @@ Ringa JS is an enterprise single page application (SPA) framework that provides:
 * Core focus on performance, modularity, and scalability
 * Zero dependencies on any other frameworks (pure JS)
 
+## Plugins
+
+Ringa JS integrates with your React application through the **[`react-ringa`](docs/reactRinga.md)** plugin.
+
+**`react-ringa` is compatible with React 16 Fiber and React 15**.
+
+## React Component Library
+
+[Demonstration](http://react.ringajs.com/)
+
+I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:
+
+* Tooltips
+* Drag and Drop
+* [List](http://react.ringajs.com/list)
+* [Form](http://react.ringajs.com/form)
+* Dropdown
+* Data Grid
+* Modals
+* Overlays
+* and much, much more
+
+Stay tuned for more information! This should be available by end of 2017.
+
 ## Comparisons
 
 Ringa JS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa is designed to entirely replace your current mix of dozens of libraries and plugins.
@@ -47,27 +71,6 @@ IE 10 needs work because it does not recognize `__proto__`.
 ## Installation
 
 * `npm install --save-dev ringa` - Install Ringa JS into your project
-
-## Plugins
-
-Ringa JS integrates with your React application through the **[`react-ringa`](docs/reactRinga.md)** plugin.
-
-**`react-ringa` is compatible with React 16 Fiber and React 15**.
-
-## React Components
-
-I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:
-
-* Tooltips
-* Drag and Drop
-* List
-* Dropdown
-* Data Grid
-* Modals
-* Overlays
-* and much, much more
-
-Stay tuned for more information! This should be available by end of 2017.
 
 ## Latest Versions
 

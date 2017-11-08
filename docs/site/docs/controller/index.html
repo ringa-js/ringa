@@ -226,12 +226,12 @@
                 
                 
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Components <b class="caret"></b></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">React Components <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
                             
 <li >
-    <a href="../../reactLibrary/introduction/">Introduction *</a>
+    <a href="../../reactLibrary/introduction/">Introduction</a>
 </li>
 
                         
@@ -373,13 +373,42 @@
     
         <li class="first-level active"><a href="#controller">Controller</a></li>
         
+            <li class="second-level"><a href="#1-construction">1. Construction</a></li>
+            
+        
+            <li class="second-level"><a href="#11-options">1.1. Options</a></li>
+            
+        
+            <li class="second-level"><a href="#2-listening-for-events">2. Listening for Events</a></li>
+            
+        
+            <li class="second-level"><a href="#3-using-executors">3. Using Executors</a></li>
+            
+        
     
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
 <h1 id="controller">Controller</h1>
-<p><em>Under construction</em></p></div>
+<ul>
+<li>Extends <a href="../../ringaObject"><code>RingaObject</code></a></li>
+</ul>
+<p>The Ringa JS <code>Controller</code> serves the following functions:</p>
+<ul>
+<li>A container for <code>Models</code></li>
+<li>Listens to DOM nodes or <code>Bus</code> objects for events</li>
+<li>Creates and coordinates asynchronous threads in response to events</li>
+</ul>
+<p>The Ringa JS <code>Controller</code> is capable of handling any asynchronous operation in your application in a modularized and highly readable fashion.</p>
+<h2 id="1-construction">1. Construction</h2>
+<p>A <code>Controller</code> can be constructed easily:</p>
+<pre><code>import {Controller} from 'react-ringa';
+</code></pre>
+<h2 id="11-options">1.1. Options</h2>
+<h2 id="2-listening-for-events">2. Listening for Events</h2>
+<h2 id="3-using-executors">3. Using Executors</h2>
+<p>Every Ringa JS <code>Controller</code> listens to a <code>Bus</code> object for events by their String type:</p></div>
         
     </div>
 
