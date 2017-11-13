@@ -2648,6 +2648,7 @@ Model.deserialize = function (pojo) {
       console.error('Could not deserialize due to inability to find a matching model: ', pojo, options);
       return Model;
     }
+
     // Is there a custom deserialize method?
     if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
       return ModelClass.deserialize(pojo, options);
@@ -2770,7 +2771,10 @@ Model.deserialize = function (pojo) {
 };
 
 Model.construct = function (className, propertyArray) {
-  return function (_Model) {
+  //--------------------------------------------------
+  // KEEP THIS CODE
+  //--------------------------------------------------
+  var clazz = function (_Model) {
     _inherits(M, _Model);
 
     _createClass(M, null, [{
@@ -2799,6 +2803,14 @@ Model.construct = function (className, propertyArray) {
 
     return M;
   }(Model);
+
+  /**
+   * By using a generic function that is closured for our class, we unfortunately cannot compare classes by string. So in react-ringa our depend
+   * will just use $ringaClassName if it exists.
+   */
+  clazz.$ringaClassName = className;
+
+  return clazz;
 };
 
 exports.default = Model;
@@ -3758,9 +3770,17 @@ var ModelWatcher = function (_RingaObject) {
       var p = model.constructor;
 
       while (p) {
+        /**
+         * This is a workaround for Model.construct. Since Mode.construct has the exact same function for every call, we cannot
+         * compare by Function.toString() value in our weak map.
+         *
+         * @type {string|*}
+         */
+        var className = p.$ringaClassName ? '__' + p.$ringaClassName : p;
+
         // First come first serve for looking up by type!
-        if (!this.classToModel[p]) {
-          this.classToModel[p] = model;
+        if (!this.classToModel[className]) {
+          this.classToModel[className] = model;
         }
 
         p = p.__proto__;
@@ -3815,8 +3835,16 @@ var ModelWatcher = function (_RingaObject) {
         var p = classOrIdOrName;
 
         while (p) {
-          if (this.classToModel[p]) {
-            model = this.classToModel[p];
+          /**
+           * This is a workaround for Model.construct. Since Mode.construct has the exact same function for every call, we cannot
+           * compare by Function.toString() value in our weak map.
+           *
+           * @type {string|*}
+           */
+          var className = p.$ringaClassName ? '__' + p.$ringaClassName : p;
+
+          if (this.classToModel[className]) {
+            model = this.classToModel[className];
             break;
           }
 
