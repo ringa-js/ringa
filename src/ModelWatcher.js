@@ -147,9 +147,17 @@ class ModelWatcher extends RingaObject {
     let p = model.constructor;
 
     while (p) {
+      /**
+       * This is a workaround for Model.construct. Since Mode.construct has the exact same function for every call, we cannot
+       * compare by Function.toString() value in our weak map.
+       *
+       * @type {string|*}
+       */
+      let className = p.$ringaClassName ? `__${p.$ringaClassName}` : p;
+
       // First come first serve for looking up by type!
-      if (!this.classToModel[p]) {
-        this.classToModel[p] = model;
+      if (!this.classToModel[className]) {
+        this.classToModel[className] = model;
       }
 
       p = p.__proto__;
@@ -196,8 +204,16 @@ class ModelWatcher extends RingaObject {
       let p = classOrIdOrName;
 
       while (p) {
-        if (this.classToModel[p]) {
-          model = this.classToModel[p];
+        /**
+         * This is a workaround for Model.construct. Since Mode.construct has the exact same function for every call, we cannot
+         * compare by Function.toString() value in our weak map.
+         *
+         * @type {string|*}
+         */
+        let className = p.$ringaClassName ? `__${p.$ringaClassName}` : p;
+
+        if (this.classToModel[className]) {
+          model = this.classToModel[className];
           break;
         }
 

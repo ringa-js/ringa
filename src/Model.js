@@ -569,6 +569,7 @@ Model.deserialize = function(pojo, options = {}) {
       console.error('Could not deserialize due to inability to find a matching model: ', pojo, options);
       return Model;
     }
+
     // Is there a custom deserialize method?
     if (ModelClass.deserialize && ModelClass.deserialize !== Model.deserialize) {
       return ModelClass.deserialize(pojo, options);
@@ -691,7 +692,10 @@ Model.deserialize = function(pojo, options = {}) {
 };
 
 Model.construct = function(className, propertyArray) {
-  return class M extends Model {
+  //--------------------------------------------------
+  // KEEP THIS CODE
+  //--------------------------------------------------
+  let clazz = class M extends Model {
     static get name() {
       return className;
     }
@@ -710,6 +714,14 @@ Model.construct = function(className, propertyArray) {
       }
     }
   };
+
+  /**
+   * By using a generic function that is closured for our class, we unfortunately cannot compare classes by string. So in react-ringa our depend
+   * will just use $ringaClassName if it exists.
+   */
+  clazz.$ringaClassName = className;
+
+  return clazz;
 };
 
 export default Model;
