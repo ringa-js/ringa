@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jung-digital/ringa.git"
+    "url": "git+https://github.com/ringa-js/ringa.git"
   },
   "files": [
     "dist",
@@ -45,9 +45,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jung-digital/ringa/issues"
+    "url": "https://github.com/ringa-js/ringa/issues"
   },
-  "homepage": "https://github.com/jung-digital/ringa#readme",
+  "homepage": "https://github.com/ringa-js/ringa#readme",
   "npmName": "ringa",
   "npmFileMap": [
     {
