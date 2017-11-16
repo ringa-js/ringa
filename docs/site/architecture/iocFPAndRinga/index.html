@@ -655,8 +655,8 @@ let c = () =&gt; {
 c(); // I'm in C!
      // I'm in A!
 </code></pre>
-<p>In this scenario, the b() function could exist at any depth in the stack and rather than passing properties through as
-arguments, it would search up through the stack to find the first location where x is saved and then use that instead.</p>
+<p>In this scenario, the <code>b()</code> function could exist at any depth in the stack and rather than passing properties through as
+arguments, <code>b()</code> would search up through the stack to find the first location where <code>output</code> is stored and then use that.</p>
 <p>This is what Ringa does in your GUI.</p>
 <p>However, as your program grows, you can customize individual subtrees in your application by providing new models at key nodes
 in your tree. For example, you could decide that rather than having a single <code>DataGridModel</code> provided at the root of

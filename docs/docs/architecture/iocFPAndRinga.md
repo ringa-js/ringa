@@ -294,8 +294,8 @@ write functional code like this:
     c(); // I'm in C!
          // I'm in A!
 
-In this scenario, the b() function could exist at any depth in the stack and rather than passing properties through as
-arguments, it would search up through the stack to find the first location where x is saved and then use that instead.
+In this scenario, the `b()` function could exist at any depth in the stack and rather than passing properties through as
+arguments, `b()` would search up through the stack to find the first location where `output` is stored and then use that.
 
 This is what Ringa does in your GUI.
 
