@@ -347,9 +347,9 @@ To summarize with an analogy:
 * Functional programming is hierarchical management where direct bosses are responsible for giving their employees
 exactly what they need and keeping them from messing with anything other than what they are given.
 * Traditional IOC is a dictatorship where a single boss is responsible for giving out what each employee needs.
-* Ringa is flat priority style with a hierarchical management structure where employees are empowered to request whatever
-they need to get their job done and are responsible for going through each boss incrementally to get what they need.
-But each boss is also empowered to redirect their employees and shield them from upper management.
+* Ringa is a hierarchical management structure where employees are empowered to request whatever they need to get their
+job done and are responsible for going through each boss incrementally to get what they need. But each boss is also
+empowered to redirect their employees and shield them from upper management.
 
 **Ringa is a singleton-less inversion of control system that uses the natural flow of the DOM tree to help create context
 for both communication and dependency injection.**
