@@ -191,7 +191,7 @@ Essentially IOC is another declarative approach outside of functional programmin
 providing properties to children but in a safe environment that eliminates side effects. After all, a builder could
 choose to provide immutable objects to the components requesting them.
 
-Four huge advantage to IOC over the functional paradigm for GUI are:
+Four huge advantages of IOC over pure functional specifically for GUI are:
 
 1. You eliminate the need for a single giant state store
 2. You do not have to iterate over every component in the GUI to check to see if the changed state might have
