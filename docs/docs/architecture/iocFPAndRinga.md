@@ -1,5 +1,8 @@
 # Functional Programming, Inversion of Control, and Ringa
 
+*Note: the following article is about the architectural concepts of GUI and is not related to Javascript at all. This
+could apply to any language that involves a tree of UI components.*
+
 ## Topic Introduction
 
 The last several years have seen a wave of programmers pushing harder for functional programming and using a global state
