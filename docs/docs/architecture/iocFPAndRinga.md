@@ -275,7 +275,7 @@ write functional code like this:
     let b = () => {
       let output = findInStack('output');
       
-      console.log(output); // Should output 1 when called from a() and output 2 when called directly from c()
+      console.log(output);
     }
     
     let a = () => {
