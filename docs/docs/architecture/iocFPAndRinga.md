@@ -9,7 +9,7 @@ programming.
 
 As a result, rather than try to compare Ringa's architecture directly to the pros and cons of functional programming and
 a global state store, I will just provide a walkthrough of my own understanding of functional programming and inversion
-of control in an attempt to solve and discuss how I used Ringa to solve the same problems.
+of control in an attempt to explain how I used Ringa to tackle the same problems.
 
 ## Side-effects and State
 
@@ -21,7 +21,7 @@ There are two contexts web developers are generally referring to when discussing
 * Visual (GUI) Components
 
 In programming languages, a function has a side effect when running it can mutate a variable outside of its scope. This
-can make running a function "unsafe". If I am calling the functoin `foo()` everywhere in my code and the developer of the
+can make running a function "unsafe". If I am calling the function `foo()` everywhere in my code and the developer of the
 function decides that he is going to wipe all the DOM nodes whenever `foo()` is called, my code now no longer works. The
 same goes for if I pass a mutable argument by reference into `foo()` and `foo()` decides to change all the properties
 on the argument without my knowledge. Either way, `foo()` is unpredictable and volatile, and like Donald Trump or Brexit,
@@ -39,34 +39,39 @@ to be predictable and have no side effects.
 The problem, in short, is that we **want to eliminate side effects**:
 
 * One solution for programming languages is to have a pure functional language like Haskell or Erlang.
-* The analogous solution for rendering a GUI is to mimic a pure functional language by developing pure components that
+* The analogous solution for rendering a GUI is to mimic a functional language by developing pure components that
 have a single render method with properties passed from the parent and no internal state.
 
-Within React, for example, Pure components only contain a `render()` function that is guaranteed to only look at the
+Within React, for example, Pure components only contain a `render()` function that is guaranteed to only look at
 `this.props` and predictably returns the exact same DOM representation for any given props - every time.
 
 ### Functional Advantages
 
-There are massive advantages to the pure functional approach. For example, when using pure functional programming in any
-respect, you can memoize results of the calls. This allows you to cache (at the expense of memory obviously) all previous
-calls and speed up future renders of the same component all over the display. If you can memoize what a component looks
-like with the same props, and render it 1000 times on the display with the same props, you really only run the render
-function once.
+There are massive advantages to the pure functional approach. For example, when using functional programming you can
+memoize results of the calls. This allows you to cache (at the expense of memory) all previous calls and speed up future
+renders of every component instance. If you can memoize what a component looks like with the same props, and render it
+1000 times on the display with the same props, you really only run the render function once.
 
 Another advantage to functional is in multi-threaded or multi-core implementations. Normally, with threading we end up
-with lots of potential for deadlock. There are tons of unique ways to solve this problem, but they generally involve
-forcing one core or thread to sit and wait for another to relinquish access to a resource. In functional programming
-every passed property is unique and the function is memoizable so we can split our work across processes much more
-easily with virtually no deadlock since we can predict beforehand that every function has access to a unique resource
-in memory.
+with lots of potential for deadlock especially if multiple threads have write access to locations in memory. There are
+tons of unique ways to solve this problem, but they generally involve forcing one core or thread to sit and wait for
+another to relinquish access to a resource (e.g. some form of mutex). In functional programming every passed argument
+is unique or immutable and the function is memoizable so we can split our work across processes much more easily with
+virtually no deadlock since we can predict beforehand that no two functions will be fighting over write access to a
+location in memory.
 
 There are many more advantages but I will leave this as a research exercise to you. Suffice to say, I am in no way trying
 to argue for or against functional programming as it can be incredibly effective, and has been in many scenarios, since
 its inception in the 30s via lambda calculus.
 
-But one thing I think we need to be certain about: functional programming is a tool designed to help reduce human error.
-The real world is full of side effects. Even our web browser is full of side effects, as you cannot predict what your
-end user is going to do.
+But one thing I think we need to be certain about: functional programming is a tool designed to help reduce human error
+and there are plenty of tools in programming designed to do this outside of the functional programming camp. The real
+world is full of side effects and no matter how hard we try we cannot make our entire environment for development
+completely pure. Even our web browser is full of side effects, as you cannot predict what your end user is going to
+do. Heck, every end user now has access to a Javascript console and the DOM through browser developer tools so at the
+end of the day nothing is 100% safe from side effects.
+
+But we can try...
 
 ### Pure Functional Components
 
@@ -96,19 +101,26 @@ functional programming, your ideal scenario is passing the least amount of data 
 calculate as much of the remaining data as possible through subsequent function calls. Sadly, most GUI applications do
 not work like this.
 
-The reason is that in most GUIs (like a webpage) our most critical information is often needed by the leaf nodes
-and its ancestors cannot calculate that data from a subset.
+One good example of doing something like this might be passing a giant flat string of user information into your render
+and subsequent functions split out the information (first name, last name, email, address). However, with web browsers
+we run into the problem that they do not fit very well into a functional paradigm because so much of the work we have
+to do is asynchronous and in functional each callback requires running through the entire render stack... again.
+Additionally, another reason functional is a hard fit with GUI is that in most GUIs (like a webpage) our most critical
+information is often needed by the leaf nodes and its ancestors cannot calculate that data from a subset. Normally we
+already know what the users first name is from the root of the GUI... we are just trying to update *one* leaf deep in
+the tree.
 
 As a result, what happens is that we simply invert our entire problem set into a new domain. Our components have become
 "lightweight" because they retain no state and are "dumb" in that they just do what they are told and do not try to
 make any predictions but now all of the sensitive data for our leaf nodes in our GUI has been simply extracted into one
 giant state store tree that holds everything.
 
-And that state store, by definition, has to be mutable at *some* point.
+And that state store, by definition, has to be mutable at *some* point... so we have eliminated side effects in our
+render calls but we have not eliminated them completely.
 
 ### Pure Functional Problems
 
-What this means practically in the most pure functional component implementation without any additional requirements
+What this means practically in the most pure functional component implementation (without many optimizations)
 is that to make the tiniest change to a leaf node in our GUI we have to **rerender (or at least recompare the output of)
 every GUI component node** and since every single component in our GUI has access to data it only needs so that it can
 pass it to its children we have to **make the entire state store immutable before beginning our render so that a node
@@ -117,7 +129,7 @@ does not accidentally change a store value**.
 So, if I want to just *update a single label on the DOM*, I have to:
 
 * Call an action handler with a payload for the change (reducer)
-* Make a clone of my entire state
+* Make a clone of my entire state (might not be too expensive if we are copying by reference)
 * Change the one value
 * Lock my state by making every value immutable
 * Recall a comparison function on every single component in my GUI tree to find the one DOM node that needs changing
@@ -139,11 +151,13 @@ property to a child deep in our GUI tree that changes with every update to the s
 rerender even if we do a property comparison. If I have 50 reducers and suddenly one of my leaf nodes in my display is
 rendering something wrong, I might be able to predict which part of the store is providing the value, but I still have
 to dig through all the reducers potentially to figure out which one was causing the problem. Is this actually easier
-than tracking down a bug in the same component because it was storing local state?
+than tracking down a bug in the same component because it was storing local state? It may be, but we still have not
+completley squashed the problems caused by human error.
 
 But the problem is even more complicated. Even though I have made my state immutable, I still cannot stop a developer
-from passing individual properties that might be using external state to its children so making our entire store immutable
-still does not make our render predictable if a developer decides to break the functional programming "rules".
+from passing individual properties at a component level that might be using external state to its children so making
+our entire store immutable still does not make our render predictable if a developer decides to break the functional
+programming "rules".
 
 And what if a component deep in our hierarchy does not have access to a part of the store it needs? We still have to dig
 through all of its parents to figure out which one we did not pass `{...props}` to or perhaps a component that decided it
@@ -154,9 +168,11 @@ performance and make my property passing more predictable. I end up creating a b
 virtually nothing except pass the right props from my state store to a subset of my GUI components.
 
 The functional programming paradigm's goal was to reduce side effects by removing state from components but now we have
-just shifted our entire set of problems into a new domain and now created a bunch of solutions in that new domain to
-avoid a whole new set of bugs. As always, developer diligence and some best practice principles are required whether you
-choose functional or imperative. Neither functional nor imperative programming is better, they are just different and
+just shifted our entire set of problems into a new domain and now created a bunch of solutions and programming "rules"
+in that new domain to avoid a whole new set of bugs.
+
+As always, developer diligence and some best practice principles are required whether you choose functional or
+imperative style of programming. Neither functional nor imperative programming is better, they are just different and
 an inexperienced or poor developer is guaranteed to naturally create bugs in both.
 
 ### Inversion of Control (IOC)
@@ -173,13 +189,13 @@ for providing properties to its children. As a result, you will rarely find inve
 functional programming context.
 
 Inversion of control is used heavily in backend systems like traditional Java enterprise systems. There are tons of
-advantages to this approach and I will leave that up to you to research. 
+advantages to this approach and I will leave that up to you to research.
 
 For GUI systems, inversion of control can work quite well. Typically it is set up by having a single builder object
 that is configured at application startup in the root of your GUI tree or as a singleton. As use of the application
 progresses, new components are created and they are in some way given access to the builder or the builder is notified
 of their creation. For example, in Adobe Flash back in the day you could listen in the root GUI component using the capture
-phase of events for any new component that was added to the component tree and then the builder could inspect the
+phase of events for a signal when any new component was added to the component tree and then the builder could inspect the
 metadata of the component and inject its dependencies. In more complex implementations, if you instruct the builder
 that a thing has changed (e.g. the User object), then the builder has kept track of every single component in the GUI
 that "needs" the User object and will provide the new user object to them so they can update themselves.
@@ -191,7 +207,7 @@ Essentially IOC is another declarative approach outside of functional programmin
 providing properties to children but in a safe environment that eliminates side effects. After all, a builder could
 choose to provide immutable objects to the components requesting them.
 
-Four huge advantages of IOC over pure functional specifically for GUI are:
+Four advantages I see of IOC over pure functional in GUI programming are:
 
 1. You eliminate the need for a single giant state store
 2. You do not have to iterate over every component in the GUI to check to see if the changed state might have
@@ -219,7 +235,7 @@ builder know *which* data grid model to inject into each one? Well this will dep
 grid exists within. Perhaps one grid is in the `UserListContainer` section and the other is in the `TransactionsListContainer`
 section of your application.
 
-Obviously a single root builder is fairly naive of what is going on. All it sees is two requests for a `DataGridModel` come
+Obviously a single root builder is fairly naive to what is going on. All it sees is two requests for a `DataGridModel` come
 in and it does not know which grid is in which section of the application.
 
 If only there was an IOC solution that worked with the DOM tree in an intelligent way to resolve these scenarios...
@@ -231,47 +247,55 @@ What if there was a single Javascript library that:
 * Eliminated side-effects by removing as much state as possible from components 
 * Provided IOC and worked well with the GUI tree and resolved injections by context within that tree
 * Avoided all god objects or singletons
-* Let every component declare exactly what its dependencies are by type or by name
+* Let every component declare exactly what its dependencies were by type *or* by name
 * Was able to inform only the components that need to be updated that a change has occurred in their dependencies
 * Eliminated almost all boilerplate code
 * Provided a set of debugging tools that helped you find how all your injections are wired together
 
-There is. Welcome to Ringa.
+There is and welcome to Ringa.
 
-### Inversion of Control Tree
+### Ringa: Inversion of Control Tree
 
 Ringa is more than a typical inversion of control system. It uses the natural DOM tree to layer your dependency injections.
 
 Each component in your GUI tree declares its dependencies. Then during runtime, each node steps through its parents one by one
 looking for the *closest* dependency it can find that meets its needs. In this way, by default every node in the tree
-might be looking all the way to the root node. In this case your application functions very similarly to a traditional IOC.
+will look all the way to the root node for its dependencies and the root node functions as a traditional builder in an
+IOC system.
 
-However, as time progresses, you can customize individual layers in your application by providing new models at key points
+However, as your program grows, you can customize individual subtrees in your application by providing new models at key nodes
 in your tree. For example, you could decide that rather than having a single `DataGridModel` provided at the root of
-your application, you now need to provide two of them. So you just provide one `DataGridModel` through the `UserListContainer`
-node and another through the `TransactionsListContainer` node. The `DataGrid` visual component instances, regardless of
-where they are positioned in the entire tree relative to those two ancestors, will automatically find the grid they need.
+your application, you now need to provide two of them. You provide one `DataGridModel` through the `UserListContainer`
+node and another through the `TransactionsListContainer` node. By the nature of the natural container structure of your
+application you can be very confident that no leaves outside of the subtree of the `UserListContainer` are going to need
+this model. However you cannot be sure *where* in the subtree the `DataGrid` may end up due to UX requirements that might
+change. So by providing the model at the deepest safe point for the UX that you can, you both ensure that you can split
+that entire portion of your subtree into a module later if you like and also keep yourself open to large UX refactoring
+in the future. Now, the `DataGrid` visual component instances, regardless of where they are positioned in the entire subtree
+relative to those two ancestors will automatically find the grid they need. You can move them around anywhere in the subtree
+and they will still just work.
 
-This helps you build components and libraries too, because now you can "break off" entire chunks of your display tree into
-separate libraries very easily. Since your IOC providers are attached to the root nodes closest to the most modular part
-of that section of your DOM tree, you can break them out into new libraries easily. This is something that would be
+This helps you build components and libraries too, because now you can "break off" entire subtrees of your display tree 
+easily. Since your IOC providers are attached to the root nodes closest to the most modular part of that section of your
+DOM tree, you can break them out into new libraries easily starting at that root node. This is something that would be
 much harder in a functional programming or traditional IOC context.
 
-Each `Controller` in Ringa can be attached anywhere on your DOM tree and by default provides all of its models, by Class type,
-by id, or by name to any of that nodes descendants.
+Each `Controller` in Ringa can be attached anywhere on your DOM tree and by default provides all of its child models,
+by Class type(s), by id, or by name to any of that nodes descendants.
 
-### Tree Communication
+### Ringa: Tree Communication
 
 In addition, Ringa goes far beyond dependency injection because it uses the DOM tree for all communication. Just like
-traditional IOC with a single builder, traditionally a lot of the communication frameworks (like Cairngorm in Adobe Flex)
-used a single master bus for communication. Even Redux uses a single point of entry (and multiple reducers on the same
-store) to run its actions.
+traditional IOC with a single builder, traditionally a lot of communication frameworks (like Cairngorm in Adobe Flex or
+Redux in Javascript) use a single master bus for communication because this was easiest to understand.
 
-Just as each component looks through its ancestors one by one to find its dependencies, so each component communicates
-in Ringa by using bubbling events on the DOM. This means each component at any point in the DOM tree can both intercept
-and perform its own injections and *also* intercept all events.
+Just as each component looks through its ancestors one by one to find its dependencies, so in Ringa each component
+communicates by using bubbling events on the DOM. This means each component at any point in the DOM tree can both intercept
+and perform its own dependency injections and *also* intercept all events (e.g. by listening to the capture or bubble
+phase of an event meant for a descendant or an ancestor).
 
-This one-two punch of Ringa prepares your entire application to be as modular and extensible as possible.
+This one-two punch of Ringa of treating dependency injection and intercomponent communication using the same heirarchy
+prepares your entire application to be as modular and extensible as possible.
 
 ## Conclusion
 
@@ -285,9 +309,9 @@ to grow and I hope it can help your project be more successful.
 To summarize with an analogy:
 
 * Functional programming is hierarchical management where direct bosses are responsible for giving their employees
-exactly what they need.
+exactly what they need and keeping them from messing with anything other than what they are given.
 * Traditional IOC is a dictatorship where a single boss is responsible for giving out what each employee needs.
-* Ringa is flat management style with a hierarchical structure where employees are empowered to request for whatever
+* Ringa is flat priority style with a hierarchical management structure where employees are empowered to request whatever
 they need to get their job done and are responsible for going through each boss incrementally to get what they need.
 But each boss is also empowered to redirect their employees and shield them from upper management.
 
