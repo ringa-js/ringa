@@ -182,8 +182,8 @@ an inexperienced or poor developer is guaranteed to naturally create bugs in bot
 
 ## Inversion of Control (IOC)
 
-**Note: it is highly recommended that you read up a little on the concepts of inversion of control (IOC) before reading
-this section. A good overview, with analogies to functional programming, can be found n the article
+**Note: if you are not familiar with IOC, it is highly recommended that you read up a little on the concepts before reading
+this section. A good overview, with analogies to functional programming, can be found in the article
 [How to Trick OO Programmers into Loving Functional Programming](https://medium.com/easy-pieces-for-programmers/how-to-trick-oo-programmers-into-loving-functional-programming-7019e1bf9bba)**
 
 In traditional inversion of control, components use declarative measures to say what dependencies they need and generally
