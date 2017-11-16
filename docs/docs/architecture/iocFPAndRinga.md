@@ -200,7 +200,7 @@ caused a mutation in the render
 4. You do not have to create non-functioning container wrappers to subdivide your components and inject only the subset
 of the store you need
 
-One huge advantage of traditional IOC in OO programming is that a component can request a *type* of thing. If you build
+Another advantage of traditional IOC in OO programming is that a component can request a *type* of thing. If you build
 a modal window called `NewUserModal` that displays inputs for first name, last name, and email you could simply declare
 that the `NewUserModal` needs a `UserModel`. If you extend `UserModel` with the `SuperUserModel` and then add an instance
 of `SuperUserModel` to your builder then the builder will inject that into your `UserModal` and the user modal will not

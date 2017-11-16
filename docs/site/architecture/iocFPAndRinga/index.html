@@ -571,7 +571,7 @@ caused a mutation in the render</li>
 <li>You do not have to create non-functioning container wrappers to subdivide your components and inject only the subset
 of the store you need</li>
 </ol>
-<p>One huge advantage of traditional IOC in OO programming is that a component can request a <em>type</em> of thing. If you build
+<p>Another advantage of traditional IOC in OO programming is that a component can request a <em>type</em> of thing. If you build
 a modal window called <code>NewUserModal</code> that displays inputs for first name, last name, and email you could simply declare
 that the <code>NewUserModal</code> needs a <code>UserModel</code>. If you extend <code>UserModel</code> with the <code>SuperUserModel</code> and then add an instance
 of <code>SuperUserModel</code> to your builder then the builder will inject that into your <code>UserModal</code> and the user modal will not
