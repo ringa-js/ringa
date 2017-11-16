@@ -11,8 +11,8 @@ pages:
         - Hello World Tutorial: gettingStarted/helloWorld.md
         - Code Examples: gettingStarted/examples.md
     - Architecture:
-        - Lifecycle: architecture/lifecycle.md
         - Functional, IOC, and Ringa: architecture/iocFPAndRinga.md
+        - Lifecycle: architecture/lifecycle.md
         - Dependency Injection: architecture/dependencyInjection.md
         - Event System: architecture/events.md
         - Debugging *: architecture/debugging.md
