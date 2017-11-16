@@ -10,23 +10,19 @@ Right now Ringa JS is only used inside React applications, so you will almost al
 
     npm install -S ringa
     npm install -S react-ringa
-    
-To get started, you can use the [Ringa React Application Template](https://github.com/ringa-js/ringa-app-template).
-    
-Additionally, we recommend taking a look at:
+
+## Getting Started
 
 * [Hello World Tutorial](http://ringajs.com/gettingStarted/helloWorld/)
+* [Blank React Application Template](https://github.com/ringa-js/ringa-app-template)
 * [Chuck Norris Joke Loader](https://github.com/ringa-js/ringa-example-chuck-norris)
+* [TodoMVC](https://github.com/Saajan/ringa-todomvc)
 
 ## Links
 
 * **[Documentation](http://www.ringajs.com)**
-* **[Demo](http://demo.ringajs.com)**
-
-## Examples
-
-* [Chuck Norris Joke Loader](https://github.com/ringa-js/ringa-example-chuck-norris)
-* [TodoMVC](https://github.com/Saajan/ringa-todomvc)
+* **[Trello-like Demo](http://demo.ringajs.com)**
+* **[React Component Demo](http://react.ringajs.com)**
 
 ## Testing
 
