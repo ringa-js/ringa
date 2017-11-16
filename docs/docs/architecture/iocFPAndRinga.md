@@ -81,8 +81,8 @@ For our entire GUI to be pure functional, **each component in our view must**:
 
 On the surface, this seems fairly reasonable, but personally I see two large problems with this approach:
 
-1) Like an idealistic political narrative, every component and developer has to be fully committed to the approach
-2) Every tiny update forces potentially a ton of work that might not be necessary
+1. Like an idealistic political narrative, every component and developer has to be fully committed to the approach
+2. Every tiny update forces potentially a ton of work that might not be necessary
 
 At least in 2017, getting (1) to happen is a tall order especially if a developer wants to use a component available via
 something like the open-source community. Your components may be purely functional, but the ones you might depend on
@@ -193,13 +193,13 @@ choose to provide immutable objects to the components requesting them.
 
 Five huge advantage to IOC over the functional paradigm for GUI are:
 
-1) You eliminate the need for a single giant state store
-2) You do not have to iterate over every component in the GUI to check to see if the changed state might have
+1. You eliminate the need for a single giant state store
+2. You do not have to iterate over every component in the GUI to check to see if the changed state might have
 caused a mutation in the render
-3) You are not forced to duplicate the entire application state for a tiny change
-4) You do not have to create non-functioning container wrappers to subdivide your components and inject only the subset
+3. You are not forced to duplicate the entire application state for a tiny change
+4. You do not have to create non-functioning container wrappers to subdivide your components and inject only the subset
 of the store you need
-5) You do not have to have all your state stored in a single giant object
+5. You do not have to have all your state stored in a single giant object
 
 One huge advantage of traditional IOC in OO programming is that a component can request a *type* of thing. If you build
 a modal window called `NewUserModal` that displays inputs for first name, last name, and email you could simply declare

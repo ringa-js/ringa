@@ -474,8 +474,10 @@ principles?</p>
 <li>Not store any local state between renders </li>
 </ul>
 <p>On the surface, this seems fairly reasonable, but personally I see two large problems with this approach:</p>
-<p>1) Like an idealistic political narrative, every component and developer has to be fully committed to the approach
-2) Every tiny update forces potentially a ton of work that might not be necessary</p>
+<ol>
+<li>Like an idealistic political narrative, every component and developer has to be fully committed to the approach</li>
+<li>Every tiny update forces potentially a ton of work that might not be necessary</li>
+</ol>
 <p>At least in 2017, getting (1) to happen is a tall order especially if a developer wants to use a component available via
 something like the open-source community. Your components may be purely functional, but the ones you might depend on
 may not be.</p>
@@ -561,13 +563,15 @@ and can notify sets of components when their dependencies have changed.</p>
 providing properties to children but in a safe environment that eliminates side effects. After all, a builder could
 choose to provide immutable objects to the components requesting them.</p>
 <p>Five huge advantage to IOC over the functional paradigm for GUI are:</p>
-<p>1) You eliminate the need for a single giant state store
-2) You do not have to iterate over every component in the GUI to check to see if the changed state might have
-caused a mutation in the render
-3) You are not forced to duplicate the entire application state for a tiny change
-4) You do not have to create non-functioning container wrappers to subdivide your components and inject only the subset
-of the store you need
-5) You do not have to have all your state stored in a single giant object</p>
+<ol>
+<li>You eliminate the need for a single giant state store</li>
+<li>You do not have to iterate over every component in the GUI to check to see if the changed state might have
+caused a mutation in the render</li>
+<li>You are not forced to duplicate the entire application state for a tiny change</li>
+<li>You do not have to create non-functioning container wrappers to subdivide your components and inject only the subset
+of the store you need</li>
+<li>You do not have to have all your state stored in a single giant object</li>
+</ol>
 <p>One huge advantage of traditional IOC in OO programming is that a component can request a <em>type</em> of thing. If you build
 a modal window called <code>NewUserModal</code> that displays inputs for first name, last name, and email you could simply declare
 that the <code>NewUserModal</code> needs a <code>UserModel</code>. If you extend <code>UserModel</code> with the <code>SuperUserModel</code> and then add an instance
