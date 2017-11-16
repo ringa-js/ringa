@@ -76,10 +76,12 @@ end of the day nothing is 100% safe from side effects.
 
 But we can try...
 
-### Pure Functional Components
+## Pure Functional Components
 
 Is it possible and practical to solve the side-effect problem across an entire GUI application using functional programming
 principles?
+
+### Implementation
 
 For our entire GUI to be pure functional, **each component in our view must**:
 

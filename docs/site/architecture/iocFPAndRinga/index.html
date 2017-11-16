@@ -388,7 +388,10 @@
             
                 <li class="third-level"><a href="#functional-advantages">Functional Advantages</a></li>
             
-                <li class="third-level"><a href="#pure-functional-components">Pure Functional Components</a></li>
+        
+            <li class="second-level"><a href="#pure-functional-components">Pure Functional Components</a></li>
+            
+                <li class="third-level"><a href="#implementation">Implementation</a></li>
             
                 <li class="third-level"><a href="#pure-functional-problems">Pure Functional Problems</a></li>
             
@@ -473,9 +476,10 @@ completely pure. Even our web browser is full of side effects, as you cannot pre
 do. Heck, every end user now has access to a Javascript console and the DOM through browser developer tools so at the
 end of the day nothing is 100% safe from side effects.</p>
 <p>But we can try...</p>
-<h3 id="pure-functional-components">Pure Functional Components</h3>
+<h2 id="pure-functional-components">Pure Functional Components</h2>
 <p>Is it possible and practical to solve the side-effect problem across an entire GUI application using functional programming
 principles?</p>
+<h3 id="implementation">Implementation</h3>
 <p>For our entire GUI to be pure functional, <strong>each component in our view must</strong>:</p>
 <ul>
 <li>Get its properties passed from its parent</li>
