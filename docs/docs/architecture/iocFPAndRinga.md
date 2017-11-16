@@ -279,13 +279,13 @@ write functional code like this:
     }
     
     let a = () => {
-      this.output = 'I'm in A!';
+      this.output = "I'm in A!";
 
       b();
     }
     
     let c = () => {
-      this.output = 'I'm in C!';
+      this.output = "I'm in C!";
 
       b();
       a();
