@@ -133,7 +133,7 @@
                         
                             
 <li >
-    <a href="architecture/events/">Event System *</a>
+    <a href="architecture/iocFPAndRinga/">Functional, IOC, and Ringa</a>
 </li>
 
                         
@@ -145,7 +145,19 @@
                         
                             
 <li >
+    <a href="architecture/events/">Event System</a>
+</li>
+
+                        
+                            
+<li >
     <a href="architecture/debugging/">Debugging *</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="architecture/performance/">Performance</a>
 </li>
 
                         
@@ -167,12 +179,6 @@
                             
 <li >
     <a href="plugins/reactRinga/">react-ringa</a>
-</li>
-
-                        
-                            
-<li >
-    <a href="plugins/inspector/">Inspector *</a>
 </li>
 
                         
@@ -374,6 +380,9 @@
     
         <li class="first-level active"><a href="#welcome-to-ringa-js">Welcome to Ringa JS!</a></li>
         
+            <li class="second-level"><a href="#latest-stable-versions">Latest Stable Versions</a></li>
+            
+        
             <li class="second-level"><a href="#plugins">Plugins</a></li>
             
         
@@ -390,9 +399,6 @@
             
         
             <li class="second-level"><a href="#installation">Installation</a></li>
-            
-        
-            <li class="second-level"><a href="#latest-versions">Latest Versions</a></li>
             
         
             <li class="second-level"><a href="#minified-gzipped-size">Minified + GZipped Size</a></li>
@@ -428,8 +434,15 @@
 <li>Core focus on performance, modularity, and scalability</li>
 <li>Zero dependencies on any other frameworks (pure JS)</li>
 </ul>
+<p><a href="architecture/iocFPAndRinga/">Click here for an architectural overview and a "why the hell did you make this" explanation.</a></p>
+<h2 id="latest-stable-versions">Latest Stable Versions</h2>
+<ul>
+<li><a href="http://www.github.com/ringa-js/ringa">ringa <img src="https://img.shields.io/npm/v/ringa.svg"/></a></li>
+<li><a href="http://www.github.com/ringa-js/react-ringa">react-ringa <img src="https://img.shields.io/npm/v/react-ringa.svg"/></a></li>
+<li><a href="http://www.github.com/ringa-js/ringa-fw-react">ringa-fw-react <img src="https://img.shields.io/npm/v/ringa-fw-react.svg"/></a></li>
+</ul>
 <h2 id="plugins">Plugins</h2>
-<p>Ringa JS integrates with your React application through the <strong><a href="docs/reactRinga.md"><code>react-ringa</code></a></strong> plugin.</p>
+<p>Ringa JS integrates with your React application through the <strong><a href="plugins/reactRinga/"><code>react-ringa</code></a></strong> plugin.</p>
 <p><strong><code>react-ringa</code> is compatible with React 16 Fiber and React 15</strong>.</p>
 <h2 id="react-component-library">React Component Library</h2>
 <p><a href="http://react.ringajs.com/">Demonstration</a></p>
@@ -513,15 +526,6 @@ by giving you all the features you need in one place through a unified framework
 <h2 id="installation">Installation</h2>
 <ul>
 <li><code>npm install --save-dev ringa</code> - Install Ringa JS into your project</li>
-</ul>
-<h2 id="latest-versions">Latest Versions</h2>
-<ul>
-<li>
-<p>ringa <a href="http://www.github.com/joshjung/ringa"><img src="https://img.shields.io/npm/v/ringa.svg"/></a></p>
-</li>
-<li>
-<p>react-ringa <a href="http://www.github.com/joshjung/react-ringa"><img src="https://img.shields.io/npm/v/react-ringa.svg"/></a></p>
-</li>
 </ul>
 <h2 id="minified-gzipped-size">Minified + GZipped Size</h2>
 <ul>
@@ -613,6 +617,6 @@ by giving you all the features you need in one place through a unified framework
 </html>
 
 <!--
-MkDocs version : 0.16.3
-Build Date UTC : 2017-11-08 23:50:05
+MkDocs version : 0.15.2
+Build Date UTC : 2017-11-16 04:59:22.260413
 -->

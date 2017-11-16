@@ -12,9 +12,17 @@ Ringa JS is an enterprise single page application (SPA) framework that provides:
 * Core focus on performance, modularity, and scalability
 * Zero dependencies on any other frameworks (pure JS)
 
+[Click here for an architectural overview and a "why the hell did you make this" explanation.](/architecture/iocFPAndRinga.md)
+
+## Latest Stable Versions
+
+* [ringa <img src="https://img.shields.io/npm/v/ringa.svg"/>](http://www.github.com/ringa-js/ringa)
+* [react-ringa <img src="https://img.shields.io/npm/v/react-ringa.svg"/>](http://www.github.com/ringa-js/react-ringa)
+* [ringa-fw-react <img src="https://img.shields.io/npm/v/ringa-fw-react.svg"/>](http://www.github.com/ringa-js/ringa-fw-react)
+
 ## Plugins
 
-Ringa JS integrates with your React application through the **[`react-ringa`](docs/reactRinga.md)** plugin.
+Ringa JS integrates with your React application through the **[`react-ringa`](/plugins/reactRinga.md)** plugin.
 
 **`react-ringa` is compatible with React 16 Fiber and React 15**.
 
@@ -71,12 +79,6 @@ IE 10 needs work because it does not recognize `__proto__`.
 ## Installation
 
 * `npm install --save-dev ringa` - Install Ringa JS into your project
-
-## Latest Versions
-
-* ringa [<img src="https://img.shields.io/npm/v/ringa.svg"/>](http://www.github.com/joshjung/ringa)
-
-* react-ringa [<img src="https://img.shields.io/npm/v/react-ringa.svg"/>](http://www.github.com/joshjung/react-ringa)
 
 ## Minified + GZipped Size
 

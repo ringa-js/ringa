@@ -8,7 +8,7 @@
     <meta name="author" content="Joshua Jung">  
     <link rel="shortcut icon" href="../../img/favicon.ico">
 
-    <title>Event System * - Ringa JS</title>
+    <title>Event System - Ringa JS</title>
 
     <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
@@ -131,8 +131,8 @@
 
                         
                             
-<li class="active">
-    <a href="./">Event System *</a>
+<li >
+    <a href="../iocFPAndRinga/">Functional, IOC, and Ringa</a>
 </li>
 
                         
@@ -143,8 +143,20 @@
 
                         
                             
+<li class="active">
+    <a href="./">Event System</a>
+</li>
+
+                        
+                            
 <li >
     <a href="../debugging/">Debugging *</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../performance/">Performance</a>
 </li>
 
                         
@@ -166,12 +178,6 @@
                             
 <li >
     <a href="../../plugins/reactRinga/">react-ringa</a>
-</li>
-
-                        
-                            
-<li >
-    <a href="../../plugins/inspector/">Inspector *</a>
 </li>
 
                         
@@ -374,12 +380,77 @@
         <li class="first-level active"><a href="#events">Events</a></li>
         
     
+        <li class="first-level "><a href="#1-dispatching">1. Dispatching</a></li>
+        
+    
+        <li class="first-level "><a href="#dispatch">dispatch()</a></li>
+        
+    
+        <li class="first-level "><a href="#2-then-and-catch">2. then and catch</a></li>
+        
+    
+        <li class="first-level "><a href="#3-debugging">3. Debugging</a></li>
+        
+    
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="events">Events</h1>
-<p>Over the lifecycle of any new framework new patterns evolve in how components can communicate to each other.</p></div>
+<h2 id="events">Events</h2>
+<p>All communication in Ringa occurs between <code>Controller</code> instances via <code>Bus</code> objects.</p>
+<p>For busses, you have one of two options:</p>
+<p>1) The DOM <code>CustomEvent</code> bubbling event system.
+2) A recreation of the DOM bubbling event system via the Ringa <code>Bus</code> (for server-side or custom implementations).</p>
+<p>Internally all events in Ringa are wrapped with the <code>RingaEvent</code> object, which has methods like <code>then</code> and <code>catch</code>
+so that events can work like <code>Promises</code>.</p>
+<p><strong>Note: The term <code>bus</code> is often used in the Ringa documentation. Both a DOM node and the Ringa <code>Bus</code> objects are valid "bus" objects and are treated identically within Ringa.</strong> </p>
+<h2 id="1-dispatching">1. Dispatching</h2>
+<h2 id="dispatch"><code>dispatch()</code></h2>
+<pre><code>dispatch(eventType, detail, bus, bubbles = true, cancellable = true, requireCatch = true)
+</code></pre>
+<ul>
+<li><code>eventType</code>: a String event type</li>
+<li><code>detail</code>: the detail Object</li>
+<li><code>bus</code>: a Ringa <code>Bus</code> object or a DOM node (e.g. like <code>document</code> or a <code>div</code>)</li>
+<li><code>bubbles</code>: whether to allow the event to bubble to ancestor busses (DOM nodes in browser)</li>
+<li><code>cancellable</code>: whether to allow the event to be cancelled (not yet implemented)</li>
+<li>
+<p><code>requireCatch</code>: show a warning in the console if the event is not caught by a Ringa <code>Controller</code></p>
+<p>import {dispatch} from 'ringa';</p>
+<p>let ringaEvent = dispatch('doSomething', {
+  text: 'this is the event detail object, injectable via $detail'
+}, document);</p>
+</li>
+</ul>
+<p>In this example, we are using the browser <code>document</code> as the bus so any <code>Controller</code> objects listening for <code>"doSomething"</code>
+will respond.</p>
+<h2 id="2-then-and-catch">2. <code>then</code> and <code>catch</code></h2>
+<p><code>RingaEvent</code> objects act like promises. Goal is full implementation of the Promise API:</p>
+<pre><code>import {dispatch} from 'ringa';
+
+let ringaEvent = dispatch('doSomething', {
+  text: 'this is the event detail object, injectable via $detail'
+}, document);
+
+ringaEvent.then(() =&gt; {});
+ringaEvent.catch(() =&gt; {});
+</code></pre>
+<p>Note that <code>then</code> and <code>catch</code> fully implement the injection mechanism and you can inject any Ringa variables to the function
+arguments:</p>
+<pre><code>let ringaEvent = dispatch('doSomething', {
+    text: 'Hej Ringa!'
+  }, document).then(text =&gt; {
+    console.log(text); // Hey Ringa!
+  });
+</code></pre>
+<h2 id="3-debugging">3. Debugging</h2>
+<p>If you set <code>debug</code> to <code>true</code> in a <code>RingaEvent</code> detail (and you are in <code>__DEV__</code> mode), you can get some additional console
+output about the events lifecycle:</p>
+<pre><code>let ringaEvent = dispatch('doSomething', {
+    debug: true
+  }, document)
+</code></pre>
+<p>`</p></div>
         
     </div>
 

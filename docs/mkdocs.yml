@@ -12,13 +12,14 @@ pages:
         - Code Examples: gettingStarted/examples.md
     - Architecture:
         - Lifecycle: architecture/lifecycle.md
-        - Event System *: architecture/events.md
+        - Functional, IOC, and Ringa: architecture/iocFPAndRinga.md
         - Dependency Injection: architecture/dependencyInjection.md
+        - Event System: architecture/events.md
         - Debugging *: architecture/debugging.md
+        - Performance: architecture/performance.md
         - Building Component Libraries *: architecture/buildingComponentLibraries.md
     - Plugins:
         - react-ringa: plugins/reactRinga.md
-        - Inspector *: plugins/inspector.md
     - Docs:
         - Index: docs/index.md
         - RingaObject *: docs/ringaObject.md
