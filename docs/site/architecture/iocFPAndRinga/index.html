@@ -575,8 +575,9 @@ of the store you need</li>
 a modal window called <code>NewUserModal</code> that displays inputs for first name, last name, and email you could simply declare
 that the <code>NewUserModal</code> needs a <code>UserModel</code>. If you extend <code>UserModel</code> with the <code>SuperUserModel</code> and then add an instance
 of <code>SuperUserModel</code> to your builder then the builder will inject that into your <code>UserModal</code> and the user modal will not
-give one damn. It will just use the properties it needs from <code>UserModal</code> and not care about any super features added to
-<code>SuperUserModel</code>. This is one great way of future-proofing code and creating new types without breaking old GUI components.</p>
+give one damn. It will just use the properties it needs from the <code>UserModel</code> base class and not care about any super
+features added. This is one great way of future-proofing code and creating new type extensions without breaking old GUI
+components.</p>
 <p>That said, in GUI systems the traditional IOC with a <em>single</em> builder has huge downsides as well.</p>
 <p>The biggest downside is when an application starts to use libraries or third-party components. Or if you need to have a
 subset of your application function differently than the rest.</p>

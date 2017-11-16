@@ -204,8 +204,9 @@ Another advantage of traditional IOC in OO programming is that a component can r
 a modal window called `NewUserModal` that displays inputs for first name, last name, and email you could simply declare
 that the `NewUserModal` needs a `UserModel`. If you extend `UserModel` with the `SuperUserModel` and then add an instance
 of `SuperUserModel` to your builder then the builder will inject that into your `UserModal` and the user modal will not
-give one damn. It will just use the properties it needs from `UserModal` and not care about any super features added to
-`SuperUserModel`. This is one great way of future-proofing code and creating new types without breaking old GUI components.
+give one damn. It will just use the properties it needs from the `UserModel` base class and not care about any super
+features added. This is one great way of future-proofing code and creating new type extensions without breaking old GUI
+components.
 
 That said, in GUI systems the traditional IOC with a *single* builder has huge downsides as well.
 
