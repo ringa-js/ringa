@@ -273,18 +273,26 @@ Another way to think about this might be to compare it to the stack in programmi
 write functional code like this:
 
     let b = () => {
-      let x = findFirstInStack('x');
+      let output = findInStack('output');
       
-      console.log(x); // Should output 1 but ONLY when called from a()!
+      console.log(output); // Should output 1 when called from a() and output 2 when called directly from c()
     }
     
     let a = () => {
-      this.x = 1;
+      this.output = 'I'm in A!';
 
       b();
     }
     
-    a();
+    let c = () => {
+      this.output = 'I'm in C!';
+
+      b();
+      a();
+    }
+    
+    c(); // I'm in C!
+         // I'm in A!
 
 In this scenario, the b() function could exist at any depth in the stack and rather than passing properties through as
 arguments, it would search up through the stack to find the first location where x is saved and then use that instead.

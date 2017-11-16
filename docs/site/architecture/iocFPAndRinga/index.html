@@ -634,18 +634,26 @@ dependencies and the root node functions as a traditional builder in an IOC syst
 <p>Another way to think about this might be to compare it to the stack in programming. Imagine for a moment if you could
 write functional code like this:</p>
 <pre><code>let b = () =&gt; {
-  let x = findFirstInStack('x');
+  let output = findInStack('output');
 
-  console.log(x); // Should output 1 but ONLY when called from a()!
+  console.log(output); // Should output 1 when called from a() and output 2 when called directly from c()
 }
 
 let a = () =&gt; {
-  this.x = 1;
+  this.output = 'I'm in A!';
 
   b();
 }
 
-a();
+let c = () =&gt; {
+  this.output = 'I'm in C!';
+
+  b();
+  a();
+}
+
+c(); // I'm in C!
+     // I'm in A!
 </code></pre>
 <p>In this scenario, the b() function could exist at any depth in the stack and rather than passing properties through as
 arguments, it would search up through the stack to find the first location where x is saved and then use that instead.</p>
