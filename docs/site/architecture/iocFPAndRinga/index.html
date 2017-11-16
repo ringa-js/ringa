@@ -392,13 +392,16 @@
             
                 <li class="third-level"><a href="#pure-functional-problems">Pure Functional Problems</a></li>
             
-                <li class="third-level"><a href="#inversion-of-control-ioc">Inversion of Control (IOC)</a></li>
+        
+            <li class="second-level"><a href="#inversion-of-control-ioc">Inversion of Control (IOC)</a></li>
             
                 <li class="third-level"><a href="#ioc-tree-structure-no-side-effects-ringa">IOC + Tree Structure + No Side Effects = Ringa</a></li>
             
-                <li class="third-level"><a href="#ringa-inversion-of-control-tree">Ringa: Inversion of Control Tree</a></li>
+        
+            <li class="second-level"><a href="#ringa-inversion-of-control-tree">Ringa: Inversion of Control Tree</a></li>
             
-                <li class="third-level"><a href="#ringa-tree-communication">Ringa: Tree Communication</a></li>
+        
+            <li class="second-level"><a href="#ringa-tree-communication">Ringa: Tree Communication</a></li>
             
         
             <li class="second-level"><a href="#conclusion">Conclusion</a></li>
@@ -554,7 +557,7 @@ in that new domain to avoid a whole new set of bugs.</p>
 <p>As always, developer diligence and some best practice principles are required whether you choose functional or
 imperative style of programming. Neither functional nor imperative programming is better, they are just different and
 an inexperienced or poor developer is guaranteed to naturally create bugs in both.</p>
-<h3 id="inversion-of-control-ioc">Inversion of Control (IOC)</h3>
+<h2 id="inversion-of-control-ioc">Inversion of Control (IOC)</h2>
 <p><strong>Note: it is highly recommended that you read up a little on the concepts of inversion of control (IOC) before reading
 this section. A good overview, with analogies to functional programming, can be found n the article
 <a href="https://medium.com/easy-pieces-for-programmers/how-to-trick-oo-programmers-into-loving-functional-programming-7019e1bf9bba">How to Trick OO Programmers into Loving Functional Programming</a></strong></p>
@@ -617,7 +620,7 @@ come in and it does not know which grid is in which section of the application.<
 <li>Provided a set of debugging tools that helped you find how all your injections are wired together</li>
 </ul>
 <p>There is and welcome to Ringa.</p>
-<h3 id="ringa-inversion-of-control-tree">Ringa: Inversion of Control Tree</h3>
+<h2 id="ringa-inversion-of-control-tree">Ringa: Inversion of Control Tree</h2>
 <p>Ringa is more than a typical inversion of control system. It uses the natural DOM tree to layer your dependency injections.</p>
 <p>Each component in your GUI tree declares its dependencies. Then during runtime, each component steps through its parents
 one by one looking for the <em>closest</em> dependency it can find that meets its needs. In this way I even hesitate to call it
@@ -660,7 +663,7 @@ DOM tree, you can break them out into new libraries easily starting at that root
 much harder in a functional programming or traditional IOC context.</p>
 <p>Each <code>Controller</code> in Ringa can be attached anywhere on your DOM tree and by default provides all of its child models,
 by Class type(s), by id, or by name to any of that nodes descendants.</p>
-<h3 id="ringa-tree-communication">Ringa: Tree Communication</h3>
+<h2 id="ringa-tree-communication">Ringa: Tree Communication</h2>
 <p>In addition, Ringa goes far beyond dependency injection because it uses the DOM tree for all communication. Just like
 traditional IOC with a single builder, traditionally a lot of communication frameworks (like Cairngorm in Adobe Flex or
 Redux in Javascript) use a single master bus for communication because this was easiest to understand.</p>

@@ -178,7 +178,7 @@ As always, developer diligence and some best practice principles are required wh
 imperative style of programming. Neither functional nor imperative programming is better, they are just different and
 an inexperienced or poor developer is guaranteed to naturally create bugs in both.
 
-### Inversion of Control (IOC)
+## Inversion of Control (IOC)
 
 **Note: it is highly recommended that you read up a little on the concepts of inversion of control (IOC) before reading
 this section. A good overview, with analogies to functional programming, can be found n the article
@@ -257,7 +257,7 @@ What if there was a single Javascript library that:
 
 There is and welcome to Ringa.
 
-### Ringa: Inversion of Control Tree
+## Ringa: Inversion of Control Tree
 
 Ringa is more than a typical inversion of control system. It uses the natural DOM tree to layer your dependency injections.
 
@@ -309,7 +309,7 @@ much harder in a functional programming or traditional IOC context.
 Each `Controller` in Ringa can be attached anywhere on your DOM tree and by default provides all of its child models,
 by Class type(s), by id, or by name to any of that nodes descendants.
 
-### Ringa: Tree Communication
+## Ringa: Tree Communication
 
 In addition, Ringa goes far beyond dependency injection because it uses the DOM tree for all communication. Just like
 traditional IOC with a single builder, traditionally a lot of communication frameworks (like Cairngorm in Adobe Flex or
