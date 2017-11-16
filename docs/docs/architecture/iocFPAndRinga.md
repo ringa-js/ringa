@@ -265,8 +265,8 @@ Ringa is more than a typical inversion of control system. It uses the natural DO
 
 Each component in your GUI tree declares its dependencies. Then during runtime, each component steps through its parents
 one by one looking for the *closest* dependency it can find that meets its needs. In this way I even hesitate to call it
-dependency *injection*. It is a form of version control but where an algorithm is used starting at the dependent node to
-find what it needs. In this way, by default every node in the tree will look all the way to the root node for its
+dependency *injection*. It is a form of inversion of control but where an algorithm is used starting at the dependent
+node to find what it needs. In this way, by default every node in the tree will look all the way to the root node for its
 dependencies and the root node functions as a traditional builder in an IOC system.
 
 Another way to think about this might be to compare it to the stack in programming. Imagine for a moment if you could
