@@ -218,11 +218,11 @@ of the store you need
 
 Another advantage of traditional IOC in OO programming is that a component can request a *type* of thing. If you build
 a modal window called `NewUserModal` that displays inputs for first name, last name, and email you could simply declare
-that the `NewUserModal` needs a `UserModel`. If you extend `UserModel` with the `SuperUserModel` and then add an instance
-of `SuperUserModel` to your builder then the builder will inject that into your `UserModal` and the user modal will not
-give one damn. It will just use the properties it needs from the `UserModel` base class and not care about any super
-features added. This is one great way of future-proofing code and creating new type extensions without breaking old GUI
-components.
+that the `NewUserModal` has a dependency on the `UserModel`. If you extend `UserModel` with the `SuperUserModel` and
+then add an instance of `SuperUserModel` to your builder then the builder will inject that into your `NewUserModal` and
+the user modal will not care that it is a subclass. It will just use the properties it needs from the `UserModel` base
+class and ignore any super features added. This is one great way of future-proofing code and creating new type extensions
+without breaking old GUI components.
 
 That said, in GUI systems the traditional IOC with a *single* builder has huge downsides as well.
 
@@ -230,13 +230,13 @@ The biggest downside is when an application starts to use libraries or third-par
 subset of your application function differently than the rest.
 
 Take for example a simple scenario where I want to use IOC and I want to display two Data Grids on the screen at one time.
-Let's also says that these data grids are from an external library and declare they both need a `DataGridModel`. How will my IOC
-builder know *which* data grid model to inject into each one? Well this will depend on which part of the GUI tree each
-grid exists within. Perhaps one grid is in the `UserListContainer` section and the other is in the `TransactionsListContainer`
-section of your application.
+Let's also says that these data grids are from an external library and declare they both need a `DataGridModel`. How will
+my IOC builder know *which* data grid model to inject into each one? Well this will depend on which part of the GUI tree
+each grid exists within. Perhaps one grid is in the `UserListContainer` section and the other is in the
+`TransactionsListContainer` section of your application.
 
-Obviously a single root builder is fairly naive to what is going on. All it sees is two requests for a `DataGridModel` come
-in and it does not know which grid is in which section of the application.
+Obviously a single root builder is fairly naive to what is going on. All it sees is two requests for a `DataGridModel`
+come in and it does not know which grid is in which section of the application.
 
 If only there was an IOC solution that worked with the DOM tree in an intelligent way to resolve these scenarios...
 
@@ -258,10 +258,33 @@ There is and welcome to Ringa.
 
 Ringa is more than a typical inversion of control system. It uses the natural DOM tree to layer your dependency injections.
 
-Each component in your GUI tree declares its dependencies. Then during runtime, each node steps through its parents one by one
-looking for the *closest* dependency it can find that meets its needs. In this way, by default every node in the tree
-will look all the way to the root node for its dependencies and the root node functions as a traditional builder in an
-IOC system.
+Each component in your GUI tree declares its dependencies. Then during runtime, each component steps through its parents
+one by one looking for the *closest* dependency it can find that meets its needs. In this way I even hesitate to call it
+dependency *injection*. It is a form of version control but where an algorithm is used starting at the dependent node to
+find what it needs. In this way, by default every node in the tree will look all the way to the root node for its
+dependencies and the root node functions as a traditional builder in an IOC system.
+
+Another way to think about this might be to compare it to the stack in programming. Imagine for a moment if you could
+write functional code like this:
+
+    let b = () => {
+      let x = findFirstInStack('x');
+      
+      console.log(x); // Should output 1 but ONLY when called from a()!
+    }
+    
+    let a = () => {
+      this.x = 1;
+
+      b();
+    }
+    
+    a();
+
+In this scenario, the b() function could exist at any depth in the stack and rather than passing properties through as
+arguments, it would search up through the stack to find the first location where x is saved and then use that instead.
+
+This is what Ringa does in your GUI.
 
 However, as your program grows, you can customize individual subtrees in your application by providing new models at key nodes
 in your tree. For example, you could decide that rather than having a single `DataGridModel` provided at the root of
