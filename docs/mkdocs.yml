@@ -7,9 +7,9 @@ theme_dir: cinder
 pages:
     - Home: index.md
     - Get Started:
-        - Live Demo: gettingStarted/demo.md
         - Hello World Tutorial: gettingStarted/helloWorld.md
-        - Code Examples: gettingStarted/examples.md
+        - Examples: gettingStarted/examples.md
+        - Full Application Demo: gettingStarted/demo.md
     - Architecture:
         - Functional, IOC, and Ringa: architecture/iocFPAndRinga.md
         - Lifecycle: architecture/lifecycle.md
@@ -45,7 +45,6 @@ pages:
         - Checkbox *: reactLibrary/Checkbox.md
         - Dropdown *: reactLibrary/Dropdown.md
         - TabNavigator *: reactLibrary/tabNavigator.md
-    - Links: links.md
 extra_css: [extra.css]
 repo_url: https://github.com/joshjung/ringa
 include_next_prev: false

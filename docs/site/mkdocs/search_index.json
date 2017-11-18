@@ -2,18 +2,18 @@
     "docs": [
         {
             "location": "/", 
-            "text": "Welcome to Ringa JS!\n\n\nRinga JS is an enterprise single page application (SPA) framework that provides:\n\n\n\n\nMV* Architecture\n\n\nState Management\n\n\nObserver Pattern\n\n\nDependency Injection\n\n\nAsynchronous Toolset\n\n\nError Management\n\n\nSingle communication paradigm between all components that depends only on the browser\n\n\nCore focus on performance, modularity, and scalability\n\n\nZero dependencies on any other frameworks (pure JS)\n\n\n\n\nClick here for an architectural overview and a \"why the hell did you make this\" explanation.\n\n\nLatest Stable Versions\n\n\n\n\nringa \n\n\nreact-ringa \n\n\nringa-fw-react \n\n\n\n\nPlugins\n\n\nRinga JS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nreact-ringa\n is compatible with React 16 Fiber and React 15\n.\n\n\nReact Component Library\n\n\nDemonstration\n\n\nI am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:\n\n\n\n\nTooltips\n\n\nDrag and Drop\n\n\nList\n\n\nForm\n\n\nDropdown\n\n\nData Grid\n\n\nModals\n\n\nOverlays\n\n\nand much, much more\n\n\n\n\nStay tuned for more information! This should be available by end of 2017.\n\n\nComparisons\n\n\nRinga JS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa is designed to entirely replace your current mix of dozens of libraries and plugins.\n\n\nIn today's world hooking together a collection of small libraries (e.g. one for state management and another for promise management and another for observer pattern, etc.) can be quite frustrating. It is especially frustrating if you know that you will need to train a new developer in your unique mix of code. Ringa JS is designed to alleviate these problems\nby giving you all the features you need in one place through a unified framework.\n\n\nThis chart is subject to update. There are a lot of libraries out there and I may have missed some or their capabilities. If I missed something, let me know! \n\n\n\n\n\n\n\n\nProject\n\n\nState Management\n\n\nObserver Pattern\n\n\nDependency Injection\n\n\nAsynchronous Tools\n\n\nError Handling\n\n\nHandles DOM Events\n\n\nUnit Test Ready\n\n\n\n\n\n\n\n\n\n\nRinga\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nComing Soon\n\n\n\n\n\n\nRedux\n\n\nYes\n\n\nNo\n\n\nNo\n\n\nYes\n *\n\n\nNo\n\n\nNo\n\n\nYes\n\n\n\n\n\n\nMobX\n\n\nYes\n\n\nYes\n\n\nNo\n\n\nNo\n\n\nNo\n\n\nNo\n\n\nYes\n\n\n\n\n\n\n\n\n* With plugin usage.\n\n\nRequirements\n\n\nRinga JS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available).\n\n\nCompatibility\n\n\n\n\nChrome\n\n\nFirefox\n\n\nSafari\n\n\nIE 11+\n\n\nEdge\n\n\nNative Node (through use of the Ringa \nBus\n instead of DOM nodes)\n\n\n\n\nIE 10 needs work because it does not recognize \n__proto__\n.\n\n\nInstallation\n\n\n\n\nnpm install --save-dev ringa\n - Install Ringa JS into your project\n\n\n\n\nMinified + GZipped Size\n\n\n\n\nringa\n: \n~29.5kb\n\n\nreact-ringa\n: \n2.7kb\n\n\n\n\nTesting and Coverage\n\n\nnpm run test\n\n\nRinga JS currently has 208 unit tests to ensure its core features are running smoothly.\n\n\nOur goal is 100% coverage so there is a little work to do!\n\n\n\n\nWhen should I use it?\n\n\nRingaJS is right for you if you:\n\n\n\n\nHate Boilerplate Code\n\n\nNeed seamless integration between components in a large library and across various versions\n\n\nWant to simplify complex chains of asynchronous code\n\n\nWant simple communication between all your components\n\n\nWant to break your enterprise application into manageable submodules\n\n\nWant to avoid singletons\n\n\nAre not sure what your final UX is going to be and want completely painless refactoring next year\n\n\nWant to be able to pass your codebase to other developers and have the entire thing be easily understood\n\n\nWant to know your application can scale from a prototype to enterprise with little refactoring\n\n\n\n\nBackground\n\n\nThe concepts of Ringa JS were originally developed around 2010 for Adobe Flex and used on a dozen enterprise applications. Since the death of Flash, I had tossed around the idea of rewriting them for Javascript.\n\n\nI built the current version of Ringa JS in my spare time the last year to improve my own development speed and out of sheer frustration at every single major state and asynchronous library on the market.\n\n\nSo far it is working super well and is highly performant on several large-scale applications. More details to come soon as the project grows!\n\n\nContributors and Contact\n\n\nIf you want to contribute, or want to ask questions, feel free to reach out. As of November, 2017 the project is under heavy active daily development:\n\n\n\n\nJoshua Jung - Project Owner\n\n\nThomas Yarnall\n\n\nJimmy Schwarzenberger\n\n\nSaajan Sn\n\n\nNaomi Mathews\n\n\nMarcus Folkeryd", 
+            "text": "Ringa JS: State and Asynchronous Framework\n\n\nRinga JS is a single page application framework designed for ES6+ that provides:\n\n\n\n\nMV*\n\n\nState Management using observer pattern and dependency Injection\n\n\nComposable asynchronous toolset\n\n\nTree-based algorithms for both communication and dependency management\n\n\n\n\nClick here for an architectural overview\n\n\nStable Versions\n\n\n\n\nringa \n\n\nreact-ringa \n\n\nringa-fw-react \n\n\n\n\nPlugins\n\n\nRinga JS integrates with your React application through the \nreact-ringa\n plugin.\n\n\nreact-ringa\n is compatible with React 16 Fiber and React 15\n.\n\n\nReact Component Library\n\n\nWe are currently in the process of developing a large library of React components based on Ringa.\n\n\nDemonstration and Documentation\n\n\nComparisons\n\n\nHooking together a collection of numerous libraries can be quite frustrating. Especially if you know that you will need to train a new developer in your unique mix of code. Our goal with Ringa JS to provide everything you need in one place.\n\n\nThis chart is subject to update. There are a lot of libraries out there and I may have missed some or their capabilities. If I missed something, let me know! \n\n\n\n\n\n\n\n\nProject\n\n\nState Management\n\n\nObserver Pattern\n\n\nDependency Injection\n\n\nAsynchronous Tools\n\n\nError Handling\n\n\nListens to DOM Events\n\n\nUnit Test Ready\n\n\n\n\n\n\n\n\n\n\nRinga\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nYes\n\n\nComing Soon\n\n\n\n\n\n\nRedux\n\n\nYes\n\n\nNo\n\n\nNo\n\n\nYes\n *\n\n\nNo\n\n\nNo\n\n\nYes\n\n\n\n\n\n\nMobX\n\n\nYes\n\n\nYes\n\n\nNo\n\n\nNo\n\n\nNo\n\n\nNo\n\n\nYes\n\n\n\n\n\n\n\n\n* With plugin usage.\n\n\nCompatibility\n\n\nAll major modern browsers are support, starting with IE 11.\n\n\nSize\n\n\n\n\nringa\n: \n~29.5kb gzipped\n\n\nreact-ringa\n: \n2.7kb gzipped\n\n\nringa-fw-react\n: \n47kb gzipped\n\n\n\n\nBackground\n\n\nThe concepts of Ringa JS were originally developed around 2010 for Adobe Flex and used on a dozen enterprise applications. Since the death of Flash, I had tossed around the idea of rewriting them for Javascript.\n\n\nI built the current version of Ringa JS in my spare time the last year to improve my own development speed and out of sheer frustration at every single major state and asynchronous library on the market.\n\n\nSo far it is working super well and is highly performant on several large-scale applications. More details to come soon as the project grows!\n\n\nContributors and Contact\n\n\nIf you want to contribute, or want to ask questions, feel free to reach out. As of November, 2017 the project is under heavy active daily development:\n\n\n\n\nJoshua Jung - Project Owner\n\n\nThomas Yarnall\n\n\nJimmy Schwarzenberger\n\n\nSaajan Sn\n\n\nNaomi Mathews\n\n\nMarcus Folkeryd", 
             "title": "Home"
         }, 
         {
-            "location": "/#welcome-to-ringa-js", 
-            "text": "Ringa JS is an enterprise single page application (SPA) framework that provides:   MV* Architecture  State Management  Observer Pattern  Dependency Injection  Asynchronous Toolset  Error Management  Single communication paradigm between all components that depends only on the browser  Core focus on performance, modularity, and scalability  Zero dependencies on any other frameworks (pure JS)   Click here for an architectural overview and a \"why the hell did you make this\" explanation.", 
-            "title": "Welcome to Ringa JS!"
+            "location": "/#ringa-js-state-and-asynchronous-framework", 
+            "text": "Ringa JS is a single page application framework designed for ES6+ that provides:   MV*  State Management using observer pattern and dependency Injection  Composable asynchronous toolset  Tree-based algorithms for both communication and dependency management   Click here for an architectural overview", 
+            "title": "Ringa JS: State and Asynchronous Framework"
         }, 
         {
-            "location": "/#latest-stable-versions", 
+            "location": "/#stable-versions", 
             "text": "ringa   react-ringa   ringa-fw-react", 
-            "title": "Latest Stable Versions"
+            "title": "Stable Versions"
         }, 
         {
             "location": "/#plugins", 
@@ -22,43 +22,23 @@
         }, 
         {
             "location": "/#react-component-library", 
-            "text": "Demonstration  I am currently in the process of developing a large library of React components based on Ringa. The end goal is to have all the components you could possibly need to build a high-quality React application in one place:   Tooltips  Drag and Drop  List  Form  Dropdown  Data Grid  Modals  Overlays  and much, much more   Stay tuned for more information! This should be available by end of 2017.", 
+            "text": "We are currently in the process of developing a large library of React components based on Ringa.  Demonstration and Documentation", 
             "title": "React Component Library"
         }, 
         {
             "location": "/#comparisons", 
-            "text": "Ringa JS is an all-in-one solution that can be used alongside your current state management / asynchronous library. However, Ringa is designed to entirely replace your current mix of dozens of libraries and plugins.  In today's world hooking together a collection of small libraries (e.g. one for state management and another for promise management and another for observer pattern, etc.) can be quite frustrating. It is especially frustrating if you know that you will need to train a new developer in your unique mix of code. Ringa JS is designed to alleviate these problems\nby giving you all the features you need in one place through a unified framework.  This chart is subject to update. There are a lot of libraries out there and I may have missed some or their capabilities. If I missed something, let me know!      Project  State Management  Observer Pattern  Dependency Injection  Asynchronous Tools  Error Handling  Handles DOM Events  Unit Test Ready      Ringa  Yes  Yes  Yes  Yes  Yes  Yes  Coming Soon    Redux  Yes  No  No  Yes  *  No  No  Yes    MobX  Yes  Yes  No  No  No  No  Yes     * With plugin usage.", 
+            "text": "Hooking together a collection of numerous libraries can be quite frustrating. Especially if you know that you will need to train a new developer in your unique mix of code. Our goal with Ringa JS to provide everything you need in one place.  This chart is subject to update. There are a lot of libraries out there and I may have missed some or their capabilities. If I missed something, let me know!      Project  State Management  Observer Pattern  Dependency Injection  Asynchronous Tools  Error Handling  Listens to DOM Events  Unit Test Ready      Ringa  Yes  Yes  Yes  Yes  Yes  Yes  Coming Soon    Redux  Yes  No  No  Yes  *  No  No  Yes    MobX  Yes  Yes  No  No  No  No  Yes     * With plugin usage.", 
             "title": "Comparisons"
         }, 
         {
-            "location": "/#requirements", 
-            "text": "Ringa JS is being developed for an ES6+ development environment (transpiled ES5 artifacts are available).", 
-            "title": "Requirements"
-        }, 
-        {
             "location": "/#compatibility", 
-            "text": "Chrome  Firefox  Safari  IE 11+  Edge  Native Node (through use of the Ringa  Bus  instead of DOM nodes)   IE 10 needs work because it does not recognize  __proto__ .", 
+            "text": "All major modern browsers are support, starting with IE 11.", 
             "title": "Compatibility"
         }, 
         {
-            "location": "/#installation", 
-            "text": "npm install --save-dev ringa  - Install Ringa JS into your project", 
-            "title": "Installation"
-        }, 
-        {
-            "location": "/#minified-gzipped-size", 
-            "text": "ringa :  ~29.5kb  react-ringa :  2.7kb", 
-            "title": "Minified + GZipped Size"
-        }, 
-        {
-            "location": "/#testing-and-coverage", 
-            "text": "npm run test  Ringa JS currently has 208 unit tests to ensure its core features are running smoothly.  Our goal is 100% coverage so there is a little work to do!", 
-            "title": "Testing and Coverage"
-        }, 
-        {
-            "location": "/#when-should-i-use-it", 
-            "text": "RingaJS is right for you if you:   Hate Boilerplate Code  Need seamless integration between components in a large library and across various versions  Want to simplify complex chains of asynchronous code  Want simple communication between all your components  Want to break your enterprise application into manageable submodules  Want to avoid singletons  Are not sure what your final UX is going to be and want completely painless refactoring next year  Want to be able to pass your codebase to other developers and have the entire thing be easily understood  Want to know your application can scale from a prototype to enterprise with little refactoring", 
-            "title": "When should I use it?"
+            "location": "/#size", 
+            "text": "ringa :  ~29.5kb gzipped  react-ringa :  2.7kb gzipped  ringa-fw-react :  47kb gzipped", 
+            "title": "Size"
         }, 
         {
             "location": "/#background", 
@@ -69,41 +49,6 @@
             "location": "/#contributors-and-contact", 
             "text": "If you want to contribute, or want to ask questions, feel free to reach out. As of November, 2017 the project is under heavy active daily development:   Joshua Jung - Project Owner  Thomas Yarnall  Jimmy Schwarzenberger  Saajan Sn  Naomi Mathews  Marcus Folkeryd", 
             "title": "Contributors and Contact"
-        }, 
-        {
-            "location": "/gettingStarted/demo/", 
-            "text": "Demo\n\n\nIntroduction\n\n\nThis RingaJS demo is a large demonstration of some of the best features of RingaJS integrated with a live server. Feel free to dig through the code and \nplay around with the application, but keep in mind the codebase was not designed as a \"Hello World\" equivalent. If you are just getting started, take a look at the examples in \nHome\n.\n\n\n\n\nLive Application\n\n\nSource Code (Web)\n\n\nSource Code (Server)\n\n\n\n\n\n  \n\n\n\n\nDescription\n\n\nThis demo is like \nTodoMVC\n on steroids. It allows you to create lists of items that are associated with a token and stored in the database. You can share the lists of items with others by giving them the url.\n\n\nTechnology\n\n\nWeb\n\n\n\n\nWebpack\n\n\nBabel Transpiling to ES5\n\n\nJavascript ES6\n\n\nSCSS\n\n\n\n\nServer\n\n\n\n\nExpress\n\n\nMongoDB", 
-            "title": "Live Demo"
-        }, 
-        {
-            "location": "/gettingStarted/demo/#demo", 
-            "text": "", 
-            "title": "Demo"
-        }, 
-        {
-            "location": "/gettingStarted/demo/#introduction", 
-            "text": "This RingaJS demo is a large demonstration of some of the best features of RingaJS integrated with a live server. Feel free to dig through the code and \nplay around with the application, but keep in mind the codebase was not designed as a \"Hello World\" equivalent. If you are just getting started, take a look at the examples in  Home .   Live Application  Source Code (Web)  Source Code (Server)", 
-            "title": "Introduction"
-        }, 
-        {
-            "location": "/gettingStarted/demo/#description", 
-            "text": "This demo is like  TodoMVC  on steroids. It allows you to create lists of items that are associated with a token and stored in the database. You can share the lists of items with others by giving them the url.", 
-            "title": "Description"
-        }, 
-        {
-            "location": "/gettingStarted/demo/#technology", 
-            "text": "", 
-            "title": "Technology"
-        }, 
-        {
-            "location": "/gettingStarted/demo/#web", 
-            "text": "Webpack  Babel Transpiling to ES5  Javascript ES6  SCSS", 
-            "title": "Web"
-        }, 
-        {
-            "location": "/gettingStarted/demo/#server", 
-            "text": "Express  MongoDB", 
-            "title": "Server"
         }, 
         {
             "location": "/gettingStarted/helloWorld/", 
@@ -163,12 +108,22 @@
         {
             "location": "/gettingStarted/examples/", 
             "text": "Examples\n\n\n\n\nChuck Norris Jokes\n\n\nTodo MVC", 
-            "title": "Code Examples"
+            "title": "Examples"
         }, 
         {
             "location": "/gettingStarted/examples/#examples", 
             "text": "Chuck Norris Jokes  Todo MVC", 
             "title": "Examples"
+        }, 
+        {
+            "location": "/gettingStarted/demo/", 
+            "text": "Demo\n\n\n\n  \n\n\n\n\n\n\nSource Code (Web)\n\n\nSource Code (Server)", 
+            "title": "Full Application Demo"
+        }, 
+        {
+            "location": "/gettingStarted/demo/#demo", 
+            "text": "Source Code (Web)  Source Code (Server)", 
+            "title": "Demo"
         }, 
         {
             "location": "/architecture/iocFPAndRinga/", 
@@ -824,31 +779,6 @@
             "location": "/reactLibrary/tabNavigator/", 
             "text": "", 
             "title": "TabNavigator *"
-        }, 
-        {
-            "location": "/links/", 
-            "text": "Code\n\n\n\n\nRinga Github\n\n\nReact Ringa Github\n\n\nDemo Github\n\n\n\n\nTemplate\n\n\n\n\nRingaJS Application Template\n.\n\n\n\n\nDemo\n\n\n\n\nFull Demonstration\n\n\n\n\nVideos\n\n\n\n\nInitial Presentation\n\nSkip to about 10 minutes in.", 
-            "title": "Links"
-        }, 
-        {
-            "location": "/links/#code", 
-            "text": "Ringa Github  React Ringa Github  Demo Github", 
-            "title": "Code"
-        }, 
-        {
-            "location": "/links/#template", 
-            "text": "RingaJS Application Template .", 
-            "title": "Template"
-        }, 
-        {
-            "location": "/links/#demo", 
-            "text": "Full Demonstration", 
-            "title": "Demo"
-        }, 
-        {
-            "location": "/links/#videos", 
-            "text": "Initial Presentation \nSkip to about 10 minutes in.", 
-            "title": "Videos"
         }
     ]
 }
