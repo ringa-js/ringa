@@ -49,6 +49,10 @@ class RingaEvent extends RingaObject {
     // TODO add cancel support and unit tests!
     super(`RingaEvent[${type}, ${eventIx.count++}]`);
 
+    if (__DEV__ && !type) {
+      throw new Error('RingaEvent: attempting to dispatch an event with an undefined type! This normally happens because the Controller static property you are using is being used before the Controller has been instantiated.');
+    }
+
     this.detail = detail;
     detail.ringaEvent = this;
 

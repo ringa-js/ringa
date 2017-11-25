@@ -89,6 +89,10 @@ export function assign (executor, detail) {
 }
 
 export function event (eventType, detail, bus, requireCatch = false, bubbles = true, cancellable = true, event = undefined) {
+  if (__DEV__ && !eventType) {
+    throw new Error('event(): the eventType that was passed in was undefined. This normally means you used a Controller static property before the Controller has been instantiated.');
+  }
+
   return new RingaEventFactory(eventType, detail, bus, requireCatch, bubbles, cancellable, event);
 }
 

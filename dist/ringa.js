@@ -1249,6 +1249,10 @@ var RingaEvent = function (_RingaObject) {
     // TODO add cancel support and unit tests!
 
 
+    if (true && !type) {
+      throw new Error('RingaEvent: attempting to dispatch an event with an undefined type! This normally happens because the Controller static property you are using is being used before the Controller has been instantiated.');
+    }
+
     _this.detail = detail;
     detail.ringaEvent = _this;
 
@@ -8098,6 +8102,10 @@ function event(eventType, detail, bus) {
   var bubbles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   var cancellable = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
   var event = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : undefined;
+
+  if (true && !eventType) {
+    throw new Error('event(): the eventType that was passed in was undefined. This normally means you used a Controller static property before the Controller has been instantiated.');
+  }
 
   return new _RingaEventFactory2.default(eventType, detail, bus, requireCatch, bubbles, cancellable, event);
 }
