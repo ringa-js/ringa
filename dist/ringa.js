@@ -2795,7 +2795,17 @@ Model.construct = function (className, propertyArray) {
         if (typeof v === 'string') {
           _this6.addProperty(v);
         } else {
-          _this6.addProperty(v.name, v.default, v.options);
+          var d = v.default;
+
+          if (typeof d === 'function') {
+            d = d();
+          } else if (d instanceof Array) {
+            d = d.concat();
+          } else if (true && (typeof d === 'undefined' ? 'undefined' : _typeof(d)) === 'object') {
+            console.warn('Model: note that defaults that are Objects when using Model.construct() will be shared across all instances!');
+          }
+
+          _this6.addProperty(v.name, d, v.options);
         }
       }
       return _this6;

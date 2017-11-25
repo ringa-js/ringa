@@ -709,7 +709,17 @@ Model.construct = function(className, propertyArray) {
         if (typeof v === 'string') {
           this.addProperty(v);
         } else {
-          this.addProperty(v.name, v.default, v.options);
+          let d = v.default;
+
+          if (typeof d === 'function') {
+            d = d();
+          } else if (d instanceof Array) {
+            d = d.concat();
+          } else if (__DEV__ && typeof d === 'object') {
+            console.warn('Model: note that defaults that are Objects when using Model.construct() will be shared across all instances!');
+          }
+
+          this.addProperty(v.name, d, v.options);
         }
       }
     }
