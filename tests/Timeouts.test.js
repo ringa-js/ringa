@@ -49,6 +49,6 @@ describe('Timeouts', () => {
       expect(event.lastEvent._threadTimedOut).toEqual(true);
 
       done();
-    }, 100);
+    }, 200);
   }, 1000);
 });
