@@ -81,5 +81,5 @@ describe('parallelExecutor', () => {
       expect(callOrder).toBe('1223');
       done();
     });
-  }, 50);
+  }, 200);
 });
