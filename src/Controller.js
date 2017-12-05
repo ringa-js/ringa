@@ -455,8 +455,10 @@ class Controller extends RingaObject {
   }
 
   threadFailHandler(thread, error, kill) {
-    if (!this.options || this.options.consoleLogFails) {
-      console.error(error, `In thread ${thread ? thread.toString() : ''}`);
+    if (error) {
+      if (!this.options || this.options.consoleLogFails) {
+        console.error(error, `In thread ${thread ? thread.toString() : ''}`);
+      }
     }
 
     thread.ringaEvent._fail(this, error, kill);
@@ -471,12 +473,14 @@ class Controller extends RingaObject {
       }
     }
 
-    if (!this.options || this.options.consoleLogFails) {
-      this.dispatch(Controller.THREAD_FAIL_ERROR, {
-        thread,
-        error,
-        kill
-      });
+    if (error) {
+      if (!this.options || this.options.consoleLogFails) {
+        this.dispatch(Controller.THREAD_FAIL_ERROR, {
+          thread,
+          error,
+          kill
+        });
+      }
     }
   }
 

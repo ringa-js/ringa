@@ -137,6 +137,10 @@ class ExecutorAbstract extends RingaObject {
       console.error('ExecutorAbstract::done(): called done on a executor that has already failed! Original error:', this.error);
     }
 
+    if (this.ringaEvent.killed) {
+      return;
+    }
+
     let _done = () => {
       this.endTimeoutCheck();
 
@@ -185,6 +189,8 @@ class ExecutorAbstract extends RingaObject {
     this.endTime = now();
 
     this.error = error;
+
+    this.ringaEvent.killed = this.ringaEvent.killed || kill;
 
     this.failHandler(error, kill);
   }

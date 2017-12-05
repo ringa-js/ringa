@@ -81,6 +81,8 @@ class RingaEvent extends RingaObject {
 
     this._threads = [];
 
+    this.killed = false;
+
     // We keep track of when an Event triggered a thread that timed out because if one event triggers another triggers
     // another and the deepest one times out, we don't really need to get a timeout for all the parent ones that are
     // waiting as well.
