@@ -254,6 +254,10 @@ var ExecutorAbstract = function (_RingaObject) {
         console.error('ExecutorAbstract::done(): called done on a executor that has already failed! Original error:', this.error);
       }
 
+      if (this.ringaEvent.killed) {
+        return;
+      }
+
       var _done = function _done() {
         _this3.endTimeoutCheck();
 
@@ -311,6 +315,8 @@ var ExecutorAbstract = function (_RingaObject) {
       this.endTime = (0, _debug.now)();
 
       this.error = error;
+
+      this.ringaEvent.killed = this.ringaEvent.killed || kill;
 
       this.failHandler(error, kill);
     }
@@ -1280,6 +1286,8 @@ var RingaEvent = function (_RingaObject) {
     _this.__caught = false;
 
     _this._threads = [];
+
+    _this.killed = false;
 
     // We keep track of when an Event triggered a thread that timed out because if one event triggers another triggers
     // another and the deepest one times out, we don't really need to get a timeout for all the parent ones that are
@@ -3436,8 +3444,10 @@ var Controller = function (_RingaObject) {
   }, {
     key: 'threadFailHandler',
     value: function threadFailHandler(thread, error, kill) {
-      if (!this.options || this.options.consoleLogFails) {
-        console.error(error, 'In thread ' + (thread ? thread.toString() : ''));
+      if (error) {
+        if (!this.options || this.options.consoleLogFails) {
+          console.error(error, 'In thread ' + (thread ? thread.toString() : ''));
+        }
       }
 
       thread.ringaEvent._fail(this, error, kill);
@@ -3452,12 +3462,14 @@ var Controller = function (_RingaObject) {
         }
       }
 
-      if (!this.options || this.options.consoleLogFails) {
-        this.dispatch(Controller.THREAD_FAIL_ERROR, {
-          thread: thread,
-          error: error,
-          kill: kill
-        });
+      if (error) {
+        if (!this.options || this.options.consoleLogFails) {
+          this.dispatch(Controller.THREAD_FAIL_ERROR, {
+            thread: thread,
+            error: error,
+            kill: kill
+          });
+        }
       }
     }
   }, {
