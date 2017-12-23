@@ -146,6 +146,7 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
       let s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
 
       let str = `Ringa Injection Warning:\n` +
+                `\t` + ringaEvent.debugHistory + `\n` +
                 (executor ? `\tExecutor: '${executor.toString()}' of type ${executor.constructor.name}\n` : `No active Executor\n`) +
                 `\tMissing: ${argName}\n` +
                 `\tRequired: ${expectedArguments.join(', ')}\n` +

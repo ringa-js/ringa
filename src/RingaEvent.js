@@ -210,6 +210,13 @@ class RingaEvent extends RingaObject {
     return undefined;
   }
 
+  get debugHistory() {
+    let eventController = this.controllers && this.controllers.length ? this.controllers[0].name : 'Uncaught event';
+    let lastEventInfo = this.detail && this.detail.lastEvent ? ' <- ' + this.detail.lastEvent.debugHistory : '';
+
+    return eventController + ':' + this.type + lastEventInfo;
+  }
+
   //-----------------------------------
   // Methods
   //-----------------------------------
@@ -226,13 +233,13 @@ class RingaEvent extends RingaObject {
     if (__DEV__ || this.detail.debug) {
 
       // The current version of error-stack-parser throws an error if it
-      // fails to parse the given Error object. We don't really want this to 
+      // fails to parse the given Error object. We don't really want this to
       // cause a fatal error, so we'll just wrap it in a try/catch.
       // TODO: might want to console.warn() about this.
 
       try { this.dispatchStack = ErrorStackParser.parse(new Error()); }
       catch(err) { this.dispatchStack = []; }
-      
+
       this.dispatchStack.shift(); // Remove a reference to RingaEvent.dispatch()
 
       if (this.dispatchStack.length && this.dispatchStack[0].toString().search('Object.dispatch') !== -1) {
