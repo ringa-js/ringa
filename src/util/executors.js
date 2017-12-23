@@ -141,18 +141,18 @@ export const buildArgumentsFromRingaEvent = function(executor, expectedArguments
     if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
     } else if (argName.startsWith('_')) {
-      // We make an exception and don't try to inject for arguments that begin with _
+      // We make an exception and don't try to inject for arguments that begin with _ and do not warn either.
     } else {
       let s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
 
-      let str = `Ringa Injection Error!:\n` +
+      let str = `Ringa Injection Warning:\n` +
                 (executor ? `\tExecutor: '${executor.toString()}' of type ${executor.constructor.name}\n` : `No active Executor\n`) +
                 `\tMissing: ${argName}\n` +
                 `\tRequired: ${expectedArguments.join(', ')}\n` +
                 `\tAvailable: ${Object.keys(injections).sort().join(', ')}\n` +
                 `\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n` +
                 `\tDispatched from: ${s}`;
-      console.error(str);
+      console.warn(str);
 
       args.push(undefined);
     }
