@@ -573,12 +573,12 @@ var buildArgumentsFromRingaEvent = exports.buildArgumentsFromRingaEvent = functi
     if (injections.hasOwnProperty(argName)) {
       args.push(injections[argName]);
     } else if (argName.startsWith('_')) {
-      // We make an exception and don't try to inject for arguments that begin with _
+      // We make an exception and don't try to inject for arguments that begin with _ and do not warn either.
     } else {
       var s = ringaEvent.dispatchStack ? ringaEvent.dispatchStack[0] : 'unknown stack.';
 
-      var str = 'Ringa Injection Error!:\n' + (executor ? '\tExecutor: \'' + executor.toString() + '\' of type ' + executor.constructor.name + '\n' : 'No active Executor\n') + ('\tMissing: ' + argName + '\n') + ('\tRequired: ' + expectedArguments.join(', ') + '\n') + ('\tAvailable: ' + Object.keys(injections).sort().join(', ') + '\n') + '\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n' + ('\tDispatched from: ' + s);
-      console.error(str);
+      var str = 'Ringa Injection Warning:\n' + '\t' + ringaEvent.debugHistory + '\n' + (executor ? '\tExecutor: \'' + executor.toString() + '\' of type ' + executor.constructor.name + '\n' : 'No active Executor\n') + ('\tMissing: ' + argName + '\n') + ('\tRequired: ' + expectedArguments.join(', ') + '\n') + ('\tAvailable: ' + Object.keys(injections).sort().join(', ') + '\n') + '\tIf you are minifying JS, make sure you add the original, unmangled property name to the UglifyJSPlugin mangle exceptions.\n' + ('\tDispatched from: ' + s);
+      console.warn(str);
 
       args.push(undefined);
     }
@@ -1323,7 +1323,7 @@ var RingaEvent = function (_RingaObject) {
       if (true) {
 
         // The current version of error-stack-parser throws an error if it
-        // fails to parse the given Error object. We don't really want this to 
+        // fails to parse the given Error object. We don't really want this to
         // cause a fatal error, so we'll just wrap it in a try/catch.
         // TODO: might want to console.warn() about this.
 
@@ -1848,6 +1848,14 @@ var RingaEvent = function (_RingaObject) {
       }
 
       return undefined;
+    }
+  }, {
+    key: 'debugHistory',
+    get: function get() {
+      var eventController = this.controllers && this.controllers.length ? this.controllers[0].name : 'Uncaught event';
+      var lastEventInfo = this.detail && this.detail.lastEvent ? ' <- ' + this.detail.lastEvent.debugHistory : '';
+
+      return eventController + ':' + this.type + lastEventInfo;
     }
   }]);
 
