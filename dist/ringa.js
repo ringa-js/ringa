@@ -2108,7 +2108,7 @@ function uglifyWhitelist(mergeArray) {
 
   arr = arr.sort();
 
-  return injectionNames().concat(constructorNames()).sort();
+  return arr;
 }
 
 /***/ }),
