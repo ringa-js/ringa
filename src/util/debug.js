@@ -75,5 +75,5 @@ export function uglifyWhitelist(mergeArray, includeConstructorNames = false) {
 
   arr = arr.sort();
 
-  return injectionNames().concat(constructorNames()).sort();
+  return arr;
 }
