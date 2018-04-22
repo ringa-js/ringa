@@ -1,6 +1,8 @@
 import Bus from './Bus';
 import TrieSearch from 'trie-search';
 
+import ErrorStackParser from 'error-stack-parser';
+
 window.$ModelNotifications = {
   watchers: 0,
   modelWatchers: 0
@@ -92,6 +94,11 @@ class Model extends Bus {
     this.$version = undefined; // Used when something is deserialized
 
     window.$ModelNameToConstructorMap[this.constructor.name] = this.constructor;
+
+    if (__DEV__) {
+      try { this.stackCreationPoint = new Error().stack.replace(/\s*Error\s*/g, ''); }
+      catch(err) { this.stackCreationPoint = 'unknown'; }
+    }
   }
 
   //-----------------------------------

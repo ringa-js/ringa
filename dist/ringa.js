@@ -98,7 +98,7 @@ var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
 var _InspectorController = __webpack_require__(8);
 
-var _debug = __webpack_require__(11);
+var _debug = __webpack_require__(9);
 
 var _type = __webpack_require__(3);
 
@@ -429,9 +429,17 @@ exports.default = ExecutorAbstract;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.buildArgumentsFromRingaEvent = exports.getInjections = exports.injectionInfo = undefined;
+
+var _debug = __webpack_require__(9);
+
 var injectionInfo = exports.injectionInfo = {
   byName: {}
 };
+
+var hasWarnedAboutWhitelist = false;
+var lastWarnedLength = 0;
+var needsAddingToWhitelist = [];
 
 var getInjections = exports.getInjections = function getInjections(ringaEvent) {
   var executor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
@@ -519,7 +527,33 @@ var getInjections = exports.getInjections = function getInjections(ringaEvent) {
 
   if (true) {
     for (var key in injections) {
+      if (/[0-9]$/g.test(key)) {
+        continue;
+      }
+
+      if (RINGA_CURRENT_WHITELIST instanceof Array) {
+        if (RINGA_CURRENT_WHITELIST.indexOf(key) === -1 && needsAddingToWhitelist.indexOf(key) === -1) {
+          needsAddingToWhitelist.push(key);
+        }
+      } else if (!hasWarnedAboutWhitelist) {
+        hasWarnedAboutWhitelist = true;
+
+        console.error('Ringa Non-Fatal Error: please setup your build to set window.RINGA_CURRENT_WHITELIST to the current Array whitelist you use in your production build.' + 'You can use the Webpack Define plugin, for example, to do this. By setting this up, Ringa will let you know while running when it encounters a' + ' new variable that is not already defined in your build. This will greatly help when deploying to production. Please also remember NOT to uglify class names!' + ' Here is an example of how to do this with the define plugin if you store your whitelist in an external file:\n\n' + '    new webpack.DefinePlugin({\n' + '      __DEV__: true,\n' + '      RINGA_CURRENT_WHITELIST: `${JSON.stringify(require(\'./uglifyMangleWhitelist.json\'))}`\n' + '      ...\n' + '    });\n' + 'Another option if you want your application to rebuild every time you edit the whitelist would be to import your uglify whitelist JSON directly into your javascript build (e.g. App.js).');
+      }
+
       injectionInfo.byName[key] = key;
+    }
+
+    if (needsAddingToWhitelist.length !== lastWarnedLength) {
+      var whitelist = (0, _debug.uglifyWhitelist)(RINGA_CURRENT_WHITELIST);
+
+      console.error('Ringa Whitelist Update!');
+      if (needsAddingToWhitelist.length < 10) {
+        console.error('Found these variables: ' + needsAddingToWhitelist.join(','));
+      }
+      console.error('Update Uglify Whitelist (' + needsAddingToWhitelist.length + ' new items)! Replace this is in your production settings and in RINGA_CURRENT_WHITELIST: \n\n' + JSON.stringify(whitelist));
+
+      lastWarnedLength = needsAddingToWhitelist.length;
     }
   }
 
@@ -601,11 +635,11 @@ exports.ids = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _camelcase = __webpack_require__(26);
+var _camelcase = __webpack_require__(27);
 
 var _camelcase2 = _interopRequireDefault(_camelcase);
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(10);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -1179,11 +1213,11 @@ var _RingaObject2 = __webpack_require__(2);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _errorStackParser = __webpack_require__(28);
+var _errorStackParser = __webpack_require__(18);
 
 var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
-var _debug = __webpack_require__(11);
+var _debug = __webpack_require__(9);
 
 var _type = __webpack_require__(3);
 
@@ -1979,10 +2013,115 @@ exports.default = InspectorController;
 "use strict";
 
 
-module.exports = __webpack_require__(31);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.now = now;
+exports.format = format;
+exports.ringaEventToDebugString = ringaEventToDebugString;
+exports.injectionNames = injectionNames;
+exports.constructorNames = constructorNames;
+exports.uglifyWhitelist = uglifyWhitelist;
+
+var _dateformat = __webpack_require__(28);
+
+var _dateformat2 = _interopRequireDefault(_dateformat);
+
+var _executors = __webpack_require__(1);
+
+var _RingaObject = __webpack_require__(2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function now() {
+  return new Date();
+}
+
+function format(date) {
+  if (!date) {
+    return '?';
+  }
+
+  return (0, _dateformat2.default)(date, 'hh:mm:ss');
+}
+
+/**
+ * Generates a state tree of the process tree that this event has invoked at the state of this being called.
+ *
+ * Type: 1 [Event]
+ *       2 [Controller]
+ *       3 [Thread]
+ *       4 [Executor]
+ *       0 [Metadata]
+ * @private
+ */
+function ringaEventToDebugString(ringaEvent) {
+  var thread = ringaEvent.thread;
+  var controller = ringaEvent.controller;
+  var out = '';
+
+  // Unfortunately because the state is not a "tree" we cannot generate this using
+  // recursion, which would be much more elegant
+  out += ringaEvent.id + ' ' + (ringaEvent.dispatched ? 'dispatched' : '') + '\n';
+
+  if (controller) {
+    out += '  ' + controller.id;
+
+    if (thread) {
+      out += '    ' + thread.id;
+
+      thread._list.forEach(function (command) {
+        out += '      ' + command.id + ' [' + format(command.startTime) + ' - ' + format(command.endTime) + ']\n';
+      });
+    }
+  } else {
+    out += '  not yet caught.\n';
+  }
+
+  return out;
+}
+
+function injectionNames() {
+  return Object.keys(_executors.injectionInfo.byName);
+}
+
+function constructorNames() {
+  return Object.keys(_RingaObject.ids.constructorNames);
+}
+
+function uglifyWhitelist(mergeArray) {
+  var includeConstructorNames = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+  var arr = injectionNames();
+
+  if (includeConstructorNames) {
+    arr = arr.concat(constructorNames());
+  }
+
+  if (mergeArray) {
+    mergeArray.forEach(function (name) {
+      if (!_executors.injectionInfo.byName[name]) {
+        arr.push(name);
+      }
+    });
+  }
+
+  arr = arr.sort();
+
+  return injectionNames().concat(constructorNames()).sort();
+}
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(31);
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2003,6 +2142,10 @@ var _Bus3 = _interopRequireDefault(_Bus2);
 var _trieSearch = __webpack_require__(38);
 
 var _trieSearch2 = _interopRequireDefault(_trieSearch);
+
+var _errorStackParser = __webpack_require__(18);
+
+var _errorStackParser2 = _interopRequireDefault(_errorStackParser);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2110,6 +2253,14 @@ var Model = function (_Bus) {
     _this.$version = undefined; // Used when something is deserialized
 
     window.$ModelNameToConstructorMap[_this.constructor.name] = _this.constructor;
+
+    if (true) {
+      try {
+        _this.stackCreationPoint = new Error().stack.replace(/\s*Error\s*/g, '');
+      } catch (err) {
+        _this.stackCreationPoint = 'unknown';
+      }
+    }
     return _this;
   }
 
@@ -2846,93 +2997,6 @@ Model.construct = function (className, propertyArray) {
 exports.default = Model;
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.now = now;
-exports.format = format;
-exports.ringaEventToDebugString = ringaEventToDebugString;
-exports.injectionNames = injectionNames;
-exports.constructorNames = constructorNames;
-exports.uglifyWhitelist = uglifyWhitelist;
-
-var _dateformat = __webpack_require__(27);
-
-var _dateformat2 = _interopRequireDefault(_dateformat);
-
-var _executors = __webpack_require__(1);
-
-var _RingaObject = __webpack_require__(2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function now() {
-  return new Date();
-}
-
-function format(date) {
-  if (!date) {
-    return '?';
-  }
-
-  return (0, _dateformat2.default)(date, 'hh:mm:ss');
-}
-
-/**
- * Generates a state tree of the process tree that this event has invoked at the state of this being called.
- *
- * Type: 1 [Event]
- *       2 [Controller]
- *       3 [Thread]
- *       4 [Executor]
- *       0 [Metadata]
- * @private
- */
-function ringaEventToDebugString(ringaEvent) {
-  var thread = ringaEvent.thread;
-  var controller = ringaEvent.controller;
-  var out = '';
-
-  // Unfortunately because the state is not a "tree" we cannot generate this using
-  // recursion, which would be much more elegant
-  out += ringaEvent.id + ' ' + (ringaEvent.dispatched ? 'dispatched' : '') + '\n';
-
-  if (controller) {
-    out += '  ' + controller.id;
-
-    if (thread) {
-      out += '    ' + thread.id;
-
-      thread._list.forEach(function (command) {
-        out += '      ' + command.id + ' [' + format(command.startTime) + ' - ' + format(command.endTime) + ']\n';
-      });
-    }
-  } else {
-    out += '  not yet caught.\n';
-  }
-
-  return out;
-}
-
-function injectionNames() {
-  return Object.keys(_executors.injectionInfo.byName);
-}
-
-function constructorNames() {
-  return Object.keys(_RingaObject.ids.constructorNames);
-}
-
-function uglifyWhitelist() {
-  return JSON.stringify(injectionNames().concat(constructorNames()).sort());
-}
-
-/***/ }),
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2955,7 +3019,7 @@ var _RingaObject2 = __webpack_require__(2);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(10);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -3622,7 +3686,7 @@ var _RingaObject2 = __webpack_require__(2);
 
 var _RingaObject3 = _interopRequireDefault(_RingaObject2);
 
-var _Model = __webpack_require__(10);
+var _Model = __webpack_require__(11);
 
 var _Model2 = _interopRequireDefault(_Model);
 
@@ -4166,7 +4230,7 @@ var _RingaEvent = __webpack_require__(7);
 
 var _RingaEvent2 = _interopRequireDefault(_RingaEvent);
 
-var _ringaEvent = __webpack_require__(19);
+var _ringaEvent = __webpack_require__(20);
 
 var _function = __webpack_require__(4);
 
@@ -4250,7 +4314,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(18);
+var _RingaHashArray2 = __webpack_require__(19);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -4343,7 +4407,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Model2 = __webpack_require__(10);
+var _Model2 = __webpack_require__(11);
 
 var _Model3 = _interopRequireDefault(_Model2);
 
@@ -4532,6 +4596,205 @@ exports.default = SleepExecutor;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+(function (root, factory) {
+    'use strict';
+    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
+
+    /* istanbul ignore next */
+
+    if (true) {
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    } else if ((typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object') {
+        module.exports = factory(require('stackframe'));
+    } else {
+        root.ErrorStackParser = factory(root.StackFrame);
+    }
+})(undefined, function ErrorStackParser(StackFrame) {
+    'use strict';
+
+    var FIREFOX_SAFARI_STACK_REGEXP = /(^|@)\S+\:\d+/;
+    var CHROME_IE_STACK_REGEXP = /^\s*at .*(\S+\:\d+|\(native\))/m;
+    var SAFARI_NATIVE_CODE_REGEXP = /^(eval@)?(\[native code\])?$/;
+
+    return {
+        /**
+         * Given an Error object, extract the most information from it.
+         *
+         * @param {Error} error object
+         * @return {Array} of StackFrames
+         */
+        parse: function ErrorStackParser$$parse(error) {
+            if (typeof error.stacktrace !== 'undefined' || typeof error['opera#sourceloc'] !== 'undefined') {
+                return this.parseOpera(error);
+            } else if (error.stack && error.stack.match(CHROME_IE_STACK_REGEXP)) {
+                return this.parseV8OrIE(error);
+            } else if (error.stack) {
+                return this.parseFFOrSafari(error);
+            } else {
+                throw new Error('Cannot parse given Error object');
+            }
+        },
+
+        // Separate line and column numbers from a string of the form: (URI:Line:Column)
+        extractLocation: function ErrorStackParser$$extractLocation(urlLike) {
+            // Fail-fast but return locations like "(native)"
+            if (urlLike.indexOf(':') === -1) {
+                return [urlLike];
+            }
+
+            var regExp = /(.+?)(?:\:(\d+))?(?:\:(\d+))?$/;
+            var parts = regExp.exec(urlLike.replace(/[\(\)]/g, ''));
+            return [parts[1], parts[2] || undefined, parts[3] || undefined];
+        },
+
+        parseV8OrIE: function ErrorStackParser$$parseV8OrIE(error) {
+            var filtered = error.stack.split('\n').filter(function (line) {
+                return !!line.match(CHROME_IE_STACK_REGEXP);
+            }, this);
+
+            return filtered.map(function (line) {
+                if (line.indexOf('(eval ') > -1) {
+                    // Throw away eval information until we implement stacktrace.js/stackframe#8
+                    line = line.replace(/eval code/g, 'eval').replace(/(\(eval at [^\()]*)|(\)\,.*$)/g, '');
+                }
+                var tokens = line.replace(/^\s+/, '').replace(/\(eval code/g, '(').split(/\s+/).slice(1);
+                var locationParts = this.extractLocation(tokens.pop());
+                var functionName = tokens.join(' ') || undefined;
+                var fileName = ['eval', '<anonymous>'].indexOf(locationParts[0]) > -1 ? undefined : locationParts[0];
+
+                return new StackFrame({
+                    functionName: functionName,
+                    fileName: fileName,
+                    lineNumber: locationParts[1],
+                    columnNumber: locationParts[2],
+                    source: line
+                });
+            }, this);
+        },
+
+        parseFFOrSafari: function ErrorStackParser$$parseFFOrSafari(error) {
+            var filtered = error.stack.split('\n').filter(function (line) {
+                return !line.match(SAFARI_NATIVE_CODE_REGEXP);
+            }, this);
+
+            return filtered.map(function (line) {
+                // Throw away eval information until we implement stacktrace.js/stackframe#8
+                if (line.indexOf(' > eval') > -1) {
+                    line = line.replace(/ line (\d+)(?: > eval line \d+)* > eval\:\d+\:\d+/g, ':$1');
+                }
+
+                if (line.indexOf('@') === -1 && line.indexOf(':') === -1) {
+                    // Safari eval frames only have function names and nothing else
+                    return new StackFrame({
+                        functionName: line
+                    });
+                } else {
+                    var tokens = line.split('@');
+                    var locationParts = this.extractLocation(tokens.pop());
+                    var functionName = tokens.join('@') || undefined;
+
+                    return new StackFrame({
+                        functionName: functionName,
+                        fileName: locationParts[0],
+                        lineNumber: locationParts[1],
+                        columnNumber: locationParts[2],
+                        source: line
+                    });
+                }
+            }, this);
+        },
+
+        parseOpera: function ErrorStackParser$$parseOpera(e) {
+            if (!e.stacktrace || e.message.indexOf('\n') > -1 && e.message.split('\n').length > e.stacktrace.split('\n').length) {
+                return this.parseOpera9(e);
+            } else if (!e.stack) {
+                return this.parseOpera10(e);
+            } else {
+                return this.parseOpera11(e);
+            }
+        },
+
+        parseOpera9: function ErrorStackParser$$parseOpera9(e) {
+            var lineRE = /Line (\d+).*script (?:in )?(\S+)/i;
+            var lines = e.message.split('\n');
+            var result = [];
+
+            for (var i = 2, len = lines.length; i < len; i += 2) {
+                var match = lineRE.exec(lines[i]);
+                if (match) {
+                    result.push(new StackFrame({
+                        fileName: match[2],
+                        lineNumber: match[1],
+                        source: lines[i]
+                    }));
+                }
+            }
+
+            return result;
+        },
+
+        parseOpera10: function ErrorStackParser$$parseOpera10(e) {
+            var lineRE = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i;
+            var lines = e.stacktrace.split('\n');
+            var result = [];
+
+            for (var i = 0, len = lines.length; i < len; i += 2) {
+                var match = lineRE.exec(lines[i]);
+                if (match) {
+                    result.push(new StackFrame({
+                        functionName: match[3] || undefined,
+                        fileName: match[2],
+                        lineNumber: match[1],
+                        source: lines[i]
+                    }));
+                }
+            }
+
+            return result;
+        },
+
+        // Opera 10.65+ Error.stack very similar to FF/Safari
+        parseOpera11: function ErrorStackParser$$parseOpera11(error) {
+            var filtered = error.stack.split('\n').filter(function (line) {
+                return !!line.match(FIREFOX_SAFARI_STACK_REGEXP) && !line.match(/^Error created at/);
+            }, this);
+
+            return filtered.map(function (line) {
+                var tokens = line.split('@');
+                var locationParts = this.extractLocation(tokens.pop());
+                var functionCall = tokens.shift() || '';
+                var functionName = functionCall.replace(/<anonymous function(: (\w+))?>/, '$2').replace(/\([^\)]*\)/g, '') || undefined;
+                var argsRaw;
+                if (functionCall.match(/\(([^\)]*)\)/)) {
+                    argsRaw = functionCall.replace(/^[^\(]+\(([^\)]*)\)$/, '$1');
+                }
+                var args = argsRaw === undefined || argsRaw === '[arguments not available]' ? undefined : argsRaw.split(',');
+
+                return new StackFrame({
+                    functionName: functionName,
+                    args: args,
+                    fileName: locationParts[0],
+                    lineNumber: locationParts[1],
+                    columnNumber: locationParts[2],
+                    source: line
+                });
+            }, this);
+        }
+    };
+});
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
 
 
 Object.defineProperty(exports, "__esModule", {
@@ -4540,7 +4803,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _hasharray = __webpack_require__(9);
+var _hasharray = __webpack_require__(10);
 
 var _hasharray2 = _interopRequireDefault(_hasharray);
 
@@ -4750,7 +5013,7 @@ var RingaHashArray = function (_RingaObject) {
 exports.default = RingaHashArray;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4784,7 +5047,7 @@ function mergeRingaEventDetails(ringaEvent, detail) {
 };
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4942,7 +5205,7 @@ var Command = function (_ExecutorAbstract) {
 exports.default = Command;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5125,7 +5388,7 @@ var ForEachExecutor = function (_ExecutorAbstract) {
 exports.default = ForEachExecutor;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5252,7 +5515,7 @@ var IifExecutor = function (_ExecutorAbstract) {
 exports.default = IifExecutor;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5404,7 +5667,7 @@ var IntervalExecutor = function (_ExecutorAbstract) {
 exports.default = IntervalExecutor;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5495,7 +5758,7 @@ var SpawnExecutor = function (_ExecutorAbstract) {
 exports.default = SpawnExecutor;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5513,7 +5776,7 @@ var _ExecutorFactory2 = __webpack_require__(5);
 
 var _ExecutorFactory3 = _interopRequireDefault(_ExecutorFactory2);
 
-var _ringaEvent = __webpack_require__(19);
+var _ringaEvent = __webpack_require__(20);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5550,7 +5813,7 @@ var AssignFactory = function (_ExecutorFactory) {
 exports.default = AssignFactory;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5620,7 +5883,7 @@ module.exports = function (str) {
 };
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5846,205 +6109,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     global.dateFormat = dateFormat;
   }
 })(undefined);
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-(function (root, factory) {
-    'use strict';
-    // Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, Rhino, and browsers.
-
-    /* istanbul ignore next */
-
-    if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(29)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-    } else if ((typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object') {
-        module.exports = factory(require('stackframe'));
-    } else {
-        root.ErrorStackParser = factory(root.StackFrame);
-    }
-})(undefined, function ErrorStackParser(StackFrame) {
-    'use strict';
-
-    var FIREFOX_SAFARI_STACK_REGEXP = /(^|@)\S+\:\d+/;
-    var CHROME_IE_STACK_REGEXP = /^\s*at .*(\S+\:\d+|\(native\))/m;
-    var SAFARI_NATIVE_CODE_REGEXP = /^(eval@)?(\[native code\])?$/;
-
-    return {
-        /**
-         * Given an Error object, extract the most information from it.
-         *
-         * @param {Error} error object
-         * @return {Array} of StackFrames
-         */
-        parse: function ErrorStackParser$$parse(error) {
-            if (typeof error.stacktrace !== 'undefined' || typeof error['opera#sourceloc'] !== 'undefined') {
-                return this.parseOpera(error);
-            } else if (error.stack && error.stack.match(CHROME_IE_STACK_REGEXP)) {
-                return this.parseV8OrIE(error);
-            } else if (error.stack) {
-                return this.parseFFOrSafari(error);
-            } else {
-                throw new Error('Cannot parse given Error object');
-            }
-        },
-
-        // Separate line and column numbers from a string of the form: (URI:Line:Column)
-        extractLocation: function ErrorStackParser$$extractLocation(urlLike) {
-            // Fail-fast but return locations like "(native)"
-            if (urlLike.indexOf(':') === -1) {
-                return [urlLike];
-            }
-
-            var regExp = /(.+?)(?:\:(\d+))?(?:\:(\d+))?$/;
-            var parts = regExp.exec(urlLike.replace(/[\(\)]/g, ''));
-            return [parts[1], parts[2] || undefined, parts[3] || undefined];
-        },
-
-        parseV8OrIE: function ErrorStackParser$$parseV8OrIE(error) {
-            var filtered = error.stack.split('\n').filter(function (line) {
-                return !!line.match(CHROME_IE_STACK_REGEXP);
-            }, this);
-
-            return filtered.map(function (line) {
-                if (line.indexOf('(eval ') > -1) {
-                    // Throw away eval information until we implement stacktrace.js/stackframe#8
-                    line = line.replace(/eval code/g, 'eval').replace(/(\(eval at [^\()]*)|(\)\,.*$)/g, '');
-                }
-                var tokens = line.replace(/^\s+/, '').replace(/\(eval code/g, '(').split(/\s+/).slice(1);
-                var locationParts = this.extractLocation(tokens.pop());
-                var functionName = tokens.join(' ') || undefined;
-                var fileName = ['eval', '<anonymous>'].indexOf(locationParts[0]) > -1 ? undefined : locationParts[0];
-
-                return new StackFrame({
-                    functionName: functionName,
-                    fileName: fileName,
-                    lineNumber: locationParts[1],
-                    columnNumber: locationParts[2],
-                    source: line
-                });
-            }, this);
-        },
-
-        parseFFOrSafari: function ErrorStackParser$$parseFFOrSafari(error) {
-            var filtered = error.stack.split('\n').filter(function (line) {
-                return !line.match(SAFARI_NATIVE_CODE_REGEXP);
-            }, this);
-
-            return filtered.map(function (line) {
-                // Throw away eval information until we implement stacktrace.js/stackframe#8
-                if (line.indexOf(' > eval') > -1) {
-                    line = line.replace(/ line (\d+)(?: > eval line \d+)* > eval\:\d+\:\d+/g, ':$1');
-                }
-
-                if (line.indexOf('@') === -1 && line.indexOf(':') === -1) {
-                    // Safari eval frames only have function names and nothing else
-                    return new StackFrame({
-                        functionName: line
-                    });
-                } else {
-                    var tokens = line.split('@');
-                    var locationParts = this.extractLocation(tokens.pop());
-                    var functionName = tokens.join('@') || undefined;
-
-                    return new StackFrame({
-                        functionName: functionName,
-                        fileName: locationParts[0],
-                        lineNumber: locationParts[1],
-                        columnNumber: locationParts[2],
-                        source: line
-                    });
-                }
-            }, this);
-        },
-
-        parseOpera: function ErrorStackParser$$parseOpera(e) {
-            if (!e.stacktrace || e.message.indexOf('\n') > -1 && e.message.split('\n').length > e.stacktrace.split('\n').length) {
-                return this.parseOpera9(e);
-            } else if (!e.stack) {
-                return this.parseOpera10(e);
-            } else {
-                return this.parseOpera11(e);
-            }
-        },
-
-        parseOpera9: function ErrorStackParser$$parseOpera9(e) {
-            var lineRE = /Line (\d+).*script (?:in )?(\S+)/i;
-            var lines = e.message.split('\n');
-            var result = [];
-
-            for (var i = 2, len = lines.length; i < len; i += 2) {
-                var match = lineRE.exec(lines[i]);
-                if (match) {
-                    result.push(new StackFrame({
-                        fileName: match[2],
-                        lineNumber: match[1],
-                        source: lines[i]
-                    }));
-                }
-            }
-
-            return result;
-        },
-
-        parseOpera10: function ErrorStackParser$$parseOpera10(e) {
-            var lineRE = /Line (\d+).*script (?:in )?(\S+)(?:: In function (\S+))?$/i;
-            var lines = e.stacktrace.split('\n');
-            var result = [];
-
-            for (var i = 0, len = lines.length; i < len; i += 2) {
-                var match = lineRE.exec(lines[i]);
-                if (match) {
-                    result.push(new StackFrame({
-                        functionName: match[3] || undefined,
-                        fileName: match[2],
-                        lineNumber: match[1],
-                        source: lines[i]
-                    }));
-                }
-            }
-
-            return result;
-        },
-
-        // Opera 10.65+ Error.stack very similar to FF/Safari
-        parseOpera11: function ErrorStackParser$$parseOpera11(error) {
-            var filtered = error.stack.split('\n').filter(function (line) {
-                return !!line.match(FIREFOX_SAFARI_STACK_REGEXP) && !line.match(/^Error created at/);
-            }, this);
-
-            return filtered.map(function (line) {
-                var tokens = line.split('@');
-                var locationParts = this.extractLocation(tokens.pop());
-                var functionCall = tokens.shift() || '';
-                var functionName = functionCall.replace(/<anonymous function(: (\w+))?>/, '$2').replace(/\([^\)]*\)/g, '') || undefined;
-                var argsRaw;
-                if (functionCall.match(/\(([^\)]*)\)/)) {
-                    argsRaw = functionCall.replace(/^[^\(]+\(([^\)]*)\)$/, '$1');
-                }
-                var args = argsRaw === undefined || argsRaw === '[arguments not available]' ? undefined : argsRaw.split(',');
-
-                return new StackFrame({
-                    functionName: functionName,
-                    args: args,
-                    fileName: locationParts[0],
-                    lineNumber: locationParts[1],
-                    columnNumber: locationParts[2],
-                    source: line
-                });
-            }, this);
-        }
-    };
-});
 
 /***/ }),
 /* 29 */
@@ -7070,7 +7134,7 @@ module.exports = __webpack_require__(39);
 "use strict";
 
 
-var HashArray = __webpack_require__(9);
+var HashArray = __webpack_require__(10);
 
 var MAX_CACHE_SIZE = 64;
 
@@ -7291,7 +7355,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _RingaHashArray2 = __webpack_require__(18);
+var _RingaHashArray2 = __webpack_require__(19);
 
 var _RingaHashArray3 = _interopRequireDefault(_RingaHashArray2);
 
@@ -7973,7 +8037,7 @@ var _InspectorModel = __webpack_require__(16);
 
 var _InspectorModel2 = _interopRequireDefault(_InspectorModel);
 
-var _Command = __webpack_require__(20);
+var _Command = __webpack_require__(21);
 
 var _Command2 = _interopRequireDefault(_Command);
 
@@ -8001,11 +8065,11 @@ var _RingaEventFactory = __webpack_require__(14);
 
 var _RingaEventFactory2 = _interopRequireDefault(_RingaEventFactory);
 
-var _AssignFactory = __webpack_require__(25);
+var _AssignFactory = __webpack_require__(26);
 
 var _AssignFactory2 = _interopRequireDefault(_AssignFactory);
 
-var _Model = __webpack_require__(10);
+var _Model = __webpack_require__(11);
 
 var _Model2 = _interopRequireDefault(_Model);
 
@@ -8017,19 +8081,19 @@ var _Bus = __webpack_require__(6);
 
 var _Bus2 = _interopRequireDefault(_Bus);
 
-var _IifExecutor = __webpack_require__(22);
+var _IifExecutor = __webpack_require__(23);
 
 var _IifExecutor2 = _interopRequireDefault(_IifExecutor);
 
-var _ForEachExecutor = __webpack_require__(21);
+var _ForEachExecutor = __webpack_require__(22);
 
 var _ForEachExecutor2 = _interopRequireDefault(_ForEachExecutor);
 
-var _IntervalExecutor = __webpack_require__(23);
+var _IntervalExecutor = __webpack_require__(24);
 
 var _IntervalExecutor2 = _interopRequireDefault(_IntervalExecutor);
 
-var _SpawnExecutor = __webpack_require__(24);
+var _SpawnExecutor = __webpack_require__(25);
 
 var _SpawnExecutor2 = _interopRequireDefault(_SpawnExecutor);
 
@@ -8039,7 +8103,7 @@ var _SleepExecutor2 = _interopRequireDefault(_SleepExecutor);
 
 var _type = __webpack_require__(3);
 
-var _debug = __webpack_require__(11);
+var _debug = __webpack_require__(9);
 
 var _executors = __webpack_require__(1);
 
@@ -8146,6 +8210,11 @@ function debug() {
 
 if (typeof window !== 'undefined') {
   window.ringaDebug = debug;
+  window.ringaDebug.uglifyWhitelistMerge = function (mergeArray) {
+    var includeConstructorNames = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    return window.ringaDebug().uglifyWhitelist(mergeArray, includeConstructorNames);
+  };
 }
 
 function __hardReset(debug) {

@@ -1,6 +1,12 @@
+import {uglifyWhitelist} from './debug';
+
 export const injectionInfo = {
   byName: {}
 };
+
+let hasWarnedAboutWhitelist = false;
+let lastWarnedLength = 0;
+const needsAddingToWhitelist = [];
 
 export const getInjections = function(ringaEvent, executor = undefined) {
   let mergeControllerInjections = function(injections, controller) {
@@ -87,7 +93,42 @@ export const getInjections = function(ringaEvent, executor = undefined) {
 
   if (__DEV__) {
     for (var key in injections) {
+      if (/[0-9]$/g.test(key)) {
+        continue;
+      }
+
+      if (RINGA_CURRENT_WHITELIST instanceof Array) {
+        if (RINGA_CURRENT_WHITELIST.indexOf(key) === -1 && needsAddingToWhitelist.indexOf(key) === -1) {
+          needsAddingToWhitelist.push(key);
+        }
+      } else if (!hasWarnedAboutWhitelist) {
+        hasWarnedAboutWhitelist = true;
+
+        console.error('Ringa Non-Fatal Error: please setup your build to set window.RINGA_CURRENT_WHITELIST to the current Array whitelist you use in your production build.' +
+          'You can use the Webpack Define plugin, for example, to do this. By setting this up, Ringa will let you know while running when it encounters a' +
+          ' new variable that is not already defined in your build. This will greatly help when deploying to production. Please also remember NOT to uglify class names!' +
+          ' Here is an example of how to do this with the define plugin if you store your whitelist in an external file:\n\n' +
+          '    new webpack.DefinePlugin({\n' +
+          '      __DEV__: true,\n' +
+          '      RINGA_CURRENT_WHITELIST: `${JSON.stringify(require(\'./uglifyMangleWhitelist.json\'))}`\n' +
+          '      ...\n' +
+          '    });\n' +
+          'Another option if you want your application to rebuild every time you edit the whitelist would be to import your uglify whitelist JSON directly into your javascript build (e.g. App.js).');
+      }
+
       injectionInfo.byName[key] = key;
+    }
+
+    if (needsAddingToWhitelist.length !== lastWarnedLength) {
+      const whitelist = uglifyWhitelist(RINGA_CURRENT_WHITELIST);
+
+      console.error(`Ringa Whitelist Update!`);
+      if (needsAddingToWhitelist.length < 10) {
+        console.error(`Found these variables: ${needsAddingToWhitelist.join(',')}`);
+      }
+      console.error(`Update Uglify Whitelist (${needsAddingToWhitelist.length} new items)! Replace this is in your production settings and in RINGA_CURRENT_WHITELIST: \n\n` + JSON.stringify(whitelist));
+
+      lastWarnedLength = needsAddingToWhitelist.length;
     }
   }
 

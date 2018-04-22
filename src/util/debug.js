@@ -58,6 +58,22 @@ export function constructorNames() {
   return Object.keys(ids.constructorNames);
 }
 
-export function uglifyWhitelist() {
-  return JSON.stringify(injectionNames().concat(constructorNames()).sort());
+export function uglifyWhitelist(mergeArray, includeConstructorNames = false) {
+  let arr = injectionNames();
+
+  if (includeConstructorNames) {
+    arr = arr.concat(constructorNames());
+  }
+
+  if (mergeArray) {
+    mergeArray.forEach(name => {
+      if (!injectionInfo.byName[name]) {
+        arr.push(name);
+      }
+    });
+  }
+
+  arr = arr.sort();
+
+  return injectionNames().concat(constructorNames()).sort();
 }

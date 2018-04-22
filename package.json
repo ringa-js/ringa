@@ -86,9 +86,6 @@
   },
   "jest": {
     "collectCoverage": true,
-    "coverageDirectory": "./tests/coverage",
-    "globals": {
-      "__DEV__": true
-    }
+    "coverageDirectory": "./tests/coverage"
   }
 }

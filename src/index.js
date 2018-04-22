@@ -112,6 +112,9 @@ export function debug() {
 
 if (typeof window !== 'undefined') {
   window.ringaDebug = debug;
+  window.ringaDebug.uglifyWhitelistMerge = (mergeArray, includeConstructorNames = false) => {
+    return window.ringaDebug().uglifyWhitelist(mergeArray, includeConstructorNames);
+  };
 }
 
 export function __hardReset(debug) {
