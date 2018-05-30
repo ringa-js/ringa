@@ -27,7 +27,7 @@ export default class RingaObject {
   constructor(name, id) {
     ids.counts[this.constructor.name] = ids.counts[this.constructor.name] || 1;
 
-    if (id) {
+    if (id !== undefined) {
       this.id = id;
     } else {
       this.id = this.generateId();

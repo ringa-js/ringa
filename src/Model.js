@@ -83,7 +83,7 @@ class Model extends Bus {
       name = undefined;
     }
 
-    super(name, (values && values.id) ? values.id : undefined);
+    super(name, (values && values.id !== undefined) ? values.id : undefined);
 
     this.properties = [];
     this.propertyOptions = {};
