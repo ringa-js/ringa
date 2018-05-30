@@ -675,7 +675,7 @@ var RingaObject = function () {
 
     ids.counts[this.constructor.name] = ids.counts[this.constructor.name] || 1;
 
-    if (id) {
+    if (id !== undefined) {
       this.id = id;
     } else {
       this.id = this.generateId();
@@ -2242,7 +2242,7 @@ var Model = function (_Bus) {
       name = undefined;
     }
 
-    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id ? values.id : undefined));
+    var _this = _possibleConstructorReturn(this, (Model.__proto__ || Object.getPrototypeOf(Model)).call(this, name, values && values.id !== undefined ? values.id : undefined));
 
     _this.properties = [];
     _this.propertyOptions = {};
