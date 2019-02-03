@@ -1,6 +1,6 @@
 {
   "name": "ringa",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Ringa is an ES6 MVC-inspired library designed to manage your asynchronous code and state as your project scales.",
   "main": "./src/index.js",
   "directories": {
