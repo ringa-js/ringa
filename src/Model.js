@@ -397,6 +397,10 @@ class Model extends Bus {
   removeModelChild(child) {
     let ref = this.childIdToRef[child.id];
 
+    if (!ref) {
+      return; // Probably not smart, but if someone changes an id on what are we to do?
+    }
+
     if (this.propertyOptions[ref.propertyName].setParentModel !== false) {
       child.parentModel = undefined;
     }
