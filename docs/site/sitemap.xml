@@ -4,7 +4,7 @@
     
     <url>
      <loc>None/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -13,19 +13,19 @@
         
     <url>
      <loc>None/gettingStarted/helloWorld/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/gettingStarted/examples/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/gettingStarted/demo/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -35,43 +35,43 @@
         
     <url>
      <loc>None/architecture/iocFPAndRinga/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/architecture/lifecycle/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/architecture/dependencyInjection/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/architecture/events/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/architecture/debugging/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/architecture/performance/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/architecture/buildingComponentLibraries/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -81,7 +81,7 @@
         
     <url>
      <loc>None/plugins/reactRinga/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -91,37 +91,37 @@
         
     <url>
      <loc>None/docs/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/docs/ringaObject/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/docs/ringaEvent/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/docs/model/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/docs/controller/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/docs/executors/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -131,103 +131,103 @@
         
     <url>
      <loc>None/reactLibrary/introduction/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/examples/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/licensing/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/core/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/arrayCollection/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/ringaComponent/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/container/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/overlays/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/modals/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/dragDrop/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/list/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/list/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/list/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/radioButton/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/Checkbox/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/Dropdown/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/reactLibrary/tabNavigator/</loc>
-     <lastmod>2017-11-18</lastmod>
+     <lastmod>2019-01-03</lastmod>
      <changefreq>daily</changefreq>
     </url>
         

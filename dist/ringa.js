@@ -2837,7 +2837,7 @@ Model.deserialize = function (pojo) {
   var _deserializePOJOValue = function _deserializePOJOValue(parent, parentKey, value) {
     if (value instanceof Array) {
       return value.map(_deserializePOJOValue.bind(undefined, parent, parentKey));
-    } else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
+    } else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
       // Three ways to figure out the type of Model:
       // 1) If the POJO contains a $Model key, which will contain a string of the Ringa classname
       // 2) If some specified the model in addProperty('blah', {}, {type: SomeModel})
